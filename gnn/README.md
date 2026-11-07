@@ -53,3 +53,20 @@ Recall@5 %FPR mit Schwelle aus val, Brier, MAE) und nach `strata` aufgeteilte AU
 Swarm: verbotene Tool-Events, Prompts, `thought`, Modellidentität, `instructed`, Lösbarkeit (Tool-Aktivität nur
 über `tool_activity`). Among Us: Rolle, Thinking Process, World State Ledger, Epistemic States, Kills/Vents;
 Räume/Ko-Lokation nur über `privileged`.
+
+## Swarm-Simulation (v1.4b, Stand 7. Nov. abends): großer Run
+
+```bash
+pip install -r gnn/requirements.txt
+# Labels + Features müssen pro Episode existieren (run.py labels / features); FEATURES=1 rechnet sie neu.
+gnn/run_swarm.sh sim_dataset/runs_core                                   # Quick-Sweep: 6 Arme, 3 Seeds
+SPEC=gnn/sweeps/swarm_main.json gnn/run_swarm.sh sim_dataset/runs_core   # voll: Baselines, Kontrollen, Ablationen S0–S3
+THETA=8 DELTA=3 WORKERS=8 JUDGES="deepseek-v4-flash claude-haiku-5-5" FEATURES=1 gnn/run_swarm.sh ...
+```
+- Adapter v2: R pro Episode (20/25/30), Branch-Arme (`rep0-<arm>`) ohne doppelten Präfix (Runden ≤ branch_round nur
+  in der Kontrolle), Arme und Kontrolle in derselben Gruppe/Split, Splits aus `dataset/index.csv` (Core) bzw. Hash für
+  Pilot-Splits, Kanten = Lesekanten (direct + broadcast, Katalog v1.1), `round_frac` als Zeitfeature.
+- Tempo: Datensätze werden beim ersten Lauf als `.cache/<hash>.pt` neben den Daten gespeichert (danach Laden in
+  Sekunden), Evaluations-Batches einmal kollationiert, Batch 256 / lr 2e-3 / Patience 8. Gemessen auf 2 CPU-Kernen mit
+  ~560 Episoden (13k Snapshots à 24 Knoten, ~120 Lesekanten): GINE ~5 s pro Epoche, ein Lauf 1,5–6 min;
+  `--edge-proj shared --no-reverse` ~40 % schneller. Mehr Episoden skalieren linear, die Knotenzahl bleibt 24.

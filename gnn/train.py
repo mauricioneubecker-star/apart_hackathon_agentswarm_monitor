@@ -40,6 +40,8 @@ class RunConfig:
     batch_size: int = 64
     epochs: int = 200
     patience: int = 30
+    eval_every: int = 1            # validate every k epochs (patience counts validations)
+    edge_proj: str = "per_layer"   # per_layer | shared (one edge encoder for all layers, ~15 % faster)
     drop_edge: float = 0.1
     lam_graph: float = 1.0
     lam_count: float = 0.5
@@ -57,14 +59,22 @@ class RunConfig:
     def run_id(self):
         d = asdict(self)
         d.pop("out"), d.pop("threads"), d.pop("save_preds")
+        if d.get("eval_every") == 1:      # defaults of newer options do not change old run ids
+            d.pop("eval_every")
+        if d.get("edge_proj") == "per_layer":
+            d.pop("edge_proj")
         return hashlib.md5(json.dumps(d, sort_keys=True, default=str).encode()).hexdigest()[:12]
 
 
-def get_bundle(dc: DataConfig):
-    k = dc.key()
+def get_bundle(dc: DataConfig, tables: bool = False):
+    """In-process cache; GNN runs use the on-disk cache (no pandas tables), baselines need the tables."""
+    k = (dc.key(), tables)
     if k not in _CACHE:
+        hit = [v for (kk, t), v in _CACHE.items() if kk == dc.key() and t]   # a full bundle also serves GNN runs
+        if hit:
+            return hit[0]
         _CACHE.clear()
-        _CACHE[k] = load(dc)
+        _CACHE[k] = load(dc, tables=tables)
     return _CACHE[k]
 
 
@@ -73,13 +83,26 @@ def _set_seed(s):
     random.seed(s), np.random.seed(s), torch.manual_seed(s)
 
 
+_EVAL_BATCHES = {}
+
+
+def _eval_batches(graphs):
+    """Collate evaluation graphs once per process (they are re-predicted every epoch)."""
+    from torch_geometric.loader import DataLoader
+    k = id(graphs)
+    if k not in _EVAL_BATCHES:
+        if len(_EVAL_BATCHES) > 16:
+            _EVAL_BATCHES.clear()
+        _EVAL_BATCHES[k] = (graphs, list(DataLoader(graphs, batch_size=512)))
+    return _EVAL_BATCHES[k][1]
+
+
 def _predict(model, graphs, batch_size):
     import torch
-    from torch_geometric.loader import DataLoader
     model.eval()
     pg, pc, pn, yn, sid_n, sid_g = [], [], [], [], [], []
     with torch.no_grad():
-        for b in DataLoader(graphs, batch_size=256):
+        for b in _eval_batches(graphs):
             og, oc, on = model(b)
             pg.append(torch.sigmoid(og)), pc.append(torch.sigmoid(oc)), pn.append(torch.sigmoid(on))
             yn.append(b.y_node), sid_n.append(b.sid[b.batch]), sid_g.append(b.sid)
@@ -113,7 +136,8 @@ def train_gnn(cfg: RunConfig, bundle):
     _set_seed(cfg.seed)
     model = Monitor(bundle.node_dim, bundle.edge_dim, kind=cfg.model, h=cfg.hidden, layers=cfg.layers,
                     dropout=cfg.dropout, norm=cfg.norm, readout=cfg.readout, edge_readout=cfg.edge_readout,
-                    residual=cfg.residual, heads=cfg.heads, n_aux=len(cfg.data.node_aux))
+                    residual=cfg.residual, heads=cfg.heads, n_aux=len(cfg.data.node_aux),
+                    edge_proj=cfg.edge_proj)
     opt = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
     tr = bundle.graphs["train"]
     pw_g = pw_n = None
@@ -150,7 +174,7 @@ def train_gnn(cfg: RunConfig, bundle):
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
             opt.step()
-        if not has_val:
+        if not has_val or (ep + 1) % max(1, cfg.eval_every):
             continue
         G, N = _frames(bundle, model, ["val"], cfg)
         score = get(evaluate_preds(G, N), "val", cfg.select)
@@ -173,7 +197,8 @@ def train_gnn(cfg: RunConfig, bundle):
 
 def run(cfg: RunConfig) -> dict:
     t0 = time.time()
-    bundle = get_bundle(cfg.data)
+    is_baseline = cfg.model in ("logreg", "hgb", "lgbm", "time", "hgb1", "logreg1")
+    bundle = get_bundle(cfg.data, tables=is_baseline)
     if cfg.model in ("logreg", "hgb", "lgbm", "time", "hgb1", "logreg1"):
         from .baselines import run_baseline
         G, N, info = run_baseline(cfg, bundle)
@@ -260,10 +285,11 @@ def main():
     ap.add_argument("--jury")
     for k, t, dflt in (("hidden", int, 64), ("layers", int, 3), ("dropout", float, 0.2), ("lr", float, 1e-3),
                        ("weight_decay", float, 1e-4), ("batch_size", int, 64), ("epochs", int, 200),
-                       ("patience", int, 30), ("drop_edge", float, 0.1), ("lam_graph", float, 1.0),
+                       ("patience", int, 30), ("eval_every", int, 1), ("drop_edge", float, 0.1), ("lam_graph", float, 1.0),
                        ("lam_count", float, 0.5), ("lam_node", float, 1.0), ("lam_aux", float, 0.5), ("seed", int, 0), ("threads", int, 1)):
         ap.add_argument("--" + k.replace("_", "-"), type=t, default=dflt)
     ap.add_argument("--norm", default="batch")
+    ap.add_argument("--edge-proj", default="per_layer", choices=["per_layer", "shared"])
     ap.add_argument("--readout", default="sum_max")
     ap.add_argument("--edge-readout", action="store_true")
     ap.add_argument("--pos-weight", default="none")

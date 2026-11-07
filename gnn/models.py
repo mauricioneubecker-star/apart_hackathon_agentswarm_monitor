@@ -9,9 +9,11 @@ from torch_geometric.nn import (GATv2Conv, GINEConv, ResGatedGraphConv, Transfor
 from torch_geometric.utils import scatter
 
 
-def make_conv(kind: str, h: int, heads: int = 4):
+def make_conv(kind: str, h: int, heads: int = 4, edge_proj: str = "per_layer"):
     if kind == "gine":
         mlp = nn.Sequential(nn.Linear(h, h), nn.BatchNorm1d(h), nn.ReLU(), nn.Linear(h, h))
+        if edge_proj == "shared":
+            return GINEConv(mlp, train_eps=True)                   # edges already encoded to h, no extra projection
         return GINEConv(mlp, train_eps=True, edge_dim=h)          # per-layer edge projection
     if kind == "gated":
         return ResGatedGraphConv(h, h, edge_dim=h)
@@ -24,14 +26,15 @@ def make_conv(kind: str, h: int, heads: int = 4):
 
 class Monitor(nn.Module):
     def __init__(self, node_dim, edge_dim, kind="gine", h=64, layers=3, dropout=0.2, norm="batch",
-                 readout="sum_max", edge_readout=False, residual=True, heads=4, n_aux=0):
+                 readout="sum_max", edge_readout=False, residual=True, heads=4, n_aux=0,
+                 edge_proj="per_layer"):
         super().__init__()
         self.kind, self.dropout, self.residual = kind, dropout, residual
         self.readout, self.edge_readout = readout, edge_readout or kind == "none"
         self.node_enc = nn.Sequential(nn.Linear(node_dim, h), nn.ReLU())
         self.edge_enc = nn.Sequential(nn.Linear(edge_dim, h), nn.ReLU())
         n_layers = 0 if kind == "none" else layers
-        self.convs = nn.ModuleList([make_conv(kind, h, heads) for _ in range(n_layers)])
+        self.convs = nn.ModuleList([make_conv(kind, h, heads, edge_proj) for _ in range(n_layers)])
         Norm = (lambda: nn.BatchNorm1d(h)) if norm == "batch" else (lambda: nn.LayerNorm(h))
         self.norms = nn.ModuleList([Norm() for _ in range(n_layers)])
         if kind == "none":   # K0: node MLP of equal depth instead of message passing

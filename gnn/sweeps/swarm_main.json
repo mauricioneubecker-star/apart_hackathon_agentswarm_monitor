@@ -1,30 +1,141 @@
 {
-  "out": "results/swarm_main",
-  "workers": 2,
-  "seeds": [0, 1, 2, 3, 4],
-  "base": {
-    "data_dir": "data/swarm",
-    "graph_target": "tip",
-    "graph_count": "risk_count",
-    "node_target": "violates_within_delta",
-    "select": "graph.auprc",
-    "strata": ["round", "seed_placement", "channels", "discoverability"],
-    "epochs": 200, "patience": 30, "batch_size": 64
+ "out": "results/swarm_main",
+ "workers": 4,
+ "seeds": [
+  0,
+  1,
+  2,
+  3,
+  4
+ ],
+ "base": {
+  "data_dir": "data/swarm",
+  "graph_target": "tip",
+  "graph_count": "risk_count",
+  "node_target": "violates_within_delta",
+  "select": "graph.auprc",
+  "strata": [
+   "seed_type",
+   "channels",
+   "arm",
+   "category"
+  ],
+  "epochs": 60,
+  "patience": 8,
+  "batch_size": 256,
+  "lr": 0.002,
+  "eval_every": 1
+ },
+ "arms": [
+  {
+   "arm": "A1 GINE S3",
+   "model": "gine"
   },
-  "arms": [
-    {"arm": "A1 GINE S3", "model": "gine"},
-    {"arm": "A4 GATv2 S3", "model": "gatv2"},
-    {"arm": "K0 no-MP S3", "model": "none"},
-    {"arm": "K1 LogReg S3", "model": "logreg", "seeds": [0]},
-    {"arm": "K2 HGB S3", "model": "hgb"},
-    {"arm": "Kt round+edges only", "model": "time", "seeds": [0]},
-    {"arm": "C1 GINE rewired", "model": "gine", "rewire": true},
-    {"arm": "C2 GINE shuffled labels", "model": "gine", "shuffle_labels": true, "seeds": [0]},
-    {"arm": "Abl1 GINE S0", "model": "gine", "stage": 0},
-    {"arm": "Abl1 GINE S1", "model": "gine", "stage": 1},
-    {"arm": "Abl1 GINE S2", "model": "gine", "stage": 2},
-    {"arm": "Abl2 GINE -rule_near", "model": "gine", "drop_groups": ["rule_near"]},
-    {"arm": "Abl4 GINE -temporal", "model": "gine", "drop_groups": ["temporal"]},
-    {"arm": "Abl5 GINE +tool", "model": "gine", "include_groups": ["tool_activity"]}
-  ]
+  {
+   "arm": "A2 GatedGCN S3",
+   "model": "gated",
+   "seeds": [
+    0,
+    1,
+    2
+   ]
+  },
+  {
+   "arm": "A4 GATv2 S3",
+   "model": "gatv2",
+   "seeds": [
+    0,
+    1,
+    2
+   ]
+  },
+  {
+   "arm": "K0 no-MP S3",
+   "model": "none"
+  },
+  {
+   "arm": "K1 LogReg (1-hop) S3",
+   "model": "logreg1",
+   "seeds": [
+    0
+   ]
+  },
+  {
+   "arm": "K2 HGB (1-hop) S3",
+   "model": "hgb1",
+   "seeds": [
+    0,
+    1
+   ]
+  },
+  {
+   "arm": "K2 HGB (global) S3",
+   "model": "hgb",
+   "seeds": [
+    0
+   ]
+  },
+  {
+   "arm": "Kt round+edges only",
+   "model": "time",
+   "seeds": [
+    0
+   ]
+  },
+  {
+   "arm": "C1 GINE rewired",
+   "model": "gine",
+   "rewire": true,
+   "seeds": [
+    0,
+    1,
+    2
+   ]
+  },
+  {
+   "arm": "C2 GINE shuffled labels",
+   "model": "gine",
+   "shuffle_labels": true,
+   "seeds": [
+    0,
+    1
+   ]
+  },
+  {
+   "arm": "Abl1 GINE S0",
+   "model": "gine",
+   "stage": 0
+  },
+  {
+   "arm": "Abl1 GINE S1",
+   "model": "gine",
+   "stage": 1
+  },
+  {
+   "arm": "Abl1 GINE S2",
+   "model": "gine",
+   "stage": 2
+  },
+  {
+   "arm": "Abl2 GINE -rule_near",
+   "model": "gine",
+   "drop_groups": [
+    "rule_near"
+   ]
+  },
+  {
+   "arm": "Abl4 GINE -temporal",
+   "model": "gine",
+   "drop_groups": [
+    "temporal"
+   ]
+  },
+  {
+   "arm": "Abl5 GINE +tool",
+   "model": "gine",
+   "include_groups": [
+    "tool_activity"
+   ]
+  }
+ ]
 }

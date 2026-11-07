@@ -48,7 +48,50 @@ class Bundle:
     """Everything a run needs: PyG graphs per split, flat tables for baselines, column names, metadata."""
 
 
-def load(cfg: DataConfig, verbose: bool = True) -> Bundle:
+def _cache_path(cfg: DataConfig):
+    """Cache file keyed by the data config and the input files (size + mtime)."""
+    import hashlib
+    d = cfg.data_dir
+    sig = [cfg.key()]
+    for f in sorted(os.listdir(d)):
+        if f.endswith((".csv", ".json")):
+            st = os.stat(os.path.join(d, f))
+            sig.append(f"{f}:{st.st_size}:{int(st.st_mtime)}")
+    h = hashlib.md5("|".join(sig).encode()).hexdigest()[:16]
+    base = os.environ.get("GNN_CACHE") or os.path.join(d, ".cache")
+    if not os.access(os.path.dirname(base.rstrip("/")) or ".", os.W_OK) or (os.path.exists(base) and not os.access(base, os.W_OK)):
+        base = os.path.join(os.path.expanduser("~"), ".cache", "gnn", os.path.basename(os.path.abspath(d)))
+    return os.path.join(base, f"{h}.pt")
+
+
+def load(cfg: DataConfig, verbose: bool = True, tables: bool = True, cache: bool = True) -> Bundle:
+    """tables=False skips the pandas tables (only GNN runs) and allows the on-disk cache (fast reload)."""
+    import torch
+    if cache and not tables:
+        path = _cache_path(cfg)
+        if os.path.exists(path):
+            try:
+                b = Bundle()
+                b.__dict__.update(torch.load(path, weights_only=False))
+                if verbose:
+                    print(f"[data] cache hit {path}")
+                return b
+            except Exception as e:  # corrupt / incompatible cache: rebuild
+                print(f"[data] cache unreadable ({e!r}), rebuilding")
+    b = _load(cfg, verbose)
+    if cache and not tables:
+        path = _cache_path(cfg)
+        try:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            keep = {k: v for k, v in b.__dict__.items() if k != "tables"}
+            torch.save(keep, path + ".tmp")
+            os.replace(path + ".tmp", path)
+        except OSError as e:
+            print(f"[data] could not write cache ({e!r})")
+    return b
+
+
+def _load(cfg: DataConfig, verbose: bool = True) -> Bundle:
     import torch
     from torch_geometric.data import Data
 

@@ -1,0 +1,63 @@
+{
+ "out": "results/swarm_quick",
+ "workers": 4,
+ "seeds": [
+  0,
+  1,
+  2
+ ],
+ "base": {
+  "data_dir": "data/swarm",
+  "graph_target": "tip",
+  "graph_count": "risk_count",
+  "node_target": "violates_within_delta",
+  "select": "graph.auprc",
+  "strata": [
+   "seed_type",
+   "channels",
+   "arm",
+   "category"
+  ],
+  "epochs": 60,
+  "patience": 8,
+  "batch_size": 256,
+  "lr": 0.002,
+  "eval_every": 1
+ },
+ "arms": [
+  {
+   "arm": "A1 GINE",
+   "model": "gine"
+  },
+  {
+   "arm": "K0 no-MP",
+   "model": "none"
+  },
+  {
+   "arm": "C1 GINE rewired",
+   "model": "gine",
+   "rewire": true
+  },
+  {
+   "arm": "K2 HGB (1-hop)",
+   "model": "hgb1",
+   "seeds": [
+    0
+   ]
+  },
+  {
+   "arm": "K1 LogReg (1-hop)",
+   "model": "logreg1",
+   "seeds": [
+    0
+   ]
+  },
+  {
+   "arm": "Kt round+edges only",
+   "model": "time",
+   "seeds": [
+    0
+   ]
+  }
+ ]
+}
