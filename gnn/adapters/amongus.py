@@ -31,7 +31,7 @@ import re
 import sys
 from collections import Counter, defaultdict
 
-VERSION = "amongus-adapter-v2-2026-11-07"
+VERSION = "amongus-adapter-v3-2026-11-07"
 PNUM = re.compile(r"Player (\d+)")
 PNAME = re.compile(r"(Player \d+: [a-z]+)")
 
@@ -186,6 +186,33 @@ def parse_game_log(path):
     return meetings
 
 
+JURY = {}                                     # key "<episode>|<meeting>|<occurrence>|<speaker>" -> scores
+JURY_EDGE = ["accuse", "defend", "evidence", "contradiction", "vote_push"]
+JURY_MSG = ["deflection", "certainty", "self_inconsistency", "bandwagon", "pressure"]
+
+
+def load_jury(paths):
+    """Average several judges' rows (jury_amongus.py output) per statement key."""
+    acc = defaultdict(list)
+    for p in paths:
+        for line in open(p, encoding="utf-8"):
+            r = json.loads(line)
+            if r.get("ok") and r.get("scores"):
+                acc[r["key"]].append(r["scores"])
+    out = {}
+    for k, lst in acc.items():
+        m = {x: sum(d.get(x) or 0 for d in lst) / len(lst) for x in JURY_MSG}
+        tg = defaultdict(lambda: defaultdict(list))
+        for d in lst:
+            for t, tv in (d.get("targets") or {}).items():
+                if isinstance(tv, dict):
+                    for x in ("stance", "evidence", "contradiction", "vote_push"):
+                        tg[t][x].append(tv.get(x) or 0)
+        m["targets"] = {t: {x: sum(v) / len(v) for x, v in xs.items()} for t, xs in tg.items()}
+        out[k] = m
+    return out
+
+
 def split_of(episode_id: str, matchup: str, ood_models) -> str:
     if matchup.split("/")[-1] in ood_models or matchup in ood_models:
         return "test_ood_model"
@@ -257,11 +284,11 @@ def process_experiment(exp_dir, root, ood_models, W, stats):
                 if ra.startswith("SPEAK"):
                     rd = seen[p]
                     seen[p] += 1
-                    speeches.append((min(rd, 2), p, ra.split(":", 1)[1] if ":" in ra else ""))
+                    speeches.append((min(rd, 2), p, ra.split(":", 1)[1] if ":" in ra else "", rd))
                 elif ra.startswith("VOTE"):
                     tgt = ra[4:].strip()
                     votes[p] = "SKIP" if tgt.upper().startswith("SKIP") else pid(tgt)
-            alive = sorted(set(p for _, p, _ in speeches) | set(votes), key=lambda x: int(x[1:]))
+            alive = sorted(set(x[1] for x in speeches) | set(votes), key=lambda x: int(x[1:]))
             if len(alive) < 2:
                 stats["skip_tiny_meeting"] += 1
                 continue
@@ -316,7 +343,7 @@ def process_experiment(exp_dir, root, ood_models, W, stats):
             for rd in range(3):
                 t = 3 * k + rd
                 sp = [s for s in speeches if s[0] <= rd]
-                forced = sum(1 for (r0, p, _) in sp if (r0, p) in ml["forced"])
+                forced = sum(1 for (r0, p, _, _) in sp if (r0, p) in ml["forced"])
                 W["snapshots"].writerow({"episode_id": eid, "t": t, "meeting": k, "round": rd, "step": st,
                                          "n_alive": len(alive), "n_speeches": len(sp),
                                          "forced_share": round(forced / len(sp), 4) if sp else 0.0})
@@ -330,7 +357,24 @@ def process_experiment(exp_dir, root, ood_models, W, stats):
                 placed = defaultdict(set)                # (speaker, target) -> rooms speaker places target in
                 skip_int = Counter()
                 body = ml.get("body_room")
-                for (r0, s, text) in sp:
+                J = defaultdict(Counter)                  # jury edge aggregates (max) per (s, d)
+                Jn = defaultdict(lambda: defaultdict(list))   # jury statement scores per speaker
+                for (r0, s, text, occ) in sp:
+                    js = JURY.get(f"{eid}|{k}|{occ}|{s}") if JURY else None
+                    if js:
+                        for key in JURY_MSG:
+                            if js.get(key) is not None:
+                                Jn[s][key].append(js[key])
+                        for tname, tv in (js.get("targets") or {}).items():
+                            d = pid(tname)
+                            if d in alive and d != s and isinstance(tv, dict):
+                                st_ = tv.get("stance") or 0
+                                J[(s, d)]["j_accuse"] = max(J[(s, d)]["j_accuse"], max(0, -st_))
+                                J[(s, d)]["j_defend"] = max(J[(s, d)]["j_defend"], max(0, st_))
+                                for key in ("evidence", "contradiction", "vote_push"):
+                                    J[(s, d)][f"j_{key}"] = max(J[(s, d)][f"j_{key}"], tv.get(key) or 0)
+                                E[(s, d)].setdefault("n", 0)
+                                first.setdefault((s, d), r0)
                     tx = norm(text)
                     n_own[s] += 1
                     for key in NODE_LEX:
@@ -376,6 +420,8 @@ def process_experiment(exp_dir, root, ood_models, W, stats):
                         row[f"e_{key}"] = round(math.log1p(c[f"e_{key}"]), 4)
                     row.update(e_place=c["e_place"], e_conflict=c["e_conflict"], e_place_body=c["e_place_body"],
                                e_vote_intent=round(math.log1p(c["e_vote_intent"]), 4))
+                    if JURY:
+                        row.update({f"j_{x}": J[(s, d)][f"j_{x}"] for x in JURY_EDGE})
                     W["edges"].writerow(row)
                 for (s, d), n in v_edge.items():
                     W["edges"].writerow({"episode_id": eid, "t": t, "src": s, "dst": d, "etype": "vote_prev",
@@ -398,6 +444,9 @@ def process_experiment(exp_dir, root, ood_models, W, stats):
                                self_body_room=int(bool(body) and body in self_rooms[p]),
                                contradicted_by=contradicted[p], placed_at_body_by=placed_body[p],
                                skip_intent=min(skip_int[p], 3))
+                    if JURY:
+                        row.update({f"j_{x}": (round(sum(Jn[p][x]) / len(Jn[p][x]), 4) if Jn[p][x] else "")
+                                    for x in JURY_MSG})
                     W["nodes"].writerow(row)
                     is_crew = ident.get(p) == "Crewmate"
                     vt = votes.get(p)
@@ -422,22 +471,56 @@ def process_experiment(exp_dir, root, ood_models, W, stats):
             prev_step = st
 
 
+def merge_parts(parts, out):
+    """Concatenate shard outputs (same columns) and sum their stats."""
+    os.makedirs(out, exist_ok=True)
+    names = ["episodes", "snapshots", "nodes", "edges", "graph_labels", "node_labels"]
+    for nm in names:
+        with open(os.path.join(out, f"{nm}.csv"), "w", encoding="utf-8") as fo:
+            for i, p in enumerate(parts):
+                with open(os.path.join(p, f"{nm}.csv"), encoding="utf-8") as fi:
+                    head = fi.readline()
+                    if i == 0:
+                        fo.write(head)
+                    for line in fi:
+                        fo.write(line)
+    sch = [json.load(open(os.path.join(p, "schema.json"))) for p in parts]
+    merged = dict(sch[0])
+    st = Counter()
+    for x in sch:
+        st.update(x.get("stats", {}))
+    merged["stats"], merged["experiments"] = dict(st), sum(x.get("experiments", 0) for x in sch)
+    json.dump(merged, open(os.path.join(out, "schema.json"), "w"), indent=1)
+    print(json.dumps(merged["stats"]))
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--root", required=True)
+    ap.add_argument("--root", default="")
     ap.add_argument("--out", required=True)
     ap.add_argument("--ood-models", default="", help="comma-separated matchup folder names held out as test_ood_model")
     ap.add_argument("--limit", type=int, default=0, help="max experiments (debug)")
+    ap.add_argument("--jury", nargs="*", default=[], help="jury_amongus.py outputs (one per judge; averaged)")
+    ap.add_argument("--shard", default="", help="i/k: process every k-th experiment starting at i (for time limits)")
+    ap.add_argument("--merge", nargs="*", default=[], help="merge shard output dirs into --out (no parsing)")
     a = ap.parse_args()
+    if a.merge:
+        return merge_parts([os.path.expanduser(x) for x in a.merge], os.path.expanduser(a.out))
     root, out = os.path.expanduser(a.root), os.path.expanduser(a.out)
     os.makedirs(out, exist_ok=True)
     ood = {x.strip() for x in a.ood_models.split(",") if x.strip()}
+    global JURY
+    if a.jury:
+        JURY.update(load_jury([os.path.expanduser(x) for x in a.jury]))
+        print(f"jury: {len(JURY)} scored statements")
     cols = {
         "episodes": ["episode_id", "group_id", "split", "matchup", "models", "num_players", "num_impostors",
                      "winner_reason", "n_meetings"],
         "snapshots": ["episode_id", "t", "meeting", "round", "step", "n_alive", "n_speeches", "forced_share"],
-        "nodes": ["episode_id", "t", "node_id"] + [n for n, _, _ in NODE_FEATURES],
-        "edges": ["episode_id", "t", "src", "dst", "etype"] + [n for n, _, _ in EDGE_FEATURES],
+        "nodes": ["episode_id", "t", "node_id"] + [n for n, _, _ in NODE_FEATURES]
+                 + ([f"j_{x}" for x in JURY_MSG] if JURY else []),
+        "edges": ["episode_id", "t", "src", "dst", "etype"] + [n for n, _, _ in EDGE_FEATURES]
+                 + ([f"j_{x}" for x in JURY_EDGE] if JURY else []),
         "graph_labels": ["episode_id", "t"] + list(GRAPH_LABELS),
         "node_labels": ["episode_id", "t", "node_id"] + list(NODE_LABELS),
     }
@@ -448,6 +531,9 @@ def main():
     stats = Counter()
     exps = sorted(os.path.dirname(p) for p in glob.glob(os.path.join(root, "**", "summary.json"), recursive=True)
                   if "/." not in p.replace(os.sep, "/"))
+    if a.shard:
+        i, k = (int(x) for x in a.shard.split("/"))
+        exps = exps[i::k]
     if a.limit:
         exps = exps[:a.limit]
     for i, e in enumerate(exps):
@@ -462,8 +548,10 @@ def main():
         f.close()
     schema = {"dataset": "amongus-x", "version": VERSION,
               "snapshot": "t = 3*meeting + round; labels identical within a meeting",
-              "node_features": [{"name": n, "tier": t, "groups": g} for n, t, g in NODE_FEATURES],
-              "edge_features": [{"name": n, "tier": t, "groups": g} for n, t, g in EDGE_FEATURES],
+              "node_features": [{"name": n, "tier": t, "groups": g} for n, t, g in NODE_FEATURES]
+              + ([{"name": f"j_{x}", "tier": 3, "groups": ["jury"]} for x in JURY_MSG] if JURY else []),
+              "edge_features": [{"name": n, "tier": t, "groups": g} for n, t, g in EDGE_FEATURES]
+              + ([{"name": f"j_{x}", "tier": 3, "groups": ["jury"]} for x in JURY_EDGE] if JURY else []),
               "etypes": [{"name": n, "tier": t, "groups": g} for n, t, g in ETYPES],
               "graph_labels": GRAPH_LABELS, "node_labels": NODE_LABELS,
               "time_features": ["meeting", "round", "n_alive"],

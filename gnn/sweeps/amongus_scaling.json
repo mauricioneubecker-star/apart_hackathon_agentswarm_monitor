@@ -1,0 +1,232 @@
+{
+ "out": "results/amx_scaling",
+ "workers": 2,
+ "seeds": [
+  0,
+  1
+ ],
+ "base": {
+  "data_dir": "data/amongus_selfplay_v2",
+  "strata": [
+   "round",
+   "num_players"
+  ],
+  "epochs": 150,
+  "patience": 20,
+  "batch_size": 128
+ },
+ "arms": [
+  {
+   "arm": "IMP GatedGCN f=0.1",
+   "model": "gated",
+   "node_target": "is_impostor",
+   "select": "node.auprc",
+   "train_frac": 0.1
+  },
+  {
+   "arm": "IMP K0 f=0.1",
+   "model": "none",
+   "node_target": "is_impostor",
+   "select": "node.auprc",
+   "train_frac": 0.1,
+   "seeds": [
+    0
+   ]
+  },
+  {
+   "arm": "IMP HGB f=0.1",
+   "model": "hgb",
+   "node_target": "is_impostor",
+   "select": "node.auprc",
+   "train_frac": 0.1,
+   "seeds": [
+    0
+   ]
+  },
+  {
+   "arm": "GRP GatedGCN+aux f=0.1",
+   "model": "gated",
+   "graph_target": "innocent_ejected",
+   "node_aux": [
+    "is_impostor"
+   ],
+   "select": "graph.auprc",
+   "train_frac": 0.1
+  },
+  {
+   "arm": "GRP HGB f=0.1",
+   "model": "hgb",
+   "graph_target": "innocent_ejected",
+   "select": "graph.auprc",
+   "train_frac": 0.1,
+   "seeds": [
+    0
+   ]
+  },
+  {
+   "arm": "IMP GatedGCN f=0.25",
+   "model": "gated",
+   "node_target": "is_impostor",
+   "select": "node.auprc",
+   "train_frac": 0.25
+  },
+  {
+   "arm": "IMP K0 f=0.25",
+   "model": "none",
+   "node_target": "is_impostor",
+   "select": "node.auprc",
+   "train_frac": 0.25,
+   "seeds": [
+    0
+   ]
+  },
+  {
+   "arm": "IMP HGB f=0.25",
+   "model": "hgb",
+   "node_target": "is_impostor",
+   "select": "node.auprc",
+   "train_frac": 0.25,
+   "seeds": [
+    0
+   ]
+  },
+  {
+   "arm": "GRP GatedGCN+aux f=0.25",
+   "model": "gated",
+   "graph_target": "innocent_ejected",
+   "node_aux": [
+    "is_impostor"
+   ],
+   "select": "graph.auprc",
+   "train_frac": 0.25
+  },
+  {
+   "arm": "GRP HGB f=0.25",
+   "model": "hgb",
+   "graph_target": "innocent_ejected",
+   "select": "graph.auprc",
+   "train_frac": 0.25,
+   "seeds": [
+    0
+   ]
+  },
+  {
+   "arm": "IMP GatedGCN f=0.5",
+   "model": "gated",
+   "node_target": "is_impostor",
+   "select": "node.auprc",
+   "train_frac": 0.5
+  },
+  {
+   "arm": "IMP K0 f=0.5",
+   "model": "none",
+   "node_target": "is_impostor",
+   "select": "node.auprc",
+   "train_frac": 0.5,
+   "seeds": [
+    0
+   ]
+  },
+  {
+   "arm": "IMP HGB f=0.5",
+   "model": "hgb",
+   "node_target": "is_impostor",
+   "select": "node.auprc",
+   "train_frac": 0.5,
+   "seeds": [
+    0
+   ]
+  },
+  {
+   "arm": "GRP GatedGCN+aux f=0.5",
+   "model": "gated",
+   "graph_target": "innocent_ejected",
+   "node_aux": [
+    "is_impostor"
+   ],
+   "select": "graph.auprc",
+   "train_frac": 0.5
+  },
+  {
+   "arm": "GRP HGB f=0.5",
+   "model": "hgb",
+   "graph_target": "innocent_ejected",
+   "select": "graph.auprc",
+   "train_frac": 0.5,
+   "seeds": [
+    0
+   ]
+  },
+  {
+   "arm": "IMP GatedGCN f=1.0",
+   "model": "gated",
+   "node_target": "is_impostor",
+   "select": "node.auprc",
+   "train_frac": 1.0
+  },
+  {
+   "arm": "IMP K0 f=1.0",
+   "model": "none",
+   "node_target": "is_impostor",
+   "select": "node.auprc",
+   "train_frac": 1.0,
+   "seeds": [
+    0
+   ]
+  },
+  {
+   "arm": "IMP HGB f=1.0",
+   "model": "hgb",
+   "node_target": "is_impostor",
+   "select": "node.auprc",
+   "train_frac": 1.0,
+   "seeds": [
+    0
+   ]
+  },
+  {
+   "arm": "GRP GatedGCN+aux f=1.0",
+   "model": "gated",
+   "graph_target": "innocent_ejected",
+   "node_aux": [
+    "is_impostor"
+   ],
+   "select": "graph.auprc",
+   "train_frac": 1.0
+  },
+  {
+   "arm": "GRP HGB f=1.0",
+   "model": "hgb",
+   "graph_target": "innocent_ejected",
+   "select": "graph.auprc",
+   "train_frac": 1.0,
+   "seeds": [
+    0
+   ]
+  },
+  {
+   "arm": "EJ GatedGCN",
+   "model": "gated",
+   "node_target": "is_ejected",
+   "select": "node.auprc"
+  },
+  {
+   "arm": "EJ HGB",
+   "model": "hgb",
+   "node_target": "is_ejected",
+   "select": "node.auprc",
+   "seeds": [
+    0
+   ]
+  },
+  {
+   "arm": "EJ Kt time-only",
+   "model": "time",
+   "node_target": "is_ejected",
+   "select": "node.auprc",
+   "seeds": [
+    0
+   ]
+  }
+ ]
+}

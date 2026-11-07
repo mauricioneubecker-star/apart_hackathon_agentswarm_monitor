@@ -27,6 +27,7 @@ class DataConfig:
     shuffle_labels: bool = False        # leakage control: permute targets within train
     seed: int = 0
     jury: str | None = None             # swarm judge-swap: use edges_<jury>.csv / nodes_<jury>.csv if present
+    train_frac: float = 1.0             # learning curve: keep this fraction of train groups (fixed subset)
 
     def key(self):
         return json.dumps({k: (list(v) if isinstance(v, tuple) else v) for k, v in self.__dict__.items()},
@@ -71,16 +72,24 @@ def load(cfg: DataConfig, verbose: bool = True) -> Bundle:
 
     # splits (+ holdout)
     ep["split"] = ep["split"].astype(str)
-    for col, vals in (cfg.holdout or {}).items():
-        ep.loc[ep[col].astype(str).isin([str(v) for v in vals]), "split"] = "test_ood"
+    for col, vals in (cfg.holdout or {}).items():   # exact values, or "re:<regex>"
+        m = pd.Series(False, index=ep.index)
+        for v in vals:
+            v = str(v)
+            m |= ep[col].astype(str).str.contains(v[3:], regex=True) if v.startswith("re:") else ep[col].astype(str) == v
+        ep.loc[m, "split"] = "test_ood"
+    if cfg.train_frac < 1.0:
+        groups = np.array(sorted(ep.loc[ep.split == "train", "group_id"].unique()))
+        keep = set(np.random.default_rng(12345).permutation(groups)[: int(round(len(groups) * cfg.train_frac))])
+        ep.loc[(ep.split == "train") & ~ep.group_id.isin(keep), "split"] = "unused"
     split_of = dict(zip(ep.episode_id, ep.split))
     group_of = dict(zip(ep.episode_id, ep.group_id))
 
     edges = edges[edges.etype.isin(etypes)].copy()
     nodes["split"] = nodes.episode_id.map(split_of)
     edges["split"] = edges.episode_id.map(split_of)
-    nodes = nodes[nodes.split.notna()]
-    edges = edges[edges.split.notna()]
+    nodes = nodes[nodes.split.notna() & (nodes.split != "unused")]
+    edges = edges[edges.split.notna() & (edges.split != "unused")]
 
     # standardization from train only; NaN -> mean + missing flag
     def standardize(df, cols):
