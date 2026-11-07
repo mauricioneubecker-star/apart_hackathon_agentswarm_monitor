@@ -10,6 +10,8 @@ from __future__ import annotations
 import fnmatch
 import json
 import os
+import posixpath
+import site
 import subprocess
 import sys
 import tempfile
@@ -23,6 +25,98 @@ try:  # v1.1: pytest-timeout is optional (CI timeout via subprocess timeout othe
 except ImportError:
     _PYTEST_TIMEOUT = []
 HARNESS_GLOBS_DEFAULT = ["src/sitecustomize.py", "src/usercustomize.py", "conftest.py", "**/conftest.py"]
+
+
+# ---------------------------------------------------------------------------------------------- CI sandbox
+# Agent-written code is executed by pytest. It runs inside the macOS sandbox (sandbox-exec) with:
+#   - no network, no fork/subprocess, exec only of the Python interpreter itself
+#   - read access only to the temp CI dir, the Python installation (+ site-packages) and system libraries
+#     (no home directory, no secrets.local.json, no dataset/reference solutions)
+#   - write access only to the temp CI dir
+#   - a minimal environment (no API keys, HOME = temp dir) and hard rlimits (CPU, file size, open files)
+# Without a working sandbox, simulate/selftest refuse to run unless SIM_ALLOW_UNSANDBOXED=1 is set.
+SANDBOX_EXEC = "/usr/bin/sandbox-exec"
+ALLOW_UNSANDBOXED = os.environ.get("SIM_ALLOW_UNSANDBOXED") == "1"
+_SYSTEM_READ = ["/System", "/usr/lib", "/usr/share", "/private/var/db/dyld", "/private/var/db/timezone",
+                "/Library/Apple", "/opt/homebrew/Cellar", "/opt/homebrew/opt", "/opt/homebrew/lib",
+                "/opt/homebrew/Frameworks", "/usr/local/Cellar", "/usr/local/opt", "/usr/local/lib",
+                "/Library/Frameworks/Python.framework"]
+_SANDBOX_BOOT = (
+    "import resource, sys\n"
+    "for _l, _v in ((resource.RLIMIT_CPU, 60), (resource.RLIMIT_FSIZE, 50 * 2**20), (resource.RLIMIT_CORE, 0),"
+    " (resource.RLIMIT_NOFILE, 256)):\n"
+    "    try: resource.setrlimit(_l, (_v, _v))\n"   # hard limit lowered too -> untrusted code cannot raise it
+    "    except (ValueError, OSError): pass\n"
+    "import pytest\n"
+    "sys.exit(pytest.main(sys.argv[1:]))\n"
+)
+
+
+def _q(p: str) -> str:
+    return json.dumps(str(p))  # SBPL string literal
+
+
+def _python_read_paths() -> list[str]:
+    paths = {os.path.realpath(sys.base_prefix), os.path.realpath(sys.prefix),
+             os.path.dirname(os.path.realpath(sys.executable))}
+    sp = list(site.getsitepackages()) if hasattr(site, "getsitepackages") else []
+    try:
+        import pytest as _pt
+        sp.append(os.path.dirname(os.path.dirname(os.path.realpath(_pt.__file__))))
+    except ImportError:
+        pass
+    for p in sp:
+        if os.path.isdir(p):
+            paths.add(os.path.realpath(p))
+    return sorted(paths)
+
+
+def sandbox_profile(td: Path) -> str:
+    tdr = os.path.realpath(td)
+    py = _python_read_paths()
+    exe = {sys.executable, os.path.realpath(sys.executable)}
+    reads = " ".join(f"(subpath {_q(p)})" for p in [tdr] + py + [p for p in _SYSTEM_READ if os.path.exists(p)])
+    return f"""(version 1)
+(deny default)
+(deny network*)
+(deny process-fork)
+(allow process-exec {" ".join(f"(literal {_q(e)})" for e in sorted(exe))} {" ".join(f"(subpath {_q(p)})" for p in py)})
+(allow signal (target self))
+(allow sysctl-read)
+(allow file-read-metadata)
+(allow file-read* (literal "/") (literal "/dev/null") (literal "/dev/random") (literal "/dev/urandom")
+    (literal "/dev/dtracehelper") (literal "/private/etc/localtime") {reads})
+(allow file-write* (subpath {_q(tdr)}) (literal "/dev/null") (literal "/dev/dtracehelper"))
+(allow file-ioctl (literal "/dev/null") (literal "/dev/dtracehelper"))
+"""
+
+
+def sandbox_available() -> bool:
+    return sys.platform == "darwin" and os.access(SANDBOX_EXEC, os.X_OK)
+
+
+def sandboxed_python(td: Path, args: list[str], boot: str = _SANDBOX_BOOT) -> list[str]:
+    """Command that runs `python -c boot args...` inside the CI sandbox rooted at td."""
+    return [SANDBOX_EXEC, "-p", sandbox_profile(td), sys.executable, "-c", boot] + args
+
+
+def sandbox_env(td: Path) -> dict:
+    env = {"PATH": "/usr/bin:/bin", "HOME": str(td), "TMPDIR": str(td / ".tmp"), "USER": "ci", "LOGNAME": "ci",
+           "LANG": "en_US.UTF-8", "PYTHONIOENCODING": "utf-8", "PYTHONDONTWRITEBYTECODE": "1",
+           "PYTHONNOUSERSITE": "1", "PYTHONPATH": str(td / "src")}
+    if "PYTHONHASHSEED" in os.environ:
+        env["PYTHONHASHSEED"] = os.environ["PYTHONHASHSEED"]
+    return env
+
+
+def safe_repo_path(path: str) -> str | None:
+    """Canonical repo-relative path, or None if it is absolute or escapes the repository."""
+    if not isinstance(path, str) or not path or "\x00" in path:
+        return None
+    p = posixpath.normpath(path)
+    if p.startswith("/") or p == "." or p == ".." or p.startswith("../"):
+        return None
+    return p
 
 
 def _glob_hit(path: str, g: str) -> bool:
@@ -111,6 +205,9 @@ class MockRepo:
 
     # ------------------------------------------------------------------ tools
     def read_file(self, agent, path):
+        path = safe_repo_path(path)
+        if path is None:
+            return False, "invalid path"
         if path not in self.files:
             return False, "not found"
         pol = self.policy(agent, path)
@@ -120,6 +217,9 @@ class MockRepo:
         return True, self.files[path]
 
     def write_file(self, agent, path, content):
+        path = safe_repo_path(path)
+        if path is None:
+            return False, "invalid path"
         pol = self.policy(agent, path)
         if not pol["write"]:
             self._log(agent, "write_denied", path=path)
@@ -131,6 +231,9 @@ class MockRepo:
         return True, ev
 
     def edit_file(self, agent, path, old, new):
+        path = safe_repo_path(path)
+        if path is None:
+            return False, "invalid path"
         if path not in self.files or old not in self.files[path]:
             return False, "snippet not found"
         pol = self.policy(agent, path)
@@ -159,32 +262,49 @@ class MockRepo:
     def run_tests(self, agent, fid, suite="acceptance"):
         self.run_counter += 1
         with tempfile.TemporaryDirectory() as td:
-            td = Path(td)
+            td = Path(os.path.realpath(td))
+            ref_root = (self.pkg_dir / "reference").resolve()
             for path, content in self.files.items():
-                if path.startswith(("src/", "tests/", "acceptance/")):
-                    (td / path).parent.mkdir(parents=True, exist_ok=True)
-                    (td / path).write_text(content)
+                p = safe_repo_path(path)
+                if p and p.startswith(("src/", "tests/", "acceptance/")):
+                    dst = td / p
+                    if not dst.resolve().is_relative_to(td):  # defense in depth against traversal
+                        continue
+                    dst.parent.mkdir(parents=True, exist_ok=True)
+                    dst.write_text(content)
             if self.sc["env"]["dependency_resolution"] == "stable_build":
                 for g in self.files:
-                    m = g.rsplit("/", 1)[-1][:-3] if g.startswith(f"src/{self.pid}/") and g.endswith(".py") else None
-                    ref = self.pkg_dir / "reference" / g
+                    g = safe_repo_path(g)
+                    m = g.rsplit("/", 1)[-1][:-3] if g and g.startswith(f"src/{self.pid}/") and g.endswith(".py") else None
+                    ref = (ref_root / g).resolve() if m else None
                     # Agent-created extra files (e.g. src/<pkg>/test_write.py) have no reference -> keep as written.
-                    if m and m not in (fid, "__init__") and ref.exists():
+                    if m and m not in (fid, "__init__") and ref.is_relative_to(ref_root) and ref.exists():
                         (td / g).write_text(ref.read_text())
+            (td / ".tmp").mkdir(exist_ok=True)
             target = td / ("acceptance" if suite == "acceptance" else "tests") / f"test_{fid}.py"
-            xml = td / "r.xml"
-            env = dict(os.environ, PYTHONPATH=str(td / "src"), PYTHONDONTWRITEBYTECODE="1")
+            xml = td / ".ci_report" / "r.xml"   # outside the collected test tree
+            xml.parent.mkdir()
+            args = (["-q", "-p", "no:cacheprovider"] + _PYTEST_TIMEOUT +
+                    ["--tb=line", "-rf", f"--junitxml={xml}", str(target)])
+            if sandbox_available():
+                cmd, env = sandboxed_python(td, args), sandbox_env(td)
+            elif ALLOW_UNSANDBOXED:
+                cmd, env = [sys.executable, "-c", _SANDBOX_BOOT] + args, sandbox_env(td)
+            else:
+                raise RuntimeError("CI sandbox (sandbox-exec) not available; set SIM_ALLOW_UNSANDBOXED=1 to run "
+                                   "agent code without isolation")
             try:
-                cmd = ([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider"] + _PYTEST_TIMEOUT +
-                       ["--tb=line", "-rf", f"--junitxml={xml}", str(target)])
-                proc = subprocess.run(cmd, cwd=td, env=env,
-                                      capture_output=True, text=True, timeout=120)
+                proc = subprocess.run(cmd, cwd=td, env=env, capture_output=True, text=True, timeout=120)
                 stdout = proc.stdout.replace(str(td) + "/", "")
             except subprocess.TimeoutExpired:
                 stdout = "CI run timed out"
             results = {}
             if xml.exists():
-                for tc in ET.parse(xml).getroot().iter("testcase"):
+                try:
+                    root = ET.parse(xml).getroot()
+                except ET.ParseError:
+                    root = None
+                for tc in (root.iter("testcase") if root is not None else []):
                     results[f"{suite}/test_{fid}.py::{tc.get('name')}"] = tc.find("failure") is None and tc.find("error") is None
         ratio, quarantine = self._scoring()
         considered = {k: v for k, v in results.items() if k not in quarantine}

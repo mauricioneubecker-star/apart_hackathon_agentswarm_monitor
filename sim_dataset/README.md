@@ -223,6 +223,24 @@ Die Mock-CI ruft pytest mit demselben Interpreter auf wie `run.py`. Fehlt dort p
 stumm ROT. `simulate` und `selftest` brechen deshalb ab, wenn pytest fehlt. Alle Befehle unten mit
 `.venv/bin/python` statt `python3` ausführen (oder vorher `source .venv/bin/activate`).
 
+### Sandbox für Agenten-Code
+
+Agenten haben keine Shell, nur Mock-Tools auf einem Repo im Speicher. Echt ausgeführt wird ihr Code nur in
+`run_tests` (pytest). Dieser Aufruf läuft in der macOS-Sandbox (`sandbox-exec`, siehe `generator/engine.py`):
+
+- kein Netzwerk, kein `fork`/`subprocess`, ausführbar ist nur der Python-Interpreter selbst
+- Lesen nur im temporären CI-Ordner, in der Python-Installation und in Systembibliotheken; kein Home-Ordner,
+  keine `secrets.local.json`, kein Dataset und keine Referenzlösungen
+- Schreiben nur im temporären CI-Ordner
+- minimale Umgebungsvariablen (keine API-Keys, `HOME` = CI-Ordner); harte Limits für CPU (60 s),
+  Dateigröße (50 MB) und offene Dateien
+- Tool-Pfade werden normalisiert; Pfade mit `..` aus dem Repo heraus oder absolute Pfade werden abgelehnt
+
+`python runner/sandbox_check.py` beweist das mit einem Angriffstest, der alle echten Pfade kennt (Keys lesen,
+Netz, DNS, Prozesse, Schreiben außerhalb, Limits anheben). `simulate` und `selftest` führen den Check vor jedem
+Start aus und brechen ab, wenn er fehlschlägt. Läuft nur auf macOS. Ohne Isolation nur bewusst mit
+`SIM_ALLOW_UNSANDBOXED=1` (nicht empfohlen).
+
 ### Trockenlauf ohne Netz
 
 Das prüft die ganze Pipeline mit einem Fake-LLM:

@@ -50,13 +50,22 @@ JUDGE_PROVIDER = {"deepseek-v4-flash": "adaption", "claude-haiku-5-5": "anthropi
 
 
 def require_pytest():
-    """The mock CI runs pytest via sys.executable. Without it every run_tests is silently RED -> abort."""
+    """The mock CI runs pytest via sys.executable. Without it every run_tests is silently RED -> abort.
+    Then proves the CI sandbox isolates agent code (runner/sandbox_check.py) -> abort if not."""
+    import os
     import subprocess
     r = subprocess.run([sys.executable, "-m", "pytest", "--version"], capture_output=True, text=True)
     if r.returncode != 0:
         sys.exit(f"pytest is not available for {sys.executable} - every CI run would be RED.\n"
                  f"Install the requirements into this interpreter (pip install -r requirements.txt) "
                  f"or use the project venv: .venv/bin/python runner/run.py ...")
+    if os.environ.get("SIM_ALLOW_UNSANDBOXED") == "1":
+        print("WARNING: SIM_ALLOW_UNSANDBOXED=1 - sandbox check skipped, agent code may run without isolation")
+        return
+    r = subprocess.run([sys.executable, str(HERE / "sandbox_check.py")], capture_output=True, text=True, timeout=300)
+    if r.returncode != 0:
+        sys.exit(r.stdout + r.stderr + "\nCI sandbox check failed - refusing to run agent code without isolation.")
+    print("sandbox check: OK (no network, no keys/home/dataset access, no subprocesses for agent code)")
 
 
 def pick_keys(sec, spec, role="sim"):

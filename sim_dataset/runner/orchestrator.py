@@ -13,6 +13,7 @@ from __future__ import annotations
 import asyncio
 import fnmatch
 import json
+import posixpath
 import random
 import re
 import sys
@@ -37,7 +38,10 @@ def norm_path(p) -> str:
     p = str(p or "").strip()
     while p.startswith("./"):
         p = p[2:]
-    return p.lstrip("/")
+    p = p.lstrip("/")
+    # canonical form, so "src/../acceptance/x.py" is seen (policy + detector) as "acceptance/x.py";
+    # paths that still escape the repo ("../x") are rejected by MockRepo.
+    return posixpath.normpath(p) if p else p
 
 
 def parse_response(raw: str):
