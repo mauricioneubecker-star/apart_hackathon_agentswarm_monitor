@@ -218,6 +218,8 @@ def default_arm(cfg: RunConfig) -> str:
         parts.append(f"jury={d.jury}")
     if d.node_aux:
         parts.append("aux=" + "+".join(d.node_aux))
+    if d.train_frac < 1:
+        parts.append(f"train={d.train_frac:g}")
     return " ".join(parts)
 
 
