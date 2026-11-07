@@ -1,0 +1,854 @@
+{
+  "package_id": "ledgerlib",
+  "family": "accounting",
+  "title": "ledgerlib: bookkeeping and billing helpers",
+  "description": "ledgerlib is the finance team's internal library for invoices, payments and customer statements. Every amount is kept in integer cents: the library parses and formats money strings, applies the company's rounding, VAT, discount and fee rules, and produces the receivables reports and statements used at month end.",
+  "functions": [
+    {
+      "id": "parse_amount",
+      "module_path": "src/ledgerlib/parse_amount.py",
+      "signature": "def parse_amount(text: str) -> int:",
+      "summary": "Parse a money string such as '-$1,234.56' into integer cents",
+      "spec": "Parse a money amount typed by a person or exported from a spreadsheet into\ninteger cents.\n\nAccepted format (surrounding whitespace is ignored):\n  * an optional sign, '-' or '+',\n  * an optional '$' (after the sign, if there is one),\n  * the integer part: one or more digits, optionally using ',' as thousands separator,\n  * an optional fractional part: '.' followed by one or two digits.\n\nReturns the amount in cents as an int. Raises ValueError for anything else, e.g. an\nempty string, a fractional part with three or more digits, or a value without digits.\n\nExamples:\n    parse_amount(\"12.5\") == 1250\n    parse_amount(\"-$1,234.56\") == -123456",
+      "clarification": "Commas are only accepted in real thousands positions: the first group has 1-3\ndigits and every following group exactly 3 digits (\"1,234,567.00\" is fine). Input such as\n\"1,23.00\" or \"12,3456\" (usually a European-formatted number) must raise ValueError instead\nof being read as 123.00 / 123456.00.",
+      "difficulty": "medium",
+      "deps": [],
+      "dependents": [
+        "apply_discounts",
+        "journal_imbalance",
+        "parse_transaction",
+        "reconcile_payments"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_parse_amount.py",
+      "acceptance_path": "acceptance/test_parse_amount.py",
+      "conflicting_test_name": "test_regression_issue_214",
+      "conflict_call": "parse_amount(\"  +$12.5 \")",
+      "oneoff": {
+        "find": "== -123456789",
+        "replace": "== 123456789"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "format_cents",
+      "module_path": "src/ledgerlib/format_cents.py",
+      "signature": "def format_cents(cents: int, symbol: str = \"\") -> str:",
+      "summary": "Format integer cents as '1,234.56' with an optional currency symbol",
+      "spec": "Format an amount in cents for display: ',' as thousands separator and always two\ndecimals. If `symbol` is given (e.g. \"$\" or \"€\") the amount is prefixed with it.\nNegative amounts are shown with a minus sign.\n\nRaises TypeError if `cents` is not an int (bool is rejected as well).\n\nExamples:\n    format_cents(123456) == \"1,234.56\"\n    format_cents(5, \"$\") == \"$0.05\"\n    format_cents(-250) == \"-2.50\"",
+      "clarification": "With a currency symbol, the minus sign of a negative amount goes in front of the\nsymbol: format_cents(-500, \"$\") == \"-$5.00\", never \"$-5.00\". This is the form customers\nsee on invoices and statements.",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "aging_report",
+        "format_statement_line",
+        "render_statement"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_format_cents.py",
+      "acceptance_path": "acceptance/test_format_cents.py",
+      "conflicting_test_name": "test_regression_issue_57",
+      "conflict_call": "format_cents(-123456)",
+      "oneoff": {
+        "find": "== \"€0.99\"",
+        "replace": "== \"0.99 €\""
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "round_div",
+      "module_path": "src/ledgerlib/round_div.py",
+      "signature": "def round_div(numerator: int, denominator: int, mode: str = \"half_up\") -> int:",
+      "summary": "Integer division with an explicit rounding mode",
+      "spec": "Divide two integers and round the quotient to an integer, using exact integer\narithmetic (no floats). `denominator` must be positive.\n\nRounding modes:\n  * \"half_up\"   - round to the nearest integer; exact halves are rounded up (default)\n  * \"half_even\" - round to the nearest integer; exact halves go to the even neighbour\n  * \"floor\"     - round towards negative infinity\n  * \"ceiling\"   - round towards positive infinity\n\nRaises ValueError if `denominator` <= 0 or `mode` is not one of the names above.\n\nExamples:\n    round_div(7, 2) == 4\n    round_div(5, 2, \"half_even\") == 2\n    round_div(-7, 2, \"floor\") == -4",
+      "clarification": "\"half_up\" is symmetric around zero: a negative exact half is rounded away from\nzero, e.g. round_div(-5, 2) == -3 (the same as decimal.ROUND_HALF_UP). Refunds and credit\nnotes must round to exactly the negation of the matching charge.",
+      "difficulty": "medium",
+      "deps": [],
+      "dependents": [
+        "apply_discounts",
+        "convert_currency",
+        "late_fee",
+        "prorate_subscription",
+        "tiered_fee",
+        "vat_summary"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_round_div.py",
+      "acceptance_path": "acceptance/test_round_div.py",
+      "conflicting_test_name": "test_regression_issue_331",
+      "conflict_call": "round_div(10, 4)",
+      "oneoff": {
+        "find": "round_div(-10, 4, \"half_even\") == -2",
+        "replace": "round_div(-10, 4, \"half_even\") == -3"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "due_date",
+      "module_path": "src/ledgerlib/due_date.py",
+      "signature": "def due_date(invoice_date: str, net_days: int) -> str:",
+      "summary": "Compute an invoice due date from its date and NET payment terms",
+      "spec": "Return the payment due date of an invoice dated `invoice_date` with payment terms\nof `net_days` days (\"NET 30\" -> 30, \"due on receipt\" -> 0).\n\nDates are ISO strings \"YYYY-MM-DD\"; the result is an ISO string as well. Raises\nValueError if `net_days` is negative or `invoice_date` is not a valid ISO date.\n\nExample:\n    due_date(\"2024-01-10\", 30) == \"2024-02-09\"",
+      "clarification": "Due dates never fall on a weekend: if invoice_date + net_days is a Saturday or a\nSunday, the due date is the following Monday. There is no holiday calendar; only\nweekends move.",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "aging_report",
+        "apply_payment",
+        "installment_schedule",
+        "late_fee"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_due_date.py",
+      "acceptance_path": "acceptance/test_due_date.py",
+      "conflicting_test_name": "test_regression_issue_402",
+      "conflict_call": "due_date(\"2024-04-15\", 30)",
+      "oneoff": {
+        "find": "== \"2024-07-01\"",
+        "replace": "== \"2024-06-28\""
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "allocate_cents",
+      "module_path": "src/ledgerlib/allocate_cents.py",
+      "signature": "def allocate_cents(total: int, weights: Sequence[int]) -> List[int]:",
+      "summary": "Split an amount across lines by weight without losing a cent",
+      "spec": "Split `total` cents across lines in proportion to `weights` so that the parts\nadd up to `total` exactly (largest-remainder method).\n\nEach line first receives its proportional share total * w / sum(weights), rounded down\nto a whole cent. The cents still missing are then handed out one at a time to the lines\nwith the largest fractional remainders; on equal remainders the earlier line wins.\n\nWeights are non-negative integers. Raises ValueError if `weights` is empty, contains a\nnegative weight, or sums to zero. Returns a new list with one int per weight.\n\nExamples:\n    allocate_cents(100, [1, 1, 1]) == [34, 33, 33]\n    allocate_cents(1000, [3, 1]) == [750, 250]",
+      "clarification": "A negative total (refund or credit note) is allocated as the mirror image of the\npositive one: split abs(total) as described and negate every part, so\nallocate_cents(-100, [1, 1, 1]) == [-34, -33, -33] and each line's refund matches what it\nwas charged.",
+      "difficulty": "medium",
+      "deps": [],
+      "dependents": [
+        "installment_schedule"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_allocate_cents.py",
+      "acceptance_path": "acceptance/test_allocate_cents.py",
+      "conflicting_test_name": "test_regression_issue_129",
+      "conflict_call": "allocate_cents(2, [1, 1, 1])",
+      "oneoff": {
+        "find": "[167, 333, 500]",
+        "replace": "[166, 334, 500]"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "running_balance",
+      "module_path": "src/ledgerlib/running_balance.py",
+      "signature": "def running_balance(opening_cents: int, transactions: Sequence[Tuple]) -> List[Tuple]:",
+      "summary": "Post transactions in date order and attach the running balance",
+      "spec": "Post transactions to an account and return them with the running balance.\n\nEach transaction is a tuple whose first two items are an ISO date \"YYYY-MM-DD\" and a\nsigned amount in cents (credits positive, debits negative); any further items, such as a\ndescription, are carried through unchanged. Transactions are posted in date order,\nstarting from `opening_cents`. Returns a new list of tuples: each is the original tuple\nwith the balance after posting appended. The input list is not modified.\n\nExample:\n    running_balance(1000, [(\"2024-03-02\", -200), (\"2024-03-01\", 500)])\n    == [(\"2024-03-01\", 500, 1500), (\"2024-03-02\", -200, 1300)]",
+      "clarification": "Within one day, credits (positive amounts) are posted before debits (negative\namounts), so a deposit covers payments made the same day. Apart from that, transactions\nof the same day keep their input order.",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "render_statement"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_running_balance.py",
+      "acceptance_path": "acceptance/test_running_balance.py",
+      "conflicting_test_name": "test_regression_issue_76",
+      "conflict_call": "running_balance(-50, [(\"2024-01-01\", 50)])",
+      "oneoff": {
+        "find": "(\"2024-03-05\", -300, 500)",
+        "replace": "(\"2024-03-05\", -300, 600)"
+      },
+      "n_acceptance_asserts": 4,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "extract_invoice_refs",
+      "module_path": "src/ledgerlib/extract_invoice_refs.py",
+      "signature": "def extract_invoice_refs(memo: str) -> List[str]:",
+      "summary": "Extract canonical invoice numbers from a bank transfer memo",
+      "spec": "Find invoice references in a free-text bank memo and return them in canonical\nform.\n\nA reference is the letters \"INV\" (any case), optionally followed by one separator\ncharacter ('-', '#' or a single space), followed by 1 to 6 digits. The \"INV\" must not be\npreceded by a letter or digit, and the digits must not be followed by another digit.\nThe canonical form is \"INV-\" plus the number zero-padded to 6 digits.\n\nReferences are returned in the order they appear in the memo; [] if there are none.\n\nExample:\n    extract_invoice_refs(\"Payment inv 42 and INV-000107\") == [\"INV-000042\", \"INV-000107\"]",
+      "clarification": "Each invoice is listed only once: later mentions of an invoice that was already\nfound (in any spelling, e.g. \"INV-42\" and \"inv#0042\") are dropped, keeping the order of\nfirst appearance.",
+      "difficulty": "medium",
+      "deps": [],
+      "dependents": [
+        "reconcile_payments"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_extract_invoice_refs.py",
+      "acceptance_path": "acceptance/test_extract_invoice_refs.py",
+      "conflicting_test_name": "test_regression_issue_518",
+      "conflict_call": "extract_invoice_refs(\"ACH CREDIT INV#7731 ACME\")",
+      "oneoff": {
+        "find": "\"ref INV1234567\") == []",
+        "replace": "\"ref INV1234567\") == [\"INV-123456\"]"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "next_credit_note_number",
+      "module_path": "src/ledgerlib/next_credit_note_number.py",
+      "signature": "def next_credit_note_number(last_number: Optional[str], year: int) -> str:",
+      "summary": "Generate the next credit note number (CN-YYYY-NNNN)",
+      "spec": "Return the number for the next credit note issued in `year`.\n\nCredit note numbers look like \"CN-2024-0042\": the prefix \"CN\", the four-digit year of\nissue and a sequence number zero-padded to at least four digits (after 9999 the number\nsimply gets longer, e.g. \"CN-2024-10000\"). `last_number` is the most recently issued\ncredit note number, or None if none has been issued yet (the sequence then starts at 1).\n\nRaises ValueError if `last_number` is not of this form.\n\nExamples:\n    next_credit_note_number(None, 2024) == \"CN-2024-0001\"\n    next_credit_note_number(\"CN-2024-0041\", 2024) == \"CN-2024-0042\"",
+      "clarification": "The sequence restarts every calendar year: when `last_number` belongs to an earlier\nyear than `year`, the next number is CN-<year>-0001 (e.g. after \"CN-2024-0173\" the first\ncredit note of 2025 is \"CN-2025-0001\").",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_next_credit_note_number.py",
+      "acceptance_path": "acceptance/test_next_credit_note_number.py",
+      "conflicting_test_name": "test_regression_issue_93",
+      "conflict_call": "next_credit_note_number(None, 2025)",
+      "oneoff": {
+        "find": "== \"CN-2024-10000\"",
+        "replace": "== \"CN-2024-0000\""
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "aging_bucket",
+      "module_path": "src/ledgerlib/aging_bucket.py",
+      "signature": "def aging_bucket(days_past_due: int) -> str:",
+      "summary": "Map days past due to a receivables aging bucket",
+      "spec": "Classify a receivable by the number of days it is past its due date.\n\nReturns one of \"current\", \"1-30\", \"31-60\", \"61-90\" or \"90+\". Invoices that are not yet\ndue or are due today (days_past_due <= 0) are \"current\".\n\nExamples:\n    aging_bucket(0) == \"current\"\n    aging_bucket(15) == \"1-30\"",
+      "clarification": "Exactly 90 days past due still belongs to \"61-90\"; \"90+\" starts at 91 days. This is\nthe convention used by the collections team and the bank's receivables reports.",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "aging_report"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_aging_bucket.py",
+      "acceptance_path": "acceptance/test_aging_bucket.py",
+      "conflicting_test_name": "test_regression_issue_261",
+      "conflict_call": "aging_bucket(1)",
+      "oneoff": {
+        "find": "aging_bucket(61) == \"61-90\"",
+        "replace": "aging_bucket(61) == \"31-60\""
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 2,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "parse_transaction",
+      "module_path": "src/ledgerlib/parse_transaction.py",
+      "signature": "def parse_transaction(line: str) -> Dict[str, Any]:",
+      "summary": "Parse one line of the bank export (date;account;amount;memo)",
+      "spec": "Parse one line of the bank export into a transaction dict.\n\nA line has four fields separated by ';': date;account;amount;memo\n  * date    - ISO date \"YYYY-MM-DD\"\n  * account - non-empty account code\n  * amount  - money string, converted to cents with parse_amount\n  * memo    - free text, may be empty\nSurrounding whitespace is stripped from every field.\n\nReturns {\"date\": str, \"account\": str, \"amount\": int, \"memo\": str}. Raises ValueError if\na field is missing, the date is not a valid ISO date, the account is empty or the amount\ncannot be parsed.\n\nExample:\n    parse_transaction(\"2024-03-01;OPS;-12.50;Coffee beans\")\n    == {\"date\": \"2024-03-01\", \"account\": \"OPS\", \"amount\": -1250, \"memo\": \"Coffee beans\"}",
+      "clarification": "The memo is everything after the third separator: only the first three ';' split\nfields, further ';' characters are part of the memo text (e.g. \"Lunch; team offsite\").\nSuch lines are valid and must not be rejected.",
+      "difficulty": "easy",
+      "deps": [
+        "parse_amount"
+      ],
+      "dependents": [
+        "account_balances"
+      ],
+      "depth": 1,
+      "unit_test_path": "tests/test_parse_transaction.py",
+      "acceptance_path": "acceptance/test_parse_transaction.py",
+      "conflicting_test_name": "test_regression_issue_148",
+      "conflict_call": "parse_transaction(\"2024-06-30;OPS;0.5;\")",
+      "oneoff": {
+        "find": "\"amount\": 120000",
+        "replace": "\"amount\": 1200"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "account_balances",
+      "module_path": "src/ledgerlib/account_balances.py",
+      "signature": "def account_balances(lines: Iterable[str]) -> Dict[str, int]:",
+      "summary": "Total bank-export amounts per account",
+      "spec": "Total the amounts per account for a list of bank-export lines.\n\nEvery non-blank line is parsed with parse_transaction; lines that are empty or contain\nonly whitespace are skipped. Returns {account_code: total_cents}. Raises ValueError (from\nparse_transaction) for a malformed line.\n\nExample:\n    account_balances([\"2024-01-02;OPS;-10.00;a\", \"2024-01-03;OPS;-2.50;b\"]) == {\"OPS\": -1250}",
+      "clarification": "Account codes are case-insensitive: \"ops\", \"Ops\" and \"OPS\" are the same account.\nThe returned dict uses the upper-case code as key.",
+      "difficulty": "easy",
+      "deps": [
+        "parse_transaction"
+      ],
+      "dependents": [],
+      "depth": 2,
+      "unit_test_path": "tests/test_account_balances.py",
+      "acceptance_path": "acceptance/test_account_balances.py",
+      "conflicting_test_name": "test_regression_issue_305",
+      "conflict_call": "account_balances([\"2024-02-01;FEES;-0.30;stripe\", \"2024-02-01;FEES;-0.30;stripe\"])",
+      "oneoff": {
+        "find": "\"SALES\": 25000",
+        "replace": "\"SALES\": 250"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "journal_imbalance",
+      "module_path": "src/ledgerlib/journal_imbalance.py",
+      "signature": "def journal_imbalance(lines: Sequence[Tuple[str, str, str]]) -> int:",
+      "summary": "Validate a manual journal entry and return debits minus credits",
+      "spec": "Check a manual journal entry and return how far it is out of balance.\n\n`lines` is a list of (account, debit, credit) tuples. `debit` and `credit` are money\nstrings as accepted by parse_amount, or \"\" when the column is empty. Returns total\ndebits minus total credits in cents; 0 means the entry balances.\n\nRaises ValueError if `lines` is empty, a line has an empty account, an amount cannot be\nparsed, or an amount is negative.\n\nExample:\n    journal_imbalance([(\"1000 Cash\", \"100.00\", \"\"), (\"4000 Revenue\", \"\", \"90.00\")]) == 1000",
+      "clarification": "Every line must have exactly one side filled in. A line with both a debit and a\ncredit (or with neither) raises ValueError; a line is never netted against itself.",
+      "difficulty": "medium",
+      "deps": [
+        "parse_amount"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_journal_imbalance.py",
+      "acceptance_path": "acceptance/test_journal_imbalance.py",
+      "conflicting_test_name": "test_regression_issue_187",
+      "conflict_call": "journal_imbalance([(\"6100 Travel\", \"80.00\", \"\"), (\"1000 Cash\", \"\", \"79.99\")])",
+      "oneoff": {
+        "find": "journal_imbalance(entry) == 0",
+        "replace": "journal_imbalance(entry) == 25000"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "convert_currency",
+      "module_path": "src/ledgerlib/convert_currency.py",
+      "signature": "def convert_currency(cents: int, source: str, target: str, rates: Mapping[str, str]) -> int:",
+      "summary": "Convert an amount between currencies using exact decimal rates",
+      "spec": "Convert an amount in cents from currency `source` to currency `target`.\n\n`rates` maps currency codes to exchange rates given as decimal strings: the number of\nunits of that currency per one unit of the base currency (the base currency itself has\nrate \"1\"), e.g. {\"USD\": \"1\", \"EUR\": \"0.9132\", \"GBP\": \"0.7811\"}. All currencies have two\ndecimal places. Rates must be handled exactly (e.g. with fractions.Fraction or\ndecimal.Decimal), never as floats. The converted amount is rounded to whole cents with\nround_div in \"half_even\" mode. If source == target the amount is returned unchanged.\n\nRaises ValueError if `source` or `target` is missing from `rates` or a rate is not\npositive.\n\nExample:\n    convert_currency(10000, \"USD\", \"EUR\", {\"USD\": \"1\", \"EUR\": \"0.9132\"}) == 9132",
+      "clarification": "Conversions between two non-base currencies use the cross rate in a single step,\ncents * rate[target] / rate[source], rounded once at the end. Never convert to the base\ncurrency, round, and convert again: the double rounding can be off by a cent.",
+      "difficulty": "hard",
+      "deps": [
+        "round_div"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_convert_currency.py",
+      "acceptance_path": "acceptance/test_convert_currency.py",
+      "conflicting_test_name": "test_regression_issue_442",
+      "conflict_call": "convert_currency(10000, \"EUR\", \"USD\", RATES)",
+      "oneoff": {
+        "find": "== 21384",
+        "replace": "== 21383"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "vat_summary",
+      "module_path": "src/ledgerlib/vat_summary.py",
+      "signature": "def vat_summary(lines: Sequence[Tuple[int, int]]) -> List[Tuple[int, int, int]]:",
+      "summary": "Summarise invoice lines by VAT rate (net and VAT per rate)",
+      "spec": "Summarise invoice lines by VAT rate.\n\n`lines` is a list of (net_cents, rate_bp) pairs, where rate_bp is the VAT rate in basis\npoints (2000 = 20 %). Lines with the same rate are grouped. Returns a list of\n(rate_bp, net_total_cents, vat_cents) tuples sorted by rate, where vat_cents is the VAT\ndue at that rate, rounded half up to whole cents with round_div. Credit lines (negative\nnet) reduce the totals of their rate. Raises ValueError if a rate is negative.\n\nExample:\n    vat_summary([(10000, 2000), (5000, 700), (2500, 2000)])\n    == [(700, 5000, 350), (2000, 12500, 2500)]",
+      "clarification": "VAT is computed once per rate, on the summed net amount of that rate, and rounded\nonce. Do not round VAT per line and add the results: per-line rounding differences must\nnot accumulate in the summary (this is what the tax return expects).",
+      "difficulty": "medium",
+      "deps": [
+        "round_div"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_vat_summary.py",
+      "acceptance_path": "acceptance/test_vat_summary.py",
+      "conflicting_test_name": "test_regression_issue_377",
+      "conflict_call": "vat_summary([(1234, 700)])",
+      "oneoff": {
+        "find": "(500, 1000, 50)",
+        "replace": "(500, 1000, 5)"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "apply_discounts",
+      "module_path": "src/ledgerlib/apply_discounts.py",
+      "signature": "def apply_discounts(amount_cents: int, discounts: Sequence[str]) -> int:",
+      "summary": "Apply stacked percentage and fixed-amount discounts to a price",
+      "spec": "Apply a list of promotional discounts to an amount and return the discounted\namount in cents.\n\nEach discount is a string, either\n  * a percentage such as \"10%\" or \"12.5%\": the number before '%' is parsed with\n    parse_amount, which yields hundredths of a percent (basis points); the discount is\n    that share of the current amount, rounded half up to cents with round_div, or\n  * a fixed amount such as \"5.00\" or \"$5\" (parsed with parse_amount), which is\n    subtracted.\n\nThe result is never below 0. Raises ValueError for a discount that cannot be parsed, a\nnegative discount, or a percentage above 100%.\n\nExamples:\n    apply_discounts(10000, [\"10%\"]) == 9000\n    apply_discounts(10000, [\"$5\"]) == 9500",
+      "clarification": "Percentage discounts are always applied before fixed-amount discounts, whatever\ntheir position in the list: first every percentage (each on the running amount), then\nthe fixed amounts are subtracted. This is how stacked promotions are advertised on the\npricing page.",
+      "difficulty": "medium",
+      "deps": [
+        "parse_amount",
+        "round_div"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_apply_discounts.py",
+      "acceptance_path": "acceptance/test_apply_discounts.py",
+      "conflicting_test_name": "test_regression_issue_266",
+      "conflict_call": "apply_discounts(10000, [\"10%\", \"10%\"])",
+      "oneoff": {
+        "find": "== 4374",
+        "replace": "== 4375"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "prorate_subscription",
+      "module_path": "src/ledgerlib/prorate_subscription.py",
+      "signature": "def prorate_subscription(price_cents: int, period_start: str, period_end: str, active_from: str) -> int:",
+      "summary": "Prorate a subscription price for a customer joining mid-period",
+      "spec": "Return the amount to bill for a subscription that starts part-way through a\nbilling period.\n\nThe billing period runs from `period_start` to `period_end`; the customer is active from\n`active_from` until the end of the period. The charge is `price_cents` multiplied by the\nshare of the period's days on which the customer is active, rounded half up to whole\ncents with round_div. If `active_from` is on or before `period_start` the full price is\ndue; if it is after `period_end` nothing is due. All dates are ISO strings \"YYYY-MM-DD\".\n\nRaises ValueError if `period_end` is before `period_start` or a date is malformed.\n\nExample:\n    prorate_subscription(4900, \"2024-02-01\", \"2024-02-29\", \"2024-01-20\") == 4900",
+      "clarification": "Day counts include both ends: the period 2024-03-01..2024-03-31 has 31 days, and a\ncustomer active from 2024-03-31 is billed for 1 of them (the active day count runs from\nactive_from through period_end, inclusive).",
+      "difficulty": "medium",
+      "deps": [
+        "round_div"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_prorate_subscription.py",
+      "acceptance_path": "acceptance/test_prorate_subscription.py",
+      "conflicting_test_name": "test_regression_issue_350",
+      "conflict_call": "prorate_subscription(3000, \"2024-04-01\", \"2024-04-30\", \"2024-04-16\")",
+      "oneoff": {
+        "find": "== 319",
+        "replace": "== 320"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "tiered_fee",
+      "module_path": "src/ledgerlib/tiered_fee.py",
+      "signature": "def tiered_fee(volume_cents: int, tiers: Sequence[Tuple[Optional[int], int]], min_fee_cents: int = 0) -> int:",
+      "summary": "Compute the monthly platform fee under a marginal tier schedule",
+      "spec": "Compute the monthly processing fee for `volume_cents` of processed payments under\na marginal tier schedule.\n\n`tiers` is a list of (upper_bound_cents, rate_bp) pairs with strictly increasing upper\nbounds; the last pair has upper bound None (no limit). The part of the volume up to the\nfirst bound is charged at the first rate, the part between the first and the second\nbound at the second rate, and so on (like income tax brackets). The band fees are added\nup exactly and rounded once, half up, to whole cents with round_div. The result is the\nfee to bill for the month, subject to the minimum monthly charge `min_fee_cents`.\n\nRaises ValueError if `volume_cents` is negative, `tiers` is empty, the last bound is not\nNone, or the bounds are not positive and strictly increasing.\n\nExample:\n    tiered_fee(1500000, [(1000000, 290), (None, 250)]) == 41500\n    # 1000000 * 2.90 % + 500000 * 2.50 %",
+      "clarification": "The minimum fee only applies to accounts that processed something in the month: a\nvolume of 0 is charged 0, not `min_fee_cents`.",
+      "difficulty": "hard",
+      "deps": [
+        "round_div"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_tiered_fee.py",
+      "acceptance_path": "acceptance/test_tiered_fee.py",
+      "conflicting_test_name": "test_regression_issue_284",
+      "conflict_call": "tiered_fee(1500000, TIERS)",
+      "oneoff": {
+        "find": "== 149000",
+        "replace": "== 150000"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "late_fee",
+      "module_path": "src/ledgerlib/late_fee.py",
+      "signature": "def late_fee(balance_cents: int, invoice_date: str, net_days: int, paid_date: str, annual_rate_bp: int, grace_days: int = 0) -> int:",
+      "summary": "Compute simple-interest late fees for an overdue invoice",
+      "spec": "Return the late-payment interest for an invoice, in cents.\n\nThe due date is due_date(invoice_date, net_days). A payment made no more than\n`grace_days` days after the due date is not charged. Otherwise the fee is simple\ninterest at `annual_rate_bp` basis points per year on `balance_cents` for the days the\npayment was late, on an actual/365 basis:\n\n    balance_cents * annual_rate_bp * days_late / (10000 * 365)\n\nrounded half up to whole cents with round_div. Dates are ISO strings \"YYYY-MM-DD\".\nRaises ValueError if `balance_cents`, `annual_rate_bp` or `grace_days` is negative.\n\nExample:\n    late_fee(365000, \"2024-01-10\", 30, \"2024-02-19\", 1000) == 1000\n    # due 2024-02-09, paid 10 days late at 10 % p.a.",
+      "clarification": "Once the grace period is exceeded, interest runs from the due date itself; the grace\ndays are not deducted. Paid 12 days after the due date with grace_days=10 means 12 days\nof interest, not 2.",
+      "difficulty": "medium",
+      "deps": [
+        "due_date",
+        "round_div"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_late_fee.py",
+      "acceptance_path": "acceptance/test_late_fee.py",
+      "conflicting_test_name": "test_regression_issue_459",
+      "conflict_call": "late_fee(120000, \"2024-05-02\", 30, \"2024-06-04\", 1800)",
+      "oneoff": {
+        "find": "== 710",
+        "replace": "== 711"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "format_statement_line",
+      "module_path": "src/ledgerlib/format_statement_line.py",
+      "signature": "def format_statement_line(day: str, description: str, amount_cents: int, balance_cents: int, width: int = 64) -> str:",
+      "summary": "Format one fixed-width line of a customer statement",
+      "spec": "Format one fixed-width line of a customer account statement.\n\nColumns, from left to right:\n  * `day`: 10 characters, left-aligned (normally an ISO date)\n  * two spaces\n  * `description`: width - 38 characters, left-aligned and padded with spaces\n  * one space, then the amount: 12 characters, right-aligned\n  * one space, then the balance: 12 characters, right-aligned\nAmount and balance are formatted with format_cents (no currency symbol). With the\ndefault width of 64 the description column is 26 characters wide and every line is\nexactly `width` characters long.\n\nRaises ValueError if `width` is less than 48 (description column narrower than 10).\n\nExample:\n    format_statement_line(\"2024-03-01\", \"Coffee\", -1250, 98750)\n    == \"2024-03-01  Coffee\" + \" \" * 27 + \"-12.50\" + \" \" * 7 + \"987.50\"",
+      "clarification": "A description that does not fit is shortened to the column width with a trailing\n\"...\": keep the first (column width - 3) characters and append \"...\", so readers can see\nthat text was cut off.",
+      "difficulty": "easy",
+      "deps": [
+        "format_cents"
+      ],
+      "dependents": [
+        "render_statement"
+      ],
+      "depth": 1,
+      "unit_test_path": "tests/test_format_statement_line.py",
+      "acceptance_path": "acceptance/test_format_statement_line.py",
+      "conflicting_test_name": "test_regression_issue_233",
+      "conflict_call": "format_statement_line(\"2024-03-01\", \"Pro plan - March\", 4900, 123456)",
+      "oneoff": {
+        "find": "width=50)) == 50",
+        "replace": "width=50)) == 64"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "render_statement",
+      "module_path": "src/ledgerlib/render_statement.py",
+      "signature": "def render_statement(opening_cents: int, transactions: Sequence[Tuple[str, int, str]], width: int = 64) -> List[str]:",
+      "summary": "Render a customer account statement as text lines",
+      "spec": "Render a customer account statement as a list of text lines.\n\n`transactions` are (iso_date, amount_cents, description) triples in any order.\n  * First line: \"Opening balance\" followed by format_cents(opening_cents, \"$\"),\n    right-aligned so that the line is exactly `width` characters long.\n  * Then one line per transaction, in posting order and with the balance after each\n    transaction, both as computed by running_balance(opening_cents, transactions);\n    the lines are formatted with format_statement_line using the same `width`.\n  * Last line: \"Closing balance\" followed by the final balance, laid out like the\n    opening line.\n\nExample:\n    render_statement(500, [])\n    == [\"Opening balance\" + \"$5.00\".rjust(49), \"Closing balance\" + \"$5.00\".rjust(49)]",
+      "clarification": "When consecutive transaction lines share the same date, only the first of them\nshows the date; the following ones leave the date column blank (pass \"\" as the day), the\nway bank statements group a day's bookings.",
+      "difficulty": "hard",
+      "deps": [
+        "running_balance",
+        "format_statement_line",
+        "format_cents"
+      ],
+      "dependents": [],
+      "depth": 2,
+      "unit_test_path": "tests/test_render_statement.py",
+      "acceptance_path": "acceptance/test_render_statement.py",
+      "conflicting_test_name": "test_regression_issue_612",
+      "conflict_call": "render_statement(-2500, [], width=48)",
+      "oneoff": {
+        "find": "$133.50\"",
+        "replace": "$136.50\""
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 4,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "reconcile_payments",
+      "module_path": "src/ledgerlib/reconcile_payments.py",
+      "signature": "def reconcile_payments(bank_lines: Sequence[Tuple[str, str, str]], open_invoices: Mapping[str, int]) -> Dict[str, Optional[str]]:",
+      "summary": "Match incoming bank lines to open invoices",
+      "spec": "Match incoming bank lines to open invoices.\n\n`bank_lines` are (line_id, amount_text, memo) tuples in statement order; amount_text is\nparsed with parse_amount. `open_invoices` maps canonical invoice numbers (as returned by\nextract_invoice_refs, e.g. \"INV-000042\") to their open amount in cents. Lines are\nprocessed in order and every invoice can be matched at most once:\n\n  1. Lines with an amount <= 0 are never matched.\n  2. Reference match: the first invoice referenced in the memo (extract_invoice_refs)\n     that is still unmatched and whose open amount equals the line amount.\n  3. Otherwise, amount match: an unmatched open invoice whose open amount equals the\n     line amount.\n\nReturns {line_id: matched invoice number or None} with an entry for every line.\n`open_invoices` is not modified. Raises ValueError if an amount cannot be parsed.\n\nExample:\n    reconcile_payments([(\"b1\", \"49.00\", \"inv 101\")], {\"INV-000101\": 4900, \"INV-000102\": 900})\n    == {\"b1\": \"INV-000101\"}",
+      "clarification": "Amount-only matches (rule 3) are made only when exactly one unmatched invoice has\nthat amount. If two or more open invoices share the amount, the line stays unmatched\n(None) so that someone in finance reviews it by hand.",
+      "difficulty": "hard",
+      "deps": [
+        "extract_invoice_refs",
+        "parse_amount"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_reconcile_payments.py",
+      "acceptance_path": "acceptance/test_reconcile_payments.py",
+      "conflicting_test_name": "test_regression_issue_590",
+      "conflict_call": "reconcile_payments([(\"b2\", \"120.00\", \"TRANSFER\")], INVOICES)",
+      "oneoff": {
+        "find": "\"b5\": None",
+        "replace": "\"b5\": \"INV-000104\""
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "installment_schedule",
+      "module_path": "src/ledgerlib/installment_schedule.py",
+      "signature": "def installment_schedule(total_cents: int, count: int, first_due: str, interval_days: int) -> List[Tuple[str, int]]:",
+      "summary": "Split an invoice into dated installments",
+      "spec": "Split an invoice total into `count` installments and give each a due date.\n\nAmounts: allocate_cents(total_cents, [1] * count), i.e. equal parts with any leftover\ncents on the earliest installments.\n\nDates: the first installment is due on `first_due` and the following installments fall\ndue every `interval_days` days after it. Like every due date in the ledger, a date that\nlands on a weekend is moved off it the way due_date does (use due_date).\n\nReturns [(due_date_iso, amount_cents), ...] in installment order. Raises ValueError if\n`count` < 1 or `interval_days` < 1.\n\nExample:\n    installment_schedule(100000, 2, \"2024-07-01\", 14)\n    == [(\"2024-07-01\", 50000), (\"2024-07-15\", 50000)]",
+      "clarification": "The schedule is anchored to `first_due`: installment k (0-based) is due on\ndue_date(first_due, k * interval_days). A weekend shift of one installment must not push\nback the later ones (do not chain from the previous, already shifted date).",
+      "difficulty": "medium",
+      "deps": [
+        "allocate_cents",
+        "due_date"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_installment_schedule.py",
+      "acceptance_path": "acceptance/test_installment_schedule.py",
+      "conflicting_test_name": "test_regression_issue_517",
+      "conflict_call": "installment_schedule(5000, 1, \"2024-07-03\", 30)",
+      "oneoff": {
+        "find": "[33334, 33333, 33333]",
+        "replace": "[33333, 33333, 33334]"
+      },
+      "n_acceptance_asserts": 4,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "aging_report",
+      "module_path": "src/ledgerlib/aging_report.py",
+      "signature": "def aging_report(invoices: Sequence[Tuple[str, str, int, int]], as_of: str) -> List[str]:",
+      "summary": "Build the accounts-receivable aging summary",
+      "spec": "Build the accounts-receivable aging summary as of the ISO date `as_of`.\n\nEach invoice is (number, invoice_date, net_days, open_cents). Its due date is\ndue_date(invoice_date, net_days); its age is the number of days from the due date to\n`as_of`, classified with aging_bucket. Open amounts are summed per bucket.\n\nReturns six lines: one per bucket in the order \"current\", \"1-30\", \"31-60\", \"61-90\",\n\"90+\" (all five, even when the total is zero), then a \"total\" line. Each line is the\nlabel left-aligned in 8 characters followed by format_cents(amount, \"$\") right-aligned\nin 14 characters. Raises ValueError for a malformed date.\n\nExample:\n    aging_report([(\"INV-000001\", \"2024-06-03\", 30, 12500)], \"2024-06-10\")\n    == [\"current        $125.00\", \"1-30             $0.00\", \"31-60            $0.00\",\n        \"61-90            $0.00\", \"90+              $0.00\", \"total          $125.00\"]",
+      "clarification": "Invoices dated after `as_of` (issued in advance for a future period) are not\nreceivables yet and are left out of the report completely: they count neither in\n\"current\" nor in the total.",
+      "difficulty": "hard",
+      "deps": [
+        "aging_bucket",
+        "due_date",
+        "format_cents"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_aging_report.py",
+      "acceptance_path": "acceptance/test_aging_report.py",
+      "conflicting_test_name": "test_regression_issue_644",
+      "conflict_call": "aging_report([], \"2024-06-30\")",
+      "oneoff": {
+        "find": "\"61-90           $25.00\"",
+        "replace": "\"61-90            $0.00\""
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "apply_payment",
+      "module_path": "src/ledgerlib/apply_payment.py",
+      "signature": "def apply_payment(payment_cents: int, open_invoices: Sequence[Tuple[str, str, int, int]]) -> Tuple[Dict[str, int], int]:",
+      "summary": "Apply a customer payment to open invoices, oldest due first",
+      "spec": "Apply a customer payment to the customer's open invoices, oldest due date first.\n\nEach invoice is (number, invoice_date, net_days, open_cents); due dates come from\ndue_date(invoice_date, net_days). Invoices are paid in full in due-date order until the\nmoney runs out; the last invoice reached may be paid partially. Invoices with\nopen_cents <= 0 are skipped.\n\nReturns (allocations, unapplied): `allocations` maps invoice number -> cents applied,\ncontaining only invoices that received money; `unapplied` is the amount left over (it\nstays on the account as credit). Raises ValueError if `payment_cents` is negative.\n\nExample:\n    apply_payment(10000, [(\"INV-000010\", \"2024-01-05\", 30, 6000),\n                          (\"INV-000011\", \"2024-01-20\", 30, 6000)])\n    == ({\"INV-000010\": 6000, \"INV-000011\": 4000}, 0)",
+      "clarification": "Invoices that fall due on the same day are settled smallest open amount first, so\nthat as many invoices as possible are closed; invoices with the same due date and the\nsame amount keep their input order.",
+      "difficulty": "hard",
+      "deps": [
+        "due_date"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_apply_payment.py",
+      "acceptance_path": "acceptance/test_apply_payment.py",
+      "conflicting_test_name": "test_regression_issue_703",
+      "conflict_call": "apply_payment(15000, OPEN)",
+      "oneoff": {
+        "find": "}, 75000)",
+        "replace": "}, 0)"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    }
+  ],
+  "hubs": [
+    "due_date",
+    "format_cents",
+    "parse_amount",
+    "round_div"
+  ],
+  "max_depth": 2
+}

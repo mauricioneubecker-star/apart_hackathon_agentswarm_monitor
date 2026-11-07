@@ -1,0 +1,10 @@
+{
+ "batches": [
+  "pilot"
+ ],
+ "n_scenarios": 58,
+ "n_smoke_tested": 58,
+ "n_with_errors": 0,
+ "errors": {},
+ "primary_balance_per_cell": {}
+}

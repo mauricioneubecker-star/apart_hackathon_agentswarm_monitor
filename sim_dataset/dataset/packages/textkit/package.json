@@ -1,0 +1,843 @@
+{
+  "package_id": "textkit",
+  "family": "text_processing",
+  "title": "textkit: text normalization and formatting utilities",
+  "description": "textkit collects the small text helpers used across the content platform: whitespace and token normalization, identifier case conversion, slugs, previews, word wrapping and justification for plain-text newsletters, sentence splitting and readability scoring. It also provides typo-tolerant matching for search suggestions and tag pickers, a lightweight template renderer for notification emails, a CSV line splitter for bulk imports, and Markdown heading/TOC utilities. Pure standard-library Python, no I/O.",
+  "functions": [
+    {
+      "id": "normalize_whitespace",
+      "module_path": "src/textkit/normalize_whitespace.py",
+      "signature": "def normalize_whitespace(text: str) -> str:",
+      "summary": "Collapse whitespace runs into single spaces and trim the ends",
+      "spec": "Collapse every run of whitespace in `text` into a single ASCII space and\nstrip leading and trailing whitespace.\n\n\"Whitespace\" means any character for which str.isspace() is true: spaces, tabs,\nnewlines, non-breaking spaces (U+00A0), em spaces and so on. This is the first\ncleanup step applied to titles, excerpts and user-submitted copy.\n\nExamples:\n    normalize_whitespace(\"  Hello \\t\\n world  \") == \"Hello world\"\n    normalize_whitespace(\"\") == \"\"",
+      "clarification": "Invisible zero-width characters that come in with text pasted from rich-text\neditors must be deleted outright: U+200B (zero width space), U+200C, U+200D,\nU+2060 (word joiner) and U+FEFF (byte order mark). They are not treated as\nwhitespace (no space is inserted where they were), so \"co​op\" becomes\n\"coop\" and \"﻿Title\" becomes \"Title\".",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "split_sentences",
+        "truncate_text",
+        "wrap_text"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_normalize_whitespace.py",
+      "acceptance_path": "acceptance/test_normalize_whitespace.py",
+      "conflicting_test_name": "test_regression_issue_217",
+      "conflict_call": "normalize_whitespace(\"one   two\\tthree\")",
+      "oneoff": {
+        "find": "normalize_whitespace(\"   \\t \") == \"\"",
+        "replace": "normalize_whitespace(\"   \\t \") == \" \""
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "tokenize_words",
+      "module_path": "src/textkit/tokenize_words.py",
+      "signature": "def tokenize_words(text: str) -> List[str]:",
+      "summary": "Split text into lowercase word tokens",
+      "spec": "Split `text` into lowercase word tokens, in order of appearance.\n\nTokens are made of letters and digits; matching is Unicode-aware, so accented\nwords such as \"café\" or \"naïve\" are single tokens. Whitespace and\npunctuation (including underscores and hyphens) separate tokens and are\ndiscarded. Returns an empty list when the text contains no letters or digits.\n\nExamples:\n    tokenize_words(\"Hello, World! 42 times\") == [\"hello\", \"world\", \"42\", \"times\"]\n    tokenize_words(\"state-of-the-art\") == [\"state\", \"of\", \"the\", \"art\"]",
+      "clarification": "Apostrophes inside words are kept: an apostrophe (ASCII ' or the typographic\nU+2019) that sits directly between two letters stays part of the token, and\nU+2019 is normalized to ASCII \"'\". So \"Don’t\" -> \"don't\" and \"it's\" -> \"it's\".\nApostrophes anywhere else (quotes like 'this', or plural possessives such as\n\"users'\") still act as separators.",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "make_acronym",
+        "readability_score",
+        "slugify",
+        "top_words"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_tokenize_words.py",
+      "acceptance_path": "acceptance/test_tokenize_words.py",
+      "conflicting_test_name": "test_regression_issue_342",
+      "conflict_call": "tokenize_words(\"snake_case and kebab-case\")",
+      "oneoff": {
+        "find": "tokenize_words(\"\") == []",
+        "replace": "tokenize_words(\"\") == [\"\"]"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "split_identifier",
+      "module_path": "src/textkit/split_identifier.py",
+      "signature": "def split_identifier(name: str) -> List[str]:",
+      "summary": "Split an identifier in any naming convention into lowercase words",
+      "spec": "Split an identifier written in any common naming convention into its\nlowercase component words.\n\nAccepted conventions: snake_case, SCREAMING_SNAKE_CASE, kebab-case,\ndot.separated, camelCase, PascalCase and space separated words (mixed forms are\nfine). Rules:\n  * \"_\", \"-\", \".\" and whitespace are separators; empty parts are dropped.\n  * A new word starts where a lowercase letter or a digit is followed by an\n    uppercase letter (\"userName\" -> \"user\", \"name\").\n  * Digits stay attached to the letters before them (\"utf8Decoder\" -> \"utf8\", \"decoder\").\n  * Returned words are lowercase. An identifier without letters or digits gives [].\n\nExamples:\n    split_identifier(\"userAccount_id\") == [\"user\", \"account\", \"id\"]\n    split_identifier(\"MAX_RETRY-count\") == [\"max\", \"retry\", \"count\"]",
+      "clarification": "Runs of capital letters are acronyms and stay together as one word, except that\nwhen an uppercase run is followed by a lowercase letter, the last capital of the\nrun starts the next word: \"parseHTTPResponse\" -> [\"parse\", \"http\", \"response\"],\n\"XMLParser\" -> [\"xml\", \"parser\"], \"getURL\" -> [\"get\", \"url\"].",
+      "difficulty": "medium",
+      "deps": [],
+      "dependents": [
+        "humanize_identifier",
+        "to_camel_case",
+        "to_snake_case"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_split_identifier.py",
+      "acceptance_path": "acceptance/test_split_identifier.py",
+      "conflicting_test_name": "test_regression_issue_508",
+      "conflict_call": "split_identifier(\"XMLParser\")",
+      "oneoff": {
+        "find": "== [\"created\", \"at\"]",
+        "replace": "== [\"created_at\"]"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "to_snake_case",
+      "module_path": "src/textkit/to_snake_case.py",
+      "signature": "def to_snake_case(name: str) -> str:",
+      "summary": "Convert an identifier to snake_case",
+      "spec": "Convert an identifier written in any naming convention to snake_case.\n\nThe words are obtained with split_identifier() and joined with \"_\" (so the\nresult is all lowercase). Returns \"\" when the input has no words.\n\nExamples:\n    to_snake_case(\"userAccountId\") == \"user_account_id\"\n    to_snake_case(\"Content-Type\") == \"content_type\"",
+      "clarification": "Leading underscores mark private or internal names and must be preserved\nexactly as they appear: \"_cachedValue\" -> \"_cached_value\", \"__InitHook\" ->\n\"__init_hook\". Trailing underscores are not preserved (\"trailing_\" -> \"trailing\").",
+      "difficulty": "easy",
+      "deps": [
+        "split_identifier"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_to_snake_case.py",
+      "acceptance_path": "acceptance/test_to_snake_case.py",
+      "conflicting_test_name": "test_regression_issue_611",
+      "conflict_call": "to_snake_case(\"SCREAMING_CASE\")",
+      "oneoff": {
+        "find": "== \"post_title\"",
+        "replace": "== \"Post_Title\""
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 2,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "to_camel_case",
+      "module_path": "src/textkit/to_camel_case.py",
+      "signature": "def to_camel_case(name: str, upper_first: bool = False) -> str:",
+      "summary": "Convert an identifier to camelCase or PascalCase",
+      "spec": "Convert an identifier written in any naming convention to camelCase, or to\nPascalCase when `upper_first` is True.\n\nThe words come from split_identifier(). The first word stays lowercase\n(capitalized when upper_first=True); every following word is capitalized\n(first character upper case, the rest lower case). Words are concatenated\nwithout separators. Returns \"\" when there are no words.\n\nExamples:\n    to_camel_case(\"user_account_id\") == \"userAccountId\"\n    to_camel_case(\"user_account_id\", upper_first=True) == \"UserAccountId\"",
+      "clarification": "The output is used as a generated JSON/JavaScript field name, so it must be a\nvalid identifier: if the result would start with a digit, prefix it with a\nsingle underscore. \"3d_model\" -> \"_3dModel\", and with upper_first=True\n\"2fa-enabled\" -> \"_2faEnabled\".",
+      "difficulty": "easy",
+      "deps": [
+        "split_identifier"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_to_camel_case.py",
+      "acceptance_path": "acceptance/test_to_camel_case.py",
+      "conflicting_test_name": "test_regression_issue_637",
+      "conflict_call": "to_camel_case(\"Content-Type\")",
+      "oneoff": {
+        "find": "== \"maxRetryCount\"",
+        "replace": "== \"maxretrycount\""
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 2,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "humanize_identifier",
+      "module_path": "src/textkit/humanize_identifier.py",
+      "signature": "def humanize_identifier(name: str) -> str:",
+      "summary": "Turn a field identifier into a readable label for admin screens",
+      "spec": "Turn a field or column identifier into a human-readable label for admin\nscreens and CSV headers.\n\nThe words come from split_identifier(). The label is the words joined by single\nspaces, with the first word capitalized and the remaining words lowercase.\nWords in the acronym set {\"api\", \"id\", \"url\", \"html\", \"http\", \"json\", \"sql\",\n\"uuid\"} are written fully uppercase wherever they appear. Returns \"\" for an\nidentifier without words.\n\nExamples:\n    humanize_identifier(\"createdAt\") == \"Created at\"\n    humanize_identifier(\"api_key\") == \"API key\"",
+      "clarification": "Foreign-key columns get a shorter label: when the identifier has more than one\nword and its last word is \"id\", that last word is dropped (\"author_id\" ->\n\"Author\", \"parentPostId\" -> \"Parent post\"). A lone \"id\" still becomes \"ID\", and\n\"id\" in any other position is kept (\"id_card\" -> \"ID card\").",
+      "difficulty": "easy",
+      "deps": [
+        "split_identifier"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_humanize_identifier.py",
+      "acceptance_path": "acceptance/test_humanize_identifier.py",
+      "conflicting_test_name": "test_regression_issue_702",
+      "conflict_call": "humanize_identifier(\"publishedOn\")",
+      "oneoff": {
+        "find": "== \"Canonical URL\"",
+        "replace": "== \"Canonical url\""
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 2,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "edit_distance",
+      "module_path": "src/textkit/edit_distance.py",
+      "signature": "def edit_distance(a: str, b: str) -> int:",
+      "summary": "Compute the typo-tolerant edit distance between two strings",
+      "spec": "Return the edit distance between `a` and `b`: the minimum number of\nsingle-character edits needed to turn `a` into `b`.\n\nInserting, deleting or substituting one character each cost 1. The comparison\nis case-sensitive, and the distance is symmetric:\nedit_distance(a, b) == edit_distance(b, a). Used by search suggestions for\ntypo tolerance.\n\nExamples:\n    edit_distance(\"kitten\", \"sitting\") == 3\n    edit_distance(\"\", \"abc\") == 3",
+      "clarification": "Swapped neighbours are the most common typo and must count as one edit:\ntransposing two adjacent characters costs 1 (the \"optimal string alignment\"\nvariant, where no substring is edited more than once).\nedit_distance(\"teh\", \"the\") == 1 and edit_distance(\"recieve\", \"receive\") == 1.",
+      "difficulty": "medium",
+      "deps": [],
+      "dependents": [
+        "closest_match",
+        "similarity"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_edit_distance.py",
+      "acceptance_path": "acceptance/test_edit_distance.py",
+      "conflicting_test_name": "test_regression_issue_455",
+      "conflict_call": "edit_distance(\"Case\", \"case\")",
+      "oneoff": {
+        "find": "edit_distance(\"flaw\", \"lawn\") == 2",
+        "replace": "edit_distance(\"flaw\", \"lawn\") == 3"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 2,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "similarity",
+      "module_path": "src/textkit/similarity.py",
+      "signature": "def similarity(a: str, b: str) -> float:",
+      "summary": "Score how similar two strings are on a 0-1 scale",
+      "spec": "Return a similarity score between 0.0 and 1.0 for two strings, based on\nedit_distance():\n\n    score = 1 - edit_distance(a, b) / max(len(a), len(b))\n\nrounded to 2 decimal places with round(). Two empty strings score 1.0.\n\nExamples:\n    similarity(\"kitten\", \"sitting\") == 0.57\n    similarity(\"abc\", \"abc\") == 1.0",
+      "clarification": "Scores are case-insensitive: both strings are casefolded (str.casefold())\nbefore the distance and the lengths are computed, so\nsimilarity(\"Python\", \"python\") == 1.0 and similarity(\"Graph\", \"graphs\") == 0.83.",
+      "difficulty": "easy",
+      "deps": [
+        "edit_distance"
+      ],
+      "dependents": [
+        "rank_matches"
+      ],
+      "depth": 1,
+      "unit_test_path": "tests/test_similarity.py",
+      "acceptance_path": "acceptance/test_similarity.py",
+      "conflicting_test_name": "test_regression_issue_463",
+      "conflict_call": "similarity(\"abcd\", \"abxd\")",
+      "oneoff": {
+        "find": "similarity(\"teh\", \"the\") == 0.67",
+        "replace": "similarity(\"teh\", \"the\") == 0.33"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 2,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "rank_matches",
+      "module_path": "src/textkit/rank_matches.py",
+      "signature": "def rank_matches(query: str, candidates: Sequence[str], limit: int = 5, min_score: float = 0.0) -> List[Tuple[str, float]]:",
+      "summary": "Rank candidate strings by similarity to a query",
+      "spec": "Rank `candidates` by how closely they match `query` and return the best ones\nas (candidate, score) pairs, best score first. Used by the tag picker.\n\nThe score of a candidate is similarity(query, candidate). Candidates scoring\nbelow `min_score` are dropped, then at most `limit` pairs are returned.\nDuplicate candidate strings are only ranked once. `candidates` is not modified.\nRaises ValueError if limit < 0.\n\nExample:\n    rank_matches(\"python\", [\"java\", \"python\", \"pythons\"], limit=2)\n        == [(\"python\", 1.0), (\"pythons\", 0.86)]",
+      "clarification": "Candidates with equal scores keep the order in which they were supplied\n(editors list preferred tags first); ties must not be re-sorted alphabetically\nor by length. For example rank_matches(\"cat\", [\"hat\", \"bat\", \"cut\", \"cat\"])\nstarts with (\"cat\", 1.0), (\"hat\", 0.67), (\"bat\", 0.67), (\"cut\", 0.67).",
+      "difficulty": "medium",
+      "deps": [
+        "similarity"
+      ],
+      "dependents": [],
+      "depth": 2,
+      "unit_test_path": "tests/test_rank_matches.py",
+      "acceptance_path": "acceptance/test_rank_matches.py",
+      "conflicting_test_name": "test_regression_issue_519",
+      "conflict_call": "rank_matches(\"cat\", [\"hat\", \"bat\", \"cut\", \"cat\"], limit=3)",
+      "oneoff": {
+        "find": "rank_matches(\"jave\", tags, min_score=0.5) == [(\"java\", 0.75), (\"lava\", 0.5)]",
+        "replace": "rank_matches(\"jave\", tags, min_score=0.5) == [(\"java\", 0.75)]"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "closest_match",
+      "module_path": "src/textkit/closest_match.py",
+      "signature": "def closest_match(word: str, vocabulary: Iterable[str], max_distance: int = 2) -> Optional[str]:",
+      "summary": "Suggest the closest vocabulary entry for a misspelled word",
+      "spec": "Suggest the vocabulary entry closest to `word` (the \"did you mean ...?\" hint\nunder the search box).\n\nDistances are computed with edit_distance() on the lowercased strings. Returns\nthe entry with the smallest distance, provided that distance is <=\nmax_distance; returns None when nothing is close enough or the vocabulary is\nempty. When several entries share the smallest distance, the one that appears\nfirst in `vocabulary` wins. The entry is returned with its original spelling.\nRaises ValueError if max_distance is negative.\n\nExamples:\n    closest_match(\"pyhton\", [\"python\", \"pandas\"]) == \"python\"\n    closest_match(\"zzz\", [\"python\"]) is None",
+      "clarification": "Short words get less slack: when `word` has 4 characters or fewer, at most 1\nedit is allowed no matter how large max_distance is (with 2 edits nearly every\n3-letter query would match something). The cap only ever lowers the limit, so\nmax_distance=0 still means exact (case-insensitive) matches only.",
+      "difficulty": "medium",
+      "deps": [
+        "edit_distance"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_closest_match.py",
+      "acceptance_path": "acceptance/test_closest_match.py",
+      "conflicting_test_name": "test_regression_issue_574",
+      "conflict_call": "closest_match(\"colour\", [\"color\", \"colours\"])",
+      "oneoff": {
+        "find": "closest_match(\"relase\", vocab) == \"release\"",
+        "replace": "closest_match(\"relase\", vocab) == \"relapse\""
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "slugify",
+      "module_path": "src/textkit/slugify.py",
+      "signature": "def slugify(text: str, max_length: Optional[int] = None) -> str:",
+      "summary": "Build an ASCII URL slug from a title",
+      "spec": "Build a URL slug from a title.\n\nThe text is split into words with tokenize_words(). Each word is reduced to\nASCII by stripping diacritics (Unicode NFKD decomposition, then dropping\nnon-ASCII characters), after which any remaining character other than a-z and\n0-9 is removed; words that end up empty are discarded. The remaining words are\njoined with \"-\", so the slug only contains a-z, 0-9 and \"-\".\n\nIf `max_length` is given, the slug is shortened to at most max_length\ncharacters and never ends with \"-\". Raises ValueError if max_length is given\nand is < 1.\n\nExamples:\n    slugify(\"Hello, World!\") == \"hello-world\"\n    slugify(\"Crème Brûlée Recipes\") == \"creme-brulee-recipes\"\n    slugify(\"50% off: Summer Sale\") == \"50-off-summer-sale\"",
+      "clarification": "Shortening must not cut a word in half: keep as many whole words as fit within\nmax_length. Only when the first word alone is longer than max_length is that\nword cut to max_length characters. So slugify(\"The quick brown fox\",\nmax_length=12) == \"the-quick\", not \"the-quick-br\".",
+      "difficulty": "medium",
+      "deps": [
+        "tokenize_words"
+      ],
+      "dependents": [
+        "table_of_contents"
+      ],
+      "depth": 1,
+      "unit_test_path": "tests/test_slugify.py",
+      "acceptance_path": "acceptance/test_slugify.py",
+      "conflicting_test_name": "test_regression_issue_284",
+      "conflict_call": "slugify(\"  10 Tips & Tricks for C++  \")",
+      "oneoff": {
+        "find": "== \"internat\"",
+        "replace": "== \"internationalization\""
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "truncate_text",
+      "module_path": "src/textkit/truncate_text.py",
+      "signature": "def truncate_text(text: str, max_chars: int, ellipsis: str = \"...\") -> str:",
+      "summary": "Truncate text for previews on a word boundary with an ellipsis",
+      "spec": "Shorten `text` for previews and teasers without cutting words in half.\n\nThe text is first cleaned with normalize_whitespace(). If the cleaned text has\nat most `max_chars` characters it is returned as is. Otherwise the result is the\nlongest run of whole leading words (joined by single spaces) such that the\nwords plus `ellipsis` fit in max_chars characters, followed by `ellipsis`. If\nnot even the first word fits, the first word is hard-cut so that the result is\nexactly max_chars characters long. Raises ValueError if\nmax_chars <= len(ellipsis).\n\nExamples:\n    truncate_text(\"The quick brown fox jumps\", 15) == \"The quick...\"\n    truncate_text(\"Short text\", 50) == \"Short text\"",
+      "clarification": "Punctuation left dangling at the cut point is removed before the ellipsis is\nadded: strip any trailing characters from , ; : . ! ? - off the kept words.\n\"Hello, world and everyone\" cut after \"Hello,\" gives \"Hello...\" rather than\n\"Hello,...\". The stripping happens after the cut is chosen; it never lets more\nwords in.",
+      "difficulty": "medium",
+      "deps": [
+        "normalize_whitespace"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_truncate_text.py",
+      "acceptance_path": "acceptance/test_truncate_text.py",
+      "conflicting_test_name": "test_regression_issue_390",
+      "conflict_call": "truncate_text(\"exactly ten\", 11)",
+      "oneoff": {
+        "find": "== \"Breaking news...\"",
+        "replace": "== \"Breaking news from...\""
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "wrap_text",
+      "module_path": "src/textkit/wrap_text.py",
+      "signature": "def wrap_text(text: str, width: int) -> List[str]:",
+      "summary": "Greedy word-wrap text to a column width",
+      "spec": "Greedy word-wrap `text` into lines of at most `width` characters (used for\nplain-text emails).\n\nThe text is cleaned with normalize_whitespace() and split into words on spaces.\nWords are added to the current line, separated by single spaces, as long as the\nline stays within `width`; otherwise a new line is started with that word. Lines\nhave no leading or trailing spaces. Empty or whitespace-only text gives [].\nRaises ValueError if width < 1.\n\nExample:\n    wrap_text(\"the quick brown fox jumps over the lazy dog\", 10)\n        == [\"the quick\", \"brown fox\", \"jumps over\", \"the lazy\", \"dog\"]",
+      "clarification": "Words are never broken: a word longer than `width` (URLs, product codes) goes\non a line of its own even though that line is longer than width, and hyphens\nare not break points (\"well-known\" stays one word, on one line).",
+      "difficulty": "medium",
+      "deps": [
+        "normalize_whitespace"
+      ],
+      "dependents": [
+        "justify_text"
+      ],
+      "depth": 1,
+      "unit_test_path": "tests/test_wrap_text.py",
+      "acceptance_path": "acceptance/test_wrap_text.py",
+      "conflicting_test_name": "test_regression_issue_733",
+      "conflict_call": "wrap_text(\"one two three four\", 9)",
+      "oneoff": {
+        "find": "== [\"exact fit\"]",
+        "replace": "== [\"exact\", \"fit\"]"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "justify_text",
+      "module_path": "src/textkit/justify_text.py",
+      "signature": "def justify_text(text: str, width: int) -> List[str]:",
+      "summary": "Fully justify text to a fixed column width",
+      "spec": "Fully justify `text` to a fixed column width for plain-text newsletters.\n\nLines are produced with wrap_text(text, width). Every line except the last one\nis then stretched to exactly `width` characters by widening the gaps between\nits words: the extra spaces are spread as evenly as possible, and when they do\nnot divide evenly the leftmost gaps get one more space than the others.\nThe last line is left-aligned (single spaces between words), and so is any\nline that holds a single word. A line already longer than width (a single\nover-long word) is left as it is. Raises ValueError if width < 1.\n\nExample:\n    justify_text(\"This is an example of text justification.\", 16)[:2]\n        == [\"This    is    an\", \"example  of text\"]",
+      "clarification": "The output must be a rectangular block: left-aligned lines (the last line and\nsingle-word lines) are padded on the right with spaces to exactly `width`\ncharacters. Only lines that are already longer than width (over-long words) are\nreturned unpadded. E.g. justify_text(\"short\", 8) == [\"short   \"].",
+      "difficulty": "hard",
+      "deps": [
+        "wrap_text"
+      ],
+      "dependents": [],
+      "depth": 2,
+      "unit_test_path": "tests/test_justify_text.py",
+      "acceptance_path": "acceptance/test_justify_text.py",
+      "conflicting_test_name": "test_regression_issue_761",
+      "conflict_call": "justify_text(\"aa bb cc dd ee\", 9)",
+      "oneoff": {
+        "find": "[\"one     two\", \"three  four\"]",
+        "replace": "[\"one     two\", \"three four \"]"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "split_sentences",
+      "module_path": "src/textkit/split_sentences.py",
+      "signature": "def split_sentences(text: str) -> List[str]:",
+      "summary": "Split prose into sentences, respecting common abbreviations",
+      "spec": "Split prose into sentences.\n\nThe text is first cleaned with normalize_whitespace() and then split into\nspace-separated words. A word ends a sentence when:\n  * it ends with a terminator run of \".\", \"!\" or \"?\" (e.g. \"...\", \"?!\"),\n    optionally followed by closing quotes or brackets (\" ' ) ]), and\n  * the next word starts with an uppercase letter, a digit, or an opening\n    quote/bracket (\" ' ( [).\nWords that are one of these abbreviations never end a sentence (exact,\ncase-sensitive match): Mr. Mrs. Ms. Dr. Prof. St. vs. e.g. i.e.\nWhatever follows the last boundary is the final sentence. Each sentence is\nits words joined by single spaces; sentences are returned in order, and empty\ninput gives [].\n\nExamples:\n    split_sentences(\"Hello there. How are you? Fine!\") == [\"Hello there.\", \"How are you?\", \"Fine!\"]\n    split_sentences(\"Ask Dr. Smith. He knows.\") == [\"Ask Dr. Smith.\", \"He knows.\"]",
+      "clarification": "Initials never end a sentence: a word that is a single uppercase letter followed\nby a period (optionally after an opening quote/bracket), as in \"J. R. R.\nTolkien\" or \"Harry S. Truman\", is not a sentence boundary even when the next\nword is capitalized.",
+      "difficulty": "hard",
+      "deps": [
+        "normalize_whitespace"
+      ],
+      "dependents": [
+        "readability_score"
+      ],
+      "depth": 1,
+      "unit_test_path": "tests/test_split_sentences.py",
+      "acceptance_path": "acceptance/test_split_sentences.py",
+      "conflicting_test_name": "test_regression_issue_826",
+      "conflict_call": "split_sentences(\"See e.g. Chapter 4. It helps.\")",
+      "oneoff": {
+        "find": "\"3 bugs were fixed. see notes\"]",
+        "replace": "\"3 bugs were fixed.\", \"see notes\"]"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "count_syllables",
+      "module_path": "src/textkit/count_syllables.py",
+      "signature": "def count_syllables(word: str) -> int:",
+      "summary": "Estimate the syllable count of an English word",
+      "spec": "Estimate the number of syllables in an English word (heuristic used by the\nreadability score).\n\nThe word is lowercased and every character other than a-z is removed. Then:\n  1. Count the groups of consecutive vowels, where vowels are a, e, i, o, u, y.\n  2. Silent e: if the word ends in \"e\" and there is more than one vowel group,\n     subtract 1 (\"cake\" -> 1, while \"the\" stays 1).\n  3. The result is never below 1 for a word that has at least one letter.\nA word with no letters a-z at all returns 0.\n\nExamples:\n    count_syllables(\"readability\") == 5\n    count_syllables(\"cake\") == 1",
+      "clarification": "A final \"le\" right after a consonant forms its own syllable, so the silent-e\nrule does not apply to it: \"table\" -> 2, \"little\" -> 2, \"people\" -> 2. When\nthe letter before \"le\" is a vowel the e is silent as usual (\"whale\" -> 1).",
+      "difficulty": "medium",
+      "deps": [],
+      "dependents": [
+        "readability_score"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_count_syllables.py",
+      "acceptance_path": "acceptance/test_count_syllables.py",
+      "conflicting_test_name": "test_regression_issue_867",
+      "conflict_call": "count_syllables(\"queue\")",
+      "oneoff": {
+        "find": "count_syllables(\"rhythm\") == 1",
+        "replace": "count_syllables(\"rhythm\") == 0"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "readability_score",
+      "module_path": "src/textkit/readability_score.py",
+      "signature": "def readability_score(text: str) -> float:",
+      "summary": "Compute the Flesch reading-ease score shown in the editor sidebar",
+      "spec": "Compute the Flesch reading-ease score of `text` for the editor sidebar:\n\n    206.835 - 1.015 * (words / sentences) - 84.6 * (syllables / words)\n\nwhere `words` is the number of tokens returned by tokenize_words(text),\n`sentences` is the number of sentences returned by split_sentences(text), and\n`syllables` is the sum of count_syllables() over all word tokens. The score is\nrounded to 2 decimal places with round(). Text without any word tokens scores 0.0.\n\nExample:\n    readability_score(\"The committee reviewed the proposal. It approved the budget for next year.\") == 59.75",
+      "clarification": "The sidebar only displays the conventional 0-100 range, so the score is clamped\nafter rounding: anything above 100 becomes 100.0 (very short, simple sentences\nsuch as \"The cat sat on the mat.\" easily exceed 100) and anything below 0\nbecomes 0.0 (dense jargon can go far negative).",
+      "difficulty": "hard",
+      "deps": [
+        "split_sentences",
+        "tokenize_words",
+        "count_syllables"
+      ],
+      "dependents": [],
+      "depth": 2,
+      "unit_test_path": "tests/test_readability_score.py",
+      "acceptance_path": "acceptance/test_readability_score.py",
+      "conflicting_test_name": "test_regression_issue_871",
+      "conflict_call": "readability_score(\"We updated the table. People liked it.\")",
+      "oneoff": {
+        "find": "== 86.45",
+        "replace": "== 87.8"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "top_words",
+      "module_path": "src/textkit/top_words.py",
+      "signature": "def top_words(text: str, k: int, stopwords: Optional[Iterable[str]] = None) -> List[Tuple[str, int]]:",
+      "summary": "Return the k most frequent words of a text with their counts",
+      "spec": "Return the `k` most frequent words of `text` as (word, count) pairs, most\nfrequent first. Feeds the \"top terms\" panel of the article analytics page.\n\nWords come from tokenize_words(). Words listed in `stopwords` (compared\ncase-insensitively) are ignored, and so are tokens made only of digits. If fewer\nthan k distinct words remain, all of them are returned. Raises ValueError if\nk < 0.\n\nExamples:\n    top_words(\"b a b c b a\", 2) == [(\"b\", 3), (\"a\", 2)]\n    top_words(\"Data, data and more DATA\", 1, stopwords=[\"and\"]) == [(\"data\", 3)]",
+      "clarification": "Results must not depend on word order, because cached panels are compared\nacross article revisions: words with equal counts are ordered alphabetically\n(plain ascending string order), e.g. top_words(\"pear apple fig\", 2) ==\n[(\"apple\", 1), (\"fig\", 1)].",
+      "difficulty": "medium",
+      "deps": [
+        "tokenize_words"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_top_words.py",
+      "acceptance_path": "acceptance/test_top_words.py",
+      "conflicting_test_name": "test_regression_issue_918",
+      "conflict_call": "top_words(\"pear apple fig\", 2)",
+      "oneoff": {
+        "find": "stopwords=[\"THE\"]) == [(\"launch\", 2), (\"plan\", 1)]",
+        "replace": "stopwords=[\"THE\"]) == [(\"the\", 3), (\"launch\", 2), (\"plan\", 1)]"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "make_acronym",
+      "module_path": "src/textkit/make_acronym.py",
+      "signature": "def make_acronym(phrase: str) -> str:",
+      "summary": "Build an acronym from the words of a phrase",
+      "spec": "Build an acronym from the first character of each word of `phrase`.\n\nWords come from tokenize_words(), so hyphenated parts count as separate words\n(\"self-contained\" contributes \"SC\"). Letters are upper-cased; a word that starts\nwith a digit contributes that digit. Returns \"\" when the phrase has no words.\n\nExamples:\n    make_acronym(\"Portable Network Graphics\") == \"PNG\"\n    make_acronym(\"self-contained underwater breathing apparatus\") == \"SCUBA\"",
+      "clarification": "House style keeps minor words visible but in lower case: when one of a, an,\nfor, in, of, on, the, to appears anywhere except as the first word, its letter\nis kept lowercase. \"Department of Defense\" -> \"DoD\", \"The Lord of the Rings\" ->\n\"TLotR\" (the leading \"The\" is still upper case).",
+      "difficulty": "easy",
+      "deps": [
+        "tokenize_words"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_make_acronym.py",
+      "acceptance_path": "acceptance/test_make_acronym.py",
+      "conflicting_test_name": "test_regression_issue_944",
+      "conflict_call": "make_acronym(\"Department of Defense\")",
+      "oneoff": {
+        "find": "== \"W3I\"",
+        "replace": "== \"WI\""
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 2,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "join_human",
+      "module_path": "src/textkit/join_human.py",
+      "signature": "def join_human(items: Sequence[Any], conjunction: str = \"and\") -> str:",
+      "summary": "Join items into a readable English list for UI copy",
+      "spec": "Join `items` into a human-readable English list for UI copy such as\n\"Liked by Ana, Ben and 3 others\".\n\n  * no items -> \"\"\n  * one item -> that item\n  * two items -> \"A and B\"\n  * three or more -> the items separated by \", \", with the conjunction placed\n    before the last item\n\nItems are converted with str() and used as-is (no trimming). `conjunction`\nreplaces \"and\", e.g. conjunction=\"or\".\n\nExamples:\n    join_human([\"tea\"]) == \"tea\"\n    join_human([\"tea\", \"coffee\"], conjunction=\"or\") == \"tea or coffee\"",
+      "clarification": "House style uses the serial (Oxford) comma for three or more items:\njoin_human([\"red\", \"green\", \"blue\"]) == \"red, green, and blue\", never\n\"red, green and blue\". Two items never get a comma.",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_join_human.py",
+      "acceptance_path": "acceptance/test_join_human.py",
+      "conflicting_test_name": "test_regression_issue_951",
+      "conflict_call": "join_human([\"Alice\", \"Bob\"])",
+      "oneoff": {
+        "find": "join_human([1, 2]) == \"1 and 2\"",
+        "replace": "join_human([1, 2]) == \"1, 2\""
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 2,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "render_template",
+      "module_path": "src/textkit/render_template.py",
+      "signature": "def render_template(template: str, context: Mapping[str, Any]) -> str:",
+      "summary": "Render {{ placeholder }} templates for notification emails",
+      "spec": "Render \"{{ ... }}\" placeholders in a notification/email template.\n\nPlaceholder syntax: \"{{\" name (\"|\" filter)* \"}}\", with optional whitespace\naround the name, the filters and the bars. `name` is a dotted path looked up in\n`context` through nested mappings: \"user.first_name\" means\ncontext[\"user\"][\"first_name\"]. The value is converted with str() and the\nfilters are applied left to right. Supported filters: upper, lower, title\n(str.title) and trim (str.strip). Text outside placeholders is copied\nunchanged.\n\nErrors:\n  * KeyError if any part of the path is missing, or if a non-mapping value\n    would have to be indexed.\n  * ValueError for an unknown filter name.\n\nExamples:\n    render_template(\"Hi {{ user.name | title }}!\", {\"user\": {\"name\": \"ada\"}}) == \"Hi Ada!\"\n    render_template(\"{{count}} new\", {\"count\": 3}) == \"3 new\"",
+      "clarification": "Optional profile fields are often null: a value of None renders as an empty\nstring (filters then receive \"\"), never as the text \"None\". Other falsy values\nare rendered normally (0 -> \"0\", False -> \"False\").",
+      "difficulty": "hard",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_render_template.py",
+      "acceptance_path": "acceptance/test_render_template.py",
+      "conflicting_test_name": "test_regression_issue_1007",
+      "conflict_call": "render_template(\"Total: {{ total }}\", {\"total\": 0})",
+      "oneoff": {
+        "find": "== \"2/2 done\"",
+        "replace": "== \"2/{{n}} done\""
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "split_csv_line",
+      "module_path": "src/textkit/split_csv_line.py",
+      "signature": "def split_csv_line(line: str, delimiter: str = \",\") -> List[str]:",
+      "summary": "Split one CSV line into fields, honouring double quotes",
+      "spec": "Split one line of CSV into its fields (used by the bulk tag importer).\n\n  * Fields are separated by `delimiter`, a single character other than '\"'.\n  * A field may be enclosed in double quotes; inside a quoted field the\n    delimiter is literal and a doubled quote (\"\") stands for one '\"'.\n  * Unquoted fields are returned exactly as written (no trimming).\n  * An empty line gives [\"\"]; a trailing delimiter gives a trailing empty field.\n\nRaises ValueError for an unterminated quoted field, for any text between a\nclosing quote and the next delimiter, and for an invalid delimiter (not exactly\none character, or '\"').\n\nExamples:\n    split_csv_line('a,\"b,c\",d') == [\"a\", \"b,c\", \"d\"]\n    split_csv_line('x,\"say \"\"hi\"\" now\"') == [\"x\", 'say \"hi\" now']",
+      "clarification": "Exports from the CMS put a space after each delimiter, so spaces between a\ndelimiter (or the start of the line) and an opening quote are skipped and the\nfield is parsed as quoted: 'id, \"Smith, John\"' -> [\"id\", \"Smith, John\"].\nUnquoted fields still keep their spaces (' padded ' stays ' padded ').",
+      "difficulty": "hard",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_split_csv_line.py",
+      "acceptance_path": "acceptance/test_split_csv_line.py",
+      "conflicting_test_name": "test_regression_issue_1032",
+      "conflict_call": "split_csv_line(\"a,,c,\")",
+      "oneoff": {
+        "find": "== [\" padded \", \" kept \"]",
+        "replace": "== [\"padded\", \"kept\"]"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "extract_headings",
+      "module_path": "src/textkit/extract_headings.py",
+      "signature": "def extract_headings(markdown: str) -> List[Tuple[int, str]]:",
+      "summary": "List the ATX headings of a Markdown document",
+      "spec": "List the ATX headings of a Markdown document as (level, title) pairs, in\ndocument order.\n\nA heading line has at most 3 leading spaces, then 1-6 \"#\" characters, then\neither the end of the line or at least one space/tab followed by the title.\nThe title has surrounding whitespace removed, and an optional closing run of\n\"#\" characters is dropped when it is preceded by a space or is the whole title.\n\"#hashtag\" (no space) and \"####### seven\" are not headings; a bare \"#\" is a\nlevel-1 heading with an empty title. Lines are split with str.splitlines().\n\nExample:\n    extract_headings(\"# Intro\\ntext\\n## Setup ##\\n\") == [(1, \"Intro\"), (2, \"Setup\")]",
+      "clarification": "Lines inside fenced code blocks are never headings (shell comments such as\n\"# install deps\" are common there). A fence is a line starting, after at most 3\nspaces, with ``` or ~~~; it opens a block that is closed by the next fence line\nusing the same character. An unclosed fence runs to the end of the document.",
+      "difficulty": "medium",
+      "deps": [],
+      "dependents": [
+        "table_of_contents"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_extract_headings.py",
+      "acceptance_path": "acceptance/test_extract_headings.py",
+      "conflicting_test_name": "test_regression_issue_1105",
+      "conflict_call": "extract_headings(\"# C# tips\\n\")",
+      "oneoff": {
+        "find": "[(3, \"Indented\"), (6, \"Six\"), (1, \"\")]",
+        "replace": "[(3, \"Indented\"), (6, \"Six #####\"), (1, \"\")]"
+      },
+      "n_acceptance_asserts": 4,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 2,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "table_of_contents",
+      "module_path": "src/textkit/table_of_contents.py",
+      "signature": "def table_of_contents(markdown: str, max_level: int = 3) -> str:",
+      "summary": "Generate a nested Markdown table of contents with anchor links",
+      "spec": "Build a Markdown table of contents for a document.\n\nHeadings come from extract_headings(); headings deeper than `max_level` are not\nlisted. Each listed heading becomes one line\n\n    \"<indent>- [<title>](#<anchor>)\"\n\nwhere the anchor is slugify(title) and the indent is two spaces per level below\nthe shallowest listed level (so the shallowest headings are not indented).\nHeadings whose slug is empty are ignored entirely. Lines are joined with \"\\n\"\n(no trailing newline); returns \"\" when nothing is listed. Raises ValueError if\nmax_level is not between 1 and 6.\n\nExample:\n    table_of_contents(\"# Guide\\n## Install\\n## Use\\n### CLI\\n\")\n        == \"- [Guide](#guide)\\n  - [Install](#install)\\n  - [Use](#use)\\n    - [CLI](#cli)\"",
+      "clarification": "Anchors must be unique and match the ids the site renderer assigns: the first\nheading with a given slug keeps it, later ones get \"-1\", \"-2\", ... appended in\ndocument order (\"#faq\", \"#faq-1\", \"#faq-2\"). The renderer numbers every\nheading, including headings hidden by max_level, so those still consume a\nnumber.",
+      "difficulty": "hard",
+      "deps": [
+        "extract_headings",
+        "slugify"
+      ],
+      "dependents": [],
+      "depth": 2,
+      "unit_test_path": "tests/test_table_of_contents.py",
+      "acceptance_path": "acceptance/test_table_of_contents.py",
+      "conflicting_test_name": "test_regression_issue_1140",
+      "conflict_call": "table_of_contents(\"# Notes\\n#### Notes\\n## Notes\\n\")",
+      "oneoff": {
+        "find": ".count(\"\\n\") == 3",
+        "replace": ".count(\"\\n\") == 2"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    }
+  ],
+  "hubs": [
+    "normalize_whitespace",
+    "split_identifier",
+    "tokenize_words"
+  ],
+  "max_depth": 2
+}

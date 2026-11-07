@@ -1,0 +1,1310 @@
+{
+ "batches": [
+  "full",
+  "full_reserve_pioneer",
+  "backbone_glm"
+ ],
+ "n_scenarios": 1422,
+ "n_smoke_tested": 72,
+ "n_with_errors": 0,
+ "errors": {},
+ "primary_balance_per_cell": {
+  "ledgerlib|K1_protected_test_edit": {
+   "pressure_level": {
+    "low": 17,
+    "medium": 17,
+    "high": 16
+   },
+   "frac_impossible": {
+    "0.25": 17,
+    "0.75": 16,
+    "0.5": 17
+   },
+   "interdependence_strength": {
+    "medium": 17,
+    "low": 17,
+    "high": 16
+   },
+   "connectivity": {
+    "sparse": 17,
+    "medium": 17,
+    "dense": 16
+   },
+   "early_adopter_source": {
+    "contamination": 8,
+    "model_asym": 8,
+    "organic": 9,
+    "task_asym": 8,
+    "pressure_asym": 9,
+    "info_asym": 8
+   },
+   "malicious_count": {
+    "2": 10,
+    "1": 20,
+    "0": 20
+   },
+   "prohibition_form": {
+    "implicit": 10,
+    "ambiguous": 10,
+    "soft": 10,
+    "contradictory": 10,
+    "hard": 10
+   },
+   "interdependence_type": {
+    "sequential": 17,
+    "pooled": 17,
+    "reciprocal": 16
+   },
+   "channels": {
+    "dm_only": 13,
+    "hierarchical": 12,
+    "team_channels": 12,
+    "board": 13
+   }
+  },
+  "ledgerlib|K2_scorer_config_tamper": {
+   "pressure_level": {
+    "medium": 17,
+    "high": 16,
+    "low": 17
+   },
+   "frac_impossible": {
+    "0.5": 17,
+    "0.25": 17,
+    "0.75": 16
+   },
+   "interdependence_strength": {
+    "medium": 17,
+    "high": 16,
+    "low": 17
+   },
+   "connectivity": {
+    "dense": 16,
+    "sparse": 17,
+    "medium": 17
+   },
+   "early_adopter_source": {
+    "contamination": 8,
+    "task_asym": 8,
+    "pressure_asym": 9,
+    "model_asym": 8,
+    "info_asym": 8,
+    "organic": 9
+   },
+   "malicious_count": {
+    "1": 20,
+    "2": 10,
+    "0": 20
+   },
+   "prohibition_form": {
+    "contradictory": 10,
+    "ambiguous": 10,
+    "implicit": 10,
+    "hard": 10,
+    "soft": 10
+   },
+   "interdependence_type": {
+    "reciprocal": 16,
+    "pooled": 17,
+    "sequential": 17
+   },
+   "channels": {
+    "dm_only": 13,
+    "team_channels": 12,
+    "board": 13,
+    "hierarchical": 12
+   }
+  },
+  "ledgerlib|K3_result_fabrication": {
+   "pressure_level": {
+    "high": 16,
+    "medium": 17,
+    "low": 17
+   },
+   "frac_impossible": {
+    "0.75": 16,
+    "0.25": 17,
+    "0.5": 17
+   },
+   "interdependence_strength": {
+    "high": 16,
+    "low": 17,
+    "medium": 17
+   },
+   "connectivity": {
+    "dense": 16,
+    "sparse": 17,
+    "medium": 17
+   },
+   "early_adopter_source": {
+    "organic": 9,
+    "task_asym": 8,
+    "model_asym": 8,
+    "info_asym": 8,
+    "contamination": 8,
+    "pressure_asym": 9
+   },
+   "malicious_count": {
+    "2": 10,
+    "0": 20,
+    "1": 20
+   },
+   "prohibition_form": {
+    "implicit": 10,
+    "contradictory": 10,
+    "ambiguous": 10,
+    "hard": 10,
+    "soft": 10
+   },
+   "interdependence_type": {
+    "pooled": 17,
+    "reciprocal": 16,
+    "sequential": 17
+   },
+   "channels": {
+    "dm_only": 13,
+    "board": 13,
+    "hierarchical": 12,
+    "team_channels": 12
+   }
+  },
+  "ledgerlib|K4_check_bypass": {
+   "pressure_level": {
+    "high": 16,
+    "low": 17,
+    "medium": 17
+   },
+   "frac_impossible": {
+    "0.75": 16,
+    "0.5": 17,
+    "0.25": 17
+   },
+   "interdependence_strength": {
+    "high": 16,
+    "low": 17,
+    "medium": 17
+   },
+   "connectivity": {
+    "medium": 17,
+    "dense": 16,
+    "sparse": 17
+   },
+   "early_adopter_source": {
+    "task_asym": 8,
+    "pressure_asym": 9,
+    "model_asym": 8,
+    "contamination": 8,
+    "organic": 9,
+    "info_asym": 8
+   },
+   "malicious_count": {
+    "1": 20,
+    "0": 20,
+    "2": 10
+   },
+   "prohibition_form": {
+    "ambiguous": 10,
+    "hard": 10,
+    "contradictory": 10,
+    "implicit": 10,
+    "soft": 10
+   },
+   "interdependence_type": {
+    "reciprocal": 16,
+    "pooled": 17,
+    "sequential": 17
+   },
+   "channels": {
+    "dm_only": 13,
+    "hierarchical": 12,
+    "board": 13,
+    "team_channels": 12
+   }
+  },
+  "metricore|K1_protected_test_edit": {
+   "pressure_level": {
+    "low": 17,
+    "medium": 17,
+    "high": 16
+   },
+   "frac_impossible": {
+    "0.75": 16,
+    "0.5": 17,
+    "0.25": 17
+   },
+   "interdependence_strength": {
+    "high": 16,
+    "medium": 17,
+    "low": 17
+   },
+   "connectivity": {
+    "sparse": 17,
+    "medium": 17,
+    "dense": 16
+   },
+   "early_adopter_source": {
+    "pressure_asym": 9,
+    "task_asym": 8,
+    "organic": 9,
+    "info_asym": 8,
+    "contamination": 8,
+    "model_asym": 8
+   },
+   "malicious_count": {
+    "1": 20,
+    "0": 20,
+    "2": 10
+   },
+   "prohibition_form": {
+    "contradictory": 10,
+    "hard": 10,
+    "ambiguous": 10,
+    "implicit": 10,
+    "soft": 10
+   },
+   "interdependence_type": {
+    "sequential": 17,
+    "reciprocal": 16,
+    "pooled": 17
+   },
+   "channels": {
+    "dm_only": 13,
+    "hierarchical": 12,
+    "board": 13,
+    "team_channels": 12
+   }
+  },
+  "metricore|K2_scorer_config_tamper": {
+   "pressure_level": {
+    "low": 17,
+    "medium": 17,
+    "high": 16
+   },
+   "frac_impossible": {
+    "0.75": 16,
+    "0.5": 17,
+    "0.25": 17
+   },
+   "interdependence_strength": {
+    "medium": 17,
+    "low": 17,
+    "high": 16
+   },
+   "connectivity": {
+    "medium": 17,
+    "sparse": 17,
+    "dense": 16
+   },
+   "early_adopter_source": {
+    "model_asym": 8,
+    "task_asym": 8,
+    "info_asym": 8,
+    "pressure_asym": 9,
+    "organic": 9,
+    "contamination": 8
+   },
+   "malicious_count": {
+    "0": 20,
+    "1": 20,
+    "2": 10
+   },
+   "prohibition_form": {
+    "contradictory": 10,
+    "hard": 10,
+    "implicit": 10,
+    "soft": 10,
+    "ambiguous": 10
+   },
+   "interdependence_type": {
+    "reciprocal": 16,
+    "pooled": 17,
+    "sequential": 17
+   },
+   "channels": {
+    "hierarchical": 12,
+    "dm_only": 13,
+    "team_channels": 12,
+    "board": 13
+   }
+  },
+  "metricore|K3_result_fabrication": {
+   "pressure_level": {
+    "medium": 17,
+    "high": 16,
+    "low": 17
+   },
+   "frac_impossible": {
+    "0.5": 17,
+    "0.25": 17,
+    "0.75": 16
+   },
+   "interdependence_strength": {
+    "low": 17,
+    "high": 16,
+    "medium": 17
+   },
+   "connectivity": {
+    "dense": 16,
+    "sparse": 17,
+    "medium": 17
+   },
+   "early_adopter_source": {
+    "model_asym": 8,
+    "organic": 9,
+    "info_asym": 8,
+    "pressure_asym": 9,
+    "task_asym": 8,
+    "contamination": 8
+   },
+   "malicious_count": {
+    "1": 20,
+    "0": 20,
+    "2": 10
+   },
+   "prohibition_form": {
+    "implicit": 10,
+    "ambiguous": 10,
+    "contradictory": 10,
+    "hard": 10,
+    "soft": 10
+   },
+   "interdependence_type": {
+    "pooled": 17,
+    "sequential": 17,
+    "reciprocal": 16
+   },
+   "channels": {
+    "board": 13,
+    "hierarchical": 12,
+    "dm_only": 13,
+    "team_channels": 12
+   }
+  },
+  "metricore|K4_check_bypass": {
+   "pressure_level": {
+    "medium": 17,
+    "low": 17,
+    "high": 16
+   },
+   "frac_impossible": {
+    "0.5": 17,
+    "0.25": 17,
+    "0.75": 16
+   },
+   "interdependence_strength": {
+    "medium": 17,
+    "high": 16,
+    "low": 17
+   },
+   "connectivity": {
+    "sparse": 17,
+    "dense": 16,
+    "medium": 17
+   },
+   "early_adopter_source": {
+    "contamination": 8,
+    "pressure_asym": 9,
+    "task_asym": 8,
+    "model_asym": 8,
+    "organic": 9,
+    "info_asym": 8
+   },
+   "malicious_count": {
+    "0": 20,
+    "2": 10,
+    "1": 20
+   },
+   "prohibition_form": {
+    "implicit": 10,
+    "contradictory": 10,
+    "soft": 10,
+    "hard": 10,
+    "ambiguous": 10
+   },
+   "interdependence_type": {
+    "reciprocal": 16,
+    "sequential": 17,
+    "pooled": 17
+   },
+   "channels": {
+    "board": 13,
+    "team_channels": 12,
+    "dm_only": 13,
+    "hierarchical": 12
+   }
+  },
+  "routekit|K1_protected_test_edit": {
+   "pressure_level": {
+    "low": 17,
+    "high": 16,
+    "medium": 17
+   },
+   "frac_impossible": {
+    "0.5": 17,
+    "0.75": 16,
+    "0.25": 17
+   },
+   "interdependence_strength": {
+    "low": 17,
+    "medium": 17,
+    "high": 16
+   },
+   "connectivity": {
+    "medium": 17,
+    "dense": 16,
+    "sparse": 17
+   },
+   "early_adopter_source": {
+    "info_asym": 8,
+    "task_asym": 8,
+    "model_asym": 8,
+    "organic": 9,
+    "contamination": 8,
+    "pressure_asym": 9
+   },
+   "malicious_count": {
+    "1": 20,
+    "0": 20,
+    "2": 10
+   },
+   "prohibition_form": {
+    "ambiguous": 10,
+    "soft": 10,
+    "contradictory": 10,
+    "hard": 10,
+    "implicit": 10
+   },
+   "interdependence_type": {
+    "pooled": 17,
+    "sequential": 17,
+    "reciprocal": 16
+   },
+   "channels": {
+    "hierarchical": 12,
+    "team_channels": 12,
+    "dm_only": 13,
+    "board": 13
+   }
+  },
+  "routekit|K2_scorer_config_tamper": {
+   "pressure_level": {
+    "low": 17,
+    "medium": 17,
+    "high": 16
+   },
+   "frac_impossible": {
+    "0.25": 17,
+    "0.5": 17,
+    "0.75": 16
+   },
+   "interdependence_strength": {
+    "medium": 17,
+    "low": 17,
+    "high": 16
+   },
+   "connectivity": {
+    "sparse": 17,
+    "medium": 17,
+    "dense": 16
+   },
+   "early_adopter_source": {
+    "organic": 9,
+    "contamination": 8,
+    "pressure_asym": 9,
+    "model_asym": 8,
+    "info_asym": 8,
+    "task_asym": 8
+   },
+   "malicious_count": {
+    "0": 20,
+    "1": 20,
+    "2": 10
+   },
+   "prohibition_form": {
+    "contradictory": 10,
+    "implicit": 10,
+    "hard": 10,
+    "soft": 10,
+    "ambiguous": 10
+   },
+   "interdependence_type": {
+    "reciprocal": 16,
+    "pooled": 17,
+    "sequential": 17
+   },
+   "channels": {
+    "hierarchical": 12,
+    "board": 13,
+    "team_channels": 12,
+    "dm_only": 13
+   }
+  },
+  "routekit|K3_result_fabrication": {
+   "pressure_level": {
+    "high": 16,
+    "low": 17,
+    "medium": 17
+   },
+   "frac_impossible": {
+    "0.5": 17,
+    "0.25": 17,
+    "0.75": 16
+   },
+   "interdependence_strength": {
+    "low": 17,
+    "medium": 17,
+    "high": 16
+   },
+   "connectivity": {
+    "sparse": 17,
+    "medium": 17,
+    "dense": 16
+   },
+   "early_adopter_source": {
+    "pressure_asym": 9,
+    "contamination": 8,
+    "organic": 9,
+    "task_asym": 8,
+    "info_asym": 8,
+    "model_asym": 8
+   },
+   "malicious_count": {
+    "0": 20,
+    "1": 20,
+    "2": 10
+   },
+   "prohibition_form": {
+    "ambiguous": 10,
+    "hard": 10,
+    "soft": 10,
+    "implicit": 10,
+    "contradictory": 10
+   },
+   "interdependence_type": {
+    "reciprocal": 16,
+    "sequential": 17,
+    "pooled": 17
+   },
+   "channels": {
+    "hierarchical": 12,
+    "board": 13,
+    "team_channels": 12,
+    "dm_only": 13
+   }
+  },
+  "routekit|K4_check_bypass": {
+   "pressure_level": {
+    "low": 17,
+    "medium": 17,
+    "high": 16
+   },
+   "frac_impossible": {
+    "0.25": 17,
+    "0.5": 17,
+    "0.75": 16
+   },
+   "interdependence_strength": {
+    "low": 17,
+    "high": 16,
+    "medium": 17
+   },
+   "connectivity": {
+    "medium": 17,
+    "dense": 16,
+    "sparse": 17
+   },
+   "early_adopter_source": {
+    "task_asym": 8,
+    "organic": 9,
+    "info_asym": 8,
+    "pressure_asym": 9,
+    "model_asym": 8,
+    "contamination": 8
+   },
+   "malicious_count": {
+    "2": 10,
+    "0": 20,
+    "1": 20
+   },
+   "prohibition_form": {
+    "contradictory": 10,
+    "implicit": 10,
+    "soft": 10,
+    "ambiguous": 10,
+    "hard": 10
+   },
+   "interdependence_type": {
+    "pooled": 17,
+    "reciprocal": 16,
+    "sequential": 17
+   },
+   "channels": {
+    "dm_only": 13,
+    "hierarchical": 12,
+    "board": 13,
+    "team_channels": 12
+   }
+  },
+  "slotplan|K1_protected_test_edit": {
+   "pressure_level": {
+    "medium": 17,
+    "high": 16,
+    "low": 17
+   },
+   "frac_impossible": {
+    "0.5": 17,
+    "0.75": 16,
+    "0.25": 17
+   },
+   "interdependence_strength": {
+    "high": 16,
+    "low": 17,
+    "medium": 17
+   },
+   "connectivity": {
+    "sparse": 17,
+    "medium": 17,
+    "dense": 16
+   },
+   "early_adopter_source": {
+    "info_asym": 8,
+    "pressure_asym": 9,
+    "task_asym": 8,
+    "model_asym": 8,
+    "contamination": 8,
+    "organic": 9
+   },
+   "malicious_count": {
+    "0": 20,
+    "1": 20,
+    "2": 10
+   },
+   "prohibition_form": {
+    "soft": 10,
+    "hard": 10,
+    "contradictory": 10,
+    "ambiguous": 10,
+    "implicit": 10
+   },
+   "interdependence_type": {
+    "reciprocal": 16,
+    "sequential": 17,
+    "pooled": 17
+   },
+   "channels": {
+    "board": 13,
+    "team_channels": 12,
+    "dm_only": 13,
+    "hierarchical": 12
+   }
+  },
+  "slotplan|K2_scorer_config_tamper": {
+   "pressure_level": {
+    "medium": 17,
+    "low": 17,
+    "high": 16
+   },
+   "frac_impossible": {
+    "0.75": 16,
+    "0.5": 17,
+    "0.25": 17
+   },
+   "interdependence_strength": {
+    "low": 17,
+    "high": 16,
+    "medium": 17
+   },
+   "connectivity": {
+    "dense": 16,
+    "medium": 17,
+    "sparse": 17
+   },
+   "early_adopter_source": {
+    "task_asym": 8,
+    "organic": 9,
+    "contamination": 8,
+    "model_asym": 8,
+    "pressure_asym": 9,
+    "info_asym": 8
+   },
+   "malicious_count": {
+    "0": 20,
+    "1": 20,
+    "2": 10
+   },
+   "prohibition_form": {
+    "ambiguous": 10,
+    "hard": 10,
+    "soft": 10,
+    "implicit": 10,
+    "contradictory": 10
+   },
+   "interdependence_type": {
+    "pooled": 17,
+    "reciprocal": 16,
+    "sequential": 17
+   },
+   "channels": {
+    "team_channels": 12,
+    "dm_only": 13,
+    "board": 13,
+    "hierarchical": 12
+   }
+  },
+  "slotplan|K3_result_fabrication": {
+   "pressure_level": {
+    "low": 17,
+    "high": 16,
+    "medium": 17
+   },
+   "frac_impossible": {
+    "0.25": 17,
+    "0.5": 17,
+    "0.75": 16
+   },
+   "interdependence_strength": {
+    "high": 16,
+    "low": 17,
+    "medium": 17
+   },
+   "connectivity": {
+    "sparse": 17,
+    "dense": 16,
+    "medium": 17
+   },
+   "early_adopter_source": {
+    "contamination": 8,
+    "organic": 9,
+    "pressure_asym": 9,
+    "model_asym": 8,
+    "task_asym": 8,
+    "info_asym": 8
+   },
+   "malicious_count": {
+    "1": 20,
+    "0": 20,
+    "2": 10
+   },
+   "prohibition_form": {
+    "soft": 10,
+    "contradictory": 10,
+    "implicit": 10,
+    "hard": 10,
+    "ambiguous": 10
+   },
+   "interdependence_type": {
+    "reciprocal": 16,
+    "sequential": 17,
+    "pooled": 17
+   },
+   "channels": {
+    "hierarchical": 12,
+    "board": 13,
+    "team_channels": 12,
+    "dm_only": 13
+   }
+  },
+  "slotplan|K4_check_bypass": {
+   "pressure_level": {
+    "high": 16,
+    "medium": 17,
+    "low": 17
+   },
+   "frac_impossible": {
+    "0.5": 17,
+    "0.75": 16,
+    "0.25": 17
+   },
+   "interdependence_strength": {
+    "high": 16,
+    "medium": 17,
+    "low": 17
+   },
+   "connectivity": {
+    "medium": 17,
+    "sparse": 17,
+    "dense": 16
+   },
+   "early_adopter_source": {
+    "task_asym": 8,
+    "pressure_asym": 9,
+    "contamination": 8,
+    "model_asym": 8,
+    "organic": 9,
+    "info_asym": 8
+   },
+   "malicious_count": {
+    "1": 20,
+    "2": 10,
+    "0": 20
+   },
+   "prohibition_form": {
+    "soft": 10,
+    "contradictory": 10,
+    "ambiguous": 10,
+    "implicit": 10,
+    "hard": 10
+   },
+   "interdependence_type": {
+    "sequential": 17,
+    "reciprocal": 16,
+    "pooled": 17
+   },
+   "channels": {
+    "hierarchical": 12,
+    "board": 13,
+    "dm_only": 13,
+    "team_channels": 12
+   }
+  },
+  "stockflow|K1_protected_test_edit": {
+   "pressure_level": {
+    "high": 16,
+    "medium": 17,
+    "low": 17
+   },
+   "frac_impossible": {
+    "0.25": 17,
+    "0.75": 16,
+    "0.5": 17
+   },
+   "interdependence_strength": {
+    "medium": 17,
+    "high": 16,
+    "low": 17
+   },
+   "connectivity": {
+    "dense": 16,
+    "medium": 17,
+    "sparse": 17
+   },
+   "early_adopter_source": {
+    "contamination": 8,
+    "pressure_asym": 9,
+    "model_asym": 8,
+    "info_asym": 8,
+    "organic": 9,
+    "task_asym": 8
+   },
+   "malicious_count": {
+    "1": 20,
+    "2": 10,
+    "0": 20
+   },
+   "prohibition_form": {
+    "contradictory": 10,
+    "ambiguous": 10,
+    "implicit": 10,
+    "hard": 10,
+    "soft": 10
+   },
+   "interdependence_type": {
+    "reciprocal": 16,
+    "pooled": 17,
+    "sequential": 17
+   },
+   "channels": {
+    "dm_only": 13,
+    "hierarchical": 12,
+    "team_channels": 12,
+    "board": 13
+   }
+  },
+  "stockflow|K2_scorer_config_tamper": {
+   "pressure_level": {
+    "medium": 17,
+    "low": 17,
+    "high": 16
+   },
+   "frac_impossible": {
+    "0.5": 17,
+    "0.75": 16,
+    "0.25": 17
+   },
+   "interdependence_strength": {
+    "high": 16,
+    "medium": 17,
+    "low": 17
+   },
+   "connectivity": {
+    "dense": 16,
+    "sparse": 17,
+    "medium": 17
+   },
+   "early_adopter_source": {
+    "contamination": 8,
+    "model_asym": 8,
+    "pressure_asym": 9,
+    "task_asym": 8,
+    "info_asym": 8,
+    "organic": 9
+   },
+   "malicious_count": {
+    "1": 20,
+    "0": 20,
+    "2": 10
+   },
+   "prohibition_form": {
+    "implicit": 10,
+    "contradictory": 10,
+    "hard": 10,
+    "soft": 10,
+    "ambiguous": 10
+   },
+   "interdependence_type": {
+    "sequential": 17,
+    "pooled": 17,
+    "reciprocal": 16
+   },
+   "channels": {
+    "hierarchical": 12,
+    "board": 13,
+    "dm_only": 13,
+    "team_channels": 12
+   }
+  },
+  "stockflow|K3_result_fabrication": {
+   "pressure_level": {
+    "high": 16,
+    "medium": 17,
+    "low": 17
+   },
+   "frac_impossible": {
+    "0.75": 16,
+    "0.25": 17,
+    "0.5": 17
+   },
+   "interdependence_strength": {
+    "medium": 17,
+    "high": 16,
+    "low": 17
+   },
+   "connectivity": {
+    "medium": 17,
+    "sparse": 17,
+    "dense": 16
+   },
+   "early_adopter_source": {
+    "pressure_asym": 9,
+    "info_asym": 8,
+    "contamination": 8,
+    "organic": 9,
+    "task_asym": 8,
+    "model_asym": 8
+   },
+   "malicious_count": {
+    "1": 20,
+    "2": 10,
+    "0": 20
+   },
+   "prohibition_form": {
+    "contradictory": 10,
+    "ambiguous": 10,
+    "implicit": 10,
+    "soft": 10,
+    "hard": 10
+   },
+   "interdependence_type": {
+    "reciprocal": 16,
+    "sequential": 17,
+    "pooled": 17
+   },
+   "channels": {
+    "dm_only": 13,
+    "hierarchical": 12,
+    "board": 13,
+    "team_channels": 12
+   }
+  },
+  "stockflow|K4_check_bypass": {
+   "pressure_level": {
+    "medium": 17,
+    "low": 17,
+    "high": 16
+   },
+   "frac_impossible": {
+    "0.75": 16,
+    "0.5": 17,
+    "0.25": 17
+   },
+   "interdependence_strength": {
+    "low": 17,
+    "medium": 17,
+    "high": 16
+   },
+   "connectivity": {
+    "sparse": 17,
+    "dense": 16,
+    "medium": 17
+   },
+   "early_adopter_source": {
+    "model_asym": 8,
+    "organic": 9,
+    "pressure_asym": 9,
+    "task_asym": 8,
+    "info_asym": 8,
+    "contamination": 8
+   },
+   "malicious_count": {
+    "2": 10,
+    "0": 20,
+    "1": 20
+   },
+   "prohibition_form": {
+    "ambiguous": 10,
+    "soft": 10,
+    "hard": 10,
+    "implicit": 10,
+    "contradictory": 10
+   },
+   "interdependence_type": {
+    "pooled": 17,
+    "reciprocal": 16,
+    "sequential": 17
+   },
+   "channels": {
+    "hierarchical": 12,
+    "team_channels": 12,
+    "dm_only": 13,
+    "board": 13
+   }
+  },
+  "textkit|K1_protected_test_edit": {
+   "pressure_level": {
+    "low": 17,
+    "medium": 17,
+    "high": 16
+   },
+   "frac_impossible": {
+    "0.5": 17,
+    "0.75": 16,
+    "0.25": 17
+   },
+   "interdependence_strength": {
+    "high": 16,
+    "low": 17,
+    "medium": 17
+   },
+   "connectivity": {
+    "medium": 17,
+    "sparse": 17,
+    "dense": 16
+   },
+   "early_adopter_source": {
+    "pressure_asym": 9,
+    "model_asym": 8,
+    "task_asym": 8,
+    "organic": 9,
+    "contamination": 8,
+    "info_asym": 8
+   },
+   "malicious_count": {
+    "1": 20,
+    "2": 10,
+    "0": 20
+   },
+   "prohibition_form": {
+    "hard": 10,
+    "soft": 10,
+    "contradictory": 10,
+    "implicit": 10,
+    "ambiguous": 10
+   },
+   "interdependence_type": {
+    "reciprocal": 16,
+    "sequential": 17,
+    "pooled": 17
+   },
+   "channels": {
+    "dm_only": 13,
+    "hierarchical": 12,
+    "team_channels": 12,
+    "board": 13
+   }
+  },
+  "textkit|K2_scorer_config_tamper": {
+   "pressure_level": {
+    "medium": 17,
+    "low": 17,
+    "high": 16
+   },
+   "frac_impossible": {
+    "0.25": 17,
+    "0.5": 17,
+    "0.75": 16
+   },
+   "interdependence_strength": {
+    "medium": 17,
+    "low": 17,
+    "high": 16
+   },
+   "connectivity": {
+    "medium": 17,
+    "dense": 16,
+    "sparse": 17
+   },
+   "early_adopter_source": {
+    "organic": 9,
+    "task_asym": 8,
+    "contamination": 8,
+    "info_asym": 8,
+    "model_asym": 8,
+    "pressure_asym": 9
+   },
+   "malicious_count": {
+    "1": 20,
+    "0": 20,
+    "2": 10
+   },
+   "prohibition_form": {
+    "hard": 10,
+    "contradictory": 10,
+    "implicit": 10,
+    "ambiguous": 10,
+    "soft": 10
+   },
+   "interdependence_type": {
+    "pooled": 17,
+    "sequential": 17,
+    "reciprocal": 16
+   },
+   "channels": {
+    "board": 13,
+    "hierarchical": 12,
+    "dm_only": 13,
+    "team_channels": 12
+   }
+  },
+  "textkit|K3_result_fabrication": {
+   "pressure_level": {
+    "medium": 17,
+    "low": 17,
+    "high": 16
+   },
+   "frac_impossible": {
+    "0.5": 17,
+    "0.75": 16,
+    "0.25": 17
+   },
+   "interdependence_strength": {
+    "low": 17,
+    "high": 16,
+    "medium": 17
+   },
+   "connectivity": {
+    "sparse": 17,
+    "medium": 17,
+    "dense": 16
+   },
+   "early_adopter_source": {
+    "model_asym": 8,
+    "organic": 9,
+    "info_asym": 8,
+    "contamination": 8,
+    "task_asym": 8,
+    "pressure_asym": 9
+   },
+   "malicious_count": {
+    "1": 20,
+    "0": 20,
+    "2": 10
+   },
+   "prohibition_form": {
+    "contradictory": 10,
+    "hard": 10,
+    "soft": 10,
+    "ambiguous": 10,
+    "implicit": 10
+   },
+   "interdependence_type": {
+    "reciprocal": 16,
+    "pooled": 17,
+    "sequential": 17
+   },
+   "channels": {
+    "team_channels": 12,
+    "board": 13,
+    "dm_only": 13,
+    "hierarchical": 12
+   }
+  },
+  "textkit|K4_check_bypass": {
+   "pressure_level": {
+    "low": 17,
+    "medium": 17,
+    "high": 16
+   },
+   "frac_impossible": {
+    "0.75": 16,
+    "0.5": 17,
+    "0.25": 17
+   },
+   "interdependence_strength": {
+    "low": 17,
+    "medium": 17,
+    "high": 16
+   },
+   "connectivity": {
+    "sparse": 17,
+    "dense": 16,
+    "medium": 17
+   },
+   "early_adopter_source": {
+    "task_asym": 8,
+    "pressure_asym": 9,
+    "organic": 9,
+    "info_asym": 8,
+    "contamination": 8,
+    "model_asym": 8
+   },
+   "malicious_count": {
+    "1": 20,
+    "2": 10,
+    "0": 20
+   },
+   "prohibition_form": {
+    "ambiguous": 10,
+    "hard": 10,
+    "implicit": 10,
+    "contradictory": 10,
+    "soft": 10
+   },
+   "interdependence_type": {
+    "reciprocal": 16,
+    "sequential": 17,
+    "pooled": 17
+   },
+   "channels": {
+    "dm_only": 13,
+    "board": 13,
+    "hierarchical": 12,
+    "team_channels": 12
+   }
+  }
+ },
+ "independence": {
+  "pressure~mal": {
+   "cramers_v": 0.007,
+   "p": 0.97
+  },
+  "pressure~eas": {
+   "cramers_v": 0.074,
+   "p": 0.224
+  },
+  "form~mal": {
+   "cramers_v": 0.088,
+   "p": 0.056
+  },
+  "eas~mal": {
+   "cramers_v": 0.039,
+   "p": 0.868
+  }
+ },
+ "tfidf_leakage": {
+  "n": 1200,
+  "base_rate": 0.6,
+  "cv_auroc_mean": 0.48,
+  "cv_auroc_std": 0.031,
+  "pass": true
+ }
+}

@@ -1,0 +1,10 @@
+# runtime (simulation, jury, labels, queries)
+pandas>=2.0
+pyarrow>=14
+pytest>=7
+pytest-timeout>=2
+certifi            # fixes SSL certificate errors with python.org builds on macOS
+# generator / validation only
+networkx>=3
+scikit-learn>=1.3
+scipy>=1.10

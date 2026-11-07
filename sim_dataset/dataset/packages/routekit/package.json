@@ -1,0 +1,834 @@
+{
+  "package_id": "routekit",
+  "family": "graph_routing",
+  "title": "routekit: road network and routing utilities for depot logistics",
+  "description": "Helpers used by the dispatch and network-planning teams to work with the depot road network: reading network files, building adjacency maps, shortest and heaviest-load routes, regions, road closures, depot assignment and dispatch summaries. Depot codes are short alphanumeric strings such as BER or HAM, road lengths are whole kilometres and money amounts are integer cents. All functions are pure and operate on small in-memory networks.",
+  "functions": [
+    {
+      "id": "parse_edge",
+      "module_path": "src/routekit/parse_edge.py",
+      "signature": "def parse_edge(line: str) -> Tuple[str, str, int]:",
+      "summary": "Parse a single road record like 'BER-HAM:289'",
+      "spec": "Parse one road record from a network file.\n\nA record has the form ``<FROM>-<TO>:<KM>``: two depot codes separated by a hyphen,\nthen a colon and the road length in whole kilometres. Whitespace around the record\nand around each of the three parts is ignored. Depot codes are non-empty and consist\nof letters and digits only; the length is a non-negative integer.\n\nReturns a tuple ``(from_code, to_code, km)``.\n\nRaises ValueError if the record does not have this shape (missing hyphen or colon,\nempty or non-alphanumeric code, non-integer or negative length).\n\nExamples:\n    parse_edge(\"BER-HAM:289\") == (\"BER\", \"HAM\", 289)\n    parse_edge(\"  MUC - NUE : 170 \") == (\"MUC\", \"NUE\", 170)",
+      "clarification": "Depot codes are case-insensitive in the network files and parse_edge returns them upper-cased: parse_edge(\"ber-Ham:12\") == (\"BER\", \"HAM\", 12).",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "graph_diff",
+        "parse_network"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_parse_edge.py",
+      "acceptance_path": "acceptance/test_parse_edge.py",
+      "conflicting_test_name": "test_regression_issue_217",
+      "conflict_call": "parse_edge(\"D1-D2:0\")",
+      "oneoff": {
+        "find": "== (\"BER\", \"HAM\", 289)",
+        "replace": "== (\"BER\", \"HAM\", 298)"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "parse_network",
+      "module_path": "src/routekit/parse_network.py",
+      "signature": "def parse_network(text: str) -> List[Tuple[str, str, int]]:",
+      "summary": "Parse a multi-line network file into a list of roads",
+      "spec": "Parse a whole network file into a list of roads.\n\nEach line holds one road record in the format accepted by ``parse_edge``\n(``<FROM>-<TO>:<KM>``) and is parsed with it. Blank lines (empty or whitespace only)\nand comment lines, whose first non-blank character is ``#``, are skipped. Roads are\nreturned in file order; repeated records are kept as they are.\n\nRaises ValueError if a line cannot be parsed. The message must contain the 1-based\nphysical line number in the form ``line N`` (blank and comment lines are counted).\n\nExample:\n    parse_network(\"# north\\nBER-HAM:289\\n\\nHAM-KIE:96\") == [(\"BER\", \"HAM\", 289), (\"HAM\", \"KIE\", 96)]",
+      "clarification": "Comments may also follow a record on the same line: everything from the first '#' on a line is ignored, so \"BER-HAM:289  # A24\" parses as (\"BER\", \"HAM\", 289) instead of being rejected.",
+      "difficulty": "easy",
+      "deps": [
+        "parse_edge"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_parse_network.py",
+      "acceptance_path": "acceptance/test_parse_network.py",
+      "conflicting_test_name": "test_regression_issue_342",
+      "conflict_call": "parse_network(\"BER-HAM:289\\nBER-HAM:289\")",
+      "oneoff": {
+        "find": "== [(\"KIE\", \"HAM\", 96), (\"HAM\", \"BRE\", 125)]",
+        "replace": "== [(\"KIE\", \"HAM\", 96), (\"HAM\", \"BRE\", 152)]"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "build_adjacency",
+      "module_path": "src/routekit/build_adjacency.py",
+      "signature": "def build_adjacency(edges: Iterable[Tuple[str, str, int]], directed: bool = False) -> Dict[str, Dict[str, int]]:",
+      "summary": "Build a depot adjacency map from a list of roads",
+      "spec": "Build an adjacency map from a list of roads.\n\n``edges`` contains ``(from_code, to_code, km)`` tuples as returned by ``parse_edge``.\nThe result maps every depot code to a dict ``{neighbour_code: km}``.\n\n* ``directed=False`` (default): every road can be used both ways and is entered\n  under both of its depots.\n* ``directed=True``: a road is only entered under its ``from_code``; the ``to_code``\n  still becomes a key (with an empty dict if it has no outgoing roads).\n\nSelf-loops (``from_code == to_code``) are not entered as neighbours, but the depot\nstill appears as a key. An empty edge list gives ``{}``. The input is not modified.\n\nExample:\n    build_adjacency([(\"A\", \"B\", 4), (\"B\", \"C\", 2)]) == {\"A\": {\"B\": 4}, \"B\": {\"A\": 4, \"C\": 2}, \"C\": {\"B\": 2}}",
+      "clarification": "Network files sometimes list the same pair of depots more than once (parallel roads, or both orientations of an undirected road). The adjacency map keeps the shortest length for the pair: the minimum km, not the last record read.",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "connected_components",
+        "critical_roads",
+        "find_cycle",
+        "hub_depots",
+        "isolated_by_closures"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_build_adjacency.py",
+      "acceptance_path": "acceptance/test_build_adjacency.py",
+      "conflicting_test_name": "test_regression_issue_57",
+      "conflict_call": "build_adjacency([(\"A\", \"B\", 4), (\"C\", \"C\", 1)], directed=True)",
+      "oneoff": {
+        "find": "\"C\": {\"B\": 2}}",
+        "replace": "\"C\": {\"B\": 3}}"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "format_route",
+      "module_path": "src/routekit/format_route.py",
+      "signature": "def format_route(stops: Sequence[str], km: Optional[int] = None) -> str:",
+      "summary": "Render a route as 'BER > HAM > KIE (385 km)' for dispatch sheets",
+      "spec": "Render a route for dispatch sheets.\n\nThe depot codes in ``stops`` are joined with ``\" > \"``. If ``km`` is given (it may\nbe 0), ``\" (<km> km)\"`` is appended.\n\nRaises ValueError if ``stops`` is empty.\n\nExamples:\n    format_route([\"BER\", \"HAM\", \"KIE\"]) == \"BER > HAM > KIE\"\n    format_route([\"BER\", \"HAM\", \"KIE\"], 385) == \"BER > HAM > KIE (385 km)\"",
+      "clarification": "Routes stitched together from several legs often contain the same depot twice in a row (end of one leg, start of the next). Consecutive repeats are printed once: [\"BER\", \"BER\", \"HAM\"] renders as \"BER > HAM\". Non-adjacent repeats such as BER > HAM > BER are kept.",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "route_summary"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_format_route.py",
+      "acceptance_path": "acceptance/test_format_route.py",
+      "conflicting_test_name": "test_regression_issue_164",
+      "conflict_call": "format_route([\"MUC\"], 0)",
+      "oneoff": {
+        "find": "\"BER > HAM > KIE (385 km)\"",
+        "replace": "\"BER > HAM > KIE (385km)\""
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "count_transfers",
+      "module_path": "src/routekit/count_transfers.py",
+      "signature": "def count_transfers(legs: Sequence[Tuple[str, str, Optional[str]]]) -> int:",
+      "summary": "Count line changes along a shipment's journey",
+      "spec": "Count how often a shipment changes line along its journey.\n\n``legs`` lists the journey in travel order as ``(from_stop, to_stop, line)`` tuples,\nwhere ``line`` is the id of the truck line operating the leg. Every leg must start\nwhere the previous one ended.\n\nA transfer is counted each time the shipment continues on a different line than the\none it arrived on. An empty journey or a single leg has 0 transfers.\n\nRaises ValueError if two consecutive legs are not connected\n(``legs[i][1] != legs[i + 1][0]``).\n\nExample:\n    count_transfers([(\"A\", \"B\", \"L1\"), (\"B\", \"C\", \"L1\"), (\"C\", \"D\", \"L4\")]) == 1",
+      "clarification": "A line of None marks a hand-carried leg inside a hub (no truck involved). Such legs are not a line and are skipped when comparing lines: L1 -> None -> L2 is one transfer, and L1 -> None -> L1 is no transfer at all.",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_count_transfers.py",
+      "acceptance_path": "acceptance/test_count_transfers.py",
+      "conflicting_test_name": "test_regression_issue_93",
+      "conflict_call": "count_transfers([(\"A\", \"B\", \"L1\"), (\"B\", \"C\", \"L2\"), (\"C\", \"D\", \"L1\")])",
+      "oneoff": {
+        "find": "(\"C\", \"D\", \"L1\")]) == 2",
+        "replace": "(\"C\", \"D\", \"L1\")]) == 3"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "hop_distances",
+      "module_path": "src/routekit/hop_distances.py",
+      "signature": "def hop_distances(adj: Mapping[str, Mapping[str, int]], source: str, max_hops: Optional[int] = None) -> Dict[str, int]:",
+      "summary": "Compute hop counts from a depot to every reachable depot (BFS)",
+      "spec": "Count the number of roads (hops) from ``source`` to every depot it can reach.\n\n``adj`` is an adjacency map as built by ``build_adjacency`` (directed or not); road\nlengths are ignored. The result maps each reachable depot to its minimum hop count;\n``source`` itself is included with 0. With ``max_hops`` set, only depots at most\n``max_hops`` roads away are included.\n\nRaises KeyError if ``source`` is not a key of ``adj``.\n\nExample:\n    hop_distances({\"A\": {\"B\": 3}, \"B\": {\"A\": 3, \"C\": 1}, \"C\": {\"B\": 1}}, \"A\") == {\"A\": 0, \"B\": 1, \"C\": 2}",
+      "clarification": "Depot reports print this mapping as-is, so its iteration order is part of the contract: entries are ordered by hop count, and depots with the same hop count alphabetically by code.",
+      "difficulty": "medium",
+      "deps": [],
+      "dependents": [
+        "delivery_rings",
+        "isolated_by_closures",
+        "network_center"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_hop_distances.py",
+      "acceptance_path": "acceptance/test_hop_distances.py",
+      "conflicting_test_name": "test_regression_issue_301",
+      "conflict_call": "hop_distances(NET, \"Q\")",
+      "oneoff": {
+        "find": "\"Z\": 2, \"E\": 3}",
+        "replace": "\"Z\": 2, \"E\": 4}"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "shortest_path",
+      "module_path": "src/routekit/shortest_path.py",
+      "signature": "def shortest_path(adj: Mapping[str, Mapping[str, int]], src: str, dst: str) -> Optional[Tuple[int, List[str]]]:",
+      "summary": "Find the shortest route between two depots with deterministic tie-breaking",
+      "spec": "Find the shortest route by road length between two depots.\n\n``adj`` is an adjacency map as built by ``build_adjacency`` (directed or not) with\nnon-negative km values. Returns ``(total_km, path)`` where ``path`` lists the depot\ncodes from ``src`` to ``dst`` inclusive; ``src == dst`` gives ``(0, [src])``.\nReturns None when ``dst`` cannot be reached from ``src``.\n\nReal networks often contain several routes of equal length; the function must\nalways return the same route for the same network, independent of dict insertion\norder.\n\nRaises KeyError if ``src`` or ``dst`` is not a key of ``adj``.\n\nExample:\n    net = {\"A\": {\"B\": 2}, \"B\": {\"A\": 2, \"C\": 3}, \"C\": {\"B\": 3}}\n    shortest_path(net, \"A\", \"C\") == (5, [\"A\", \"B\", \"C\"])",
+      "clarification": "Tie rule used by dispatch: among routes with the same total km, the one with fewer legs (roads) wins; if they also have the same number of legs, the lexicographically smallest list of depot codes wins.",
+      "difficulty": "hard",
+      "deps": [],
+      "dependents": [
+        "assign_depots",
+        "plan_drop_route",
+        "route_summary"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_shortest_path.py",
+      "acceptance_path": "acceptance/test_shortest_path.py",
+      "conflicting_test_name": "test_regression_issue_410",
+      "conflict_call": "shortest_path(NET, \"A\", \"G\")",
+      "oneoff": {
+        "find": "== (2, [\"A\", \"B\", \"C\"])",
+        "replace": "== (3, [\"A\", \"B\", \"C\"])"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "path_cost",
+      "module_path": "src/routekit/path_cost.py",
+      "signature": "def path_cost(adj: Mapping[str, Mapping[str, int]], path: Sequence[str], cents_per_km: int, tolls: Optional[Mapping[str, int]] = None) -> int:",
+      "summary": "Compute the transport cost of a route in cents, including depot tolls",
+      "spec": "Compute the transport cost of a given route in cents.\n\n``path`` lists depot codes in travel order; each consecutive pair must be joined by\na road in ``adj`` (``adj[a][b]``). The cost is the total road length times\n``cents_per_km`` plus depot tolls: ``tolls`` maps depot codes to a fee in cents that\nis charged when a route passes through that depot (depots missing from ``tolls``\nare free). A single-depot path has no roads.\n\nRaises ValueError if ``path`` is empty or if two consecutive depots are not joined\nby a road (this includes unknown depot codes).\n\nExample:\n    net = {\"A\": {\"B\": 4}, \"B\": {\"A\": 4, \"C\": 6}, \"C\": {\"B\": 6}}\n    path_cost(net, [\"A\", \"B\", \"C\"], 100, {\"B\": 250}) == 1250",
+      "clarification": "Tolls are charged at intermediate stops only: the origin and the final destination of the route never pay a toll. A depot that the route passes through several times is charged each time.",
+      "difficulty": "medium",
+      "deps": [],
+      "dependents": [
+        "route_summary"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_path_cost.py",
+      "acceptance_path": "acceptance/test_path_cost.py",
+      "conflicting_test_name": "test_regression_issue_128",
+      "conflict_call": "path_cost(NET, [\"C\", \"B\", \"A\", \"B\", \"C\"], 10, {\"B\": 7})",
+      "oneoff": {
+        "find": "== 160",
+        "replace": "== 150"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "dispatch_order",
+      "module_path": "src/routekit/dispatch_order.py",
+      "signature": "def dispatch_order(prereqs: Mapping[str, Iterable[str]]) -> List[str]:",
+      "summary": "Order loading jobs so every job follows its prerequisites",
+      "spec": "Order loading jobs so that every job comes after its prerequisites.\n\n``prereqs`` maps a job id to the ids of the jobs that must be dispatched before it.\nIds that only appear as prerequisites are jobs as well (with no prerequisites of\ntheir own). Returns every job exactly once, each one after all of its\nprerequisites. When several jobs could go next, the choice must be deterministic:\nthe result must not depend on dict insertion order.\n\nRaises ValueError if the prerequisites are circular (including a job that requires\nitself).\n\nExample:\n    dispatch_order({\"PACK\": [\"PICK\"], \"SHIP\": [\"PACK\", \"LABEL\"]}) == [\"LABEL\", \"PICK\", \"PACK\", \"SHIP\"]",
+      "clarification": "The bay controller uses a \"smallest ready job first\" rule: after every pick, look at all jobs whose prerequisites are now done and take the alphabetically smallest one. This gives the lexicographically smallest valid order; it is not a level-by-level (FIFO queue) order.",
+      "difficulty": "medium",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_dispatch_order.py",
+      "acceptance_path": "acceptance/test_dispatch_order.py",
+      "conflicting_test_name": "test_regression_issue_76",
+      "conflict_call": "dispatch_order({\"Y\": [], \"X\": [], \"W\": []})",
+      "oneoff": {
+        "find": "== [\"C\", \"A\", \"Z\", \"B\"]",
+        "replace": "== [\"C\", \"Z\", \"A\", \"B\"]"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "min_spanning_tree",
+      "module_path": "src/routekit/min_spanning_tree.py",
+      "signature": "def min_spanning_tree(edges: Iterable[Tuple[str, str, int]]) -> List[Tuple[str, str, int]]:",
+      "summary": "Select a minimum-length road backbone (Kruskal)",
+      "spec": "Select the cheapest set of roads that keeps every region connected (Kruskal).\n\nRoads are undirected ``(from_code, to_code, km)`` tuples. Roads are considered in\norder of increasing km, and a road is kept if it joins two depots that are not yet\nconnected by previously kept roads. For a disconnected network the result is a\nspanning forest (one tree per region). Self-loops are ignored.\n\nEvery returned road is normalised so that its first code is alphabetically smaller\nthan the second, and the result is sorted by ``(km, first_code, second_code)``.\nAn empty input gives ``[]``.\n\nExample:\n    min_spanning_tree([(\"HAM\", \"BER\", 289), (\"BER\", \"LEI\", 190), (\"HAM\", \"LEI\", 395)])\n        == [(\"BER\", \"LEI\", 190), (\"BER\", \"HAM\", 289)]",
+      "clarification": "Roads with equal km are considered in order of their normalised (first_code, second_code) pair, never in input order, so when equal-length roads compete for the same connection the alphabetically smaller road is kept.",
+      "difficulty": "hard",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_min_spanning_tree.py",
+      "acceptance_path": "acceptance/test_min_spanning_tree.py",
+      "conflicting_test_name": "test_regression_issue_188",
+      "conflict_call": "min_spanning_tree([(\"A\", \"B\", 3), (\"X\", \"Y\", 1), (\"Z\", \"Z\", 0)])",
+      "oneoff": {
+        "find": "(\"BER\", \"HAM\", 289)]",
+        "replace": "(\"BER\", \"HAM\", 298)]"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "graph_diff",
+      "module_path": "src/routekit/graph_diff.py",
+      "signature": "def graph_diff(old_lines: Sequence[str], new_lines: Sequence[str]) -> Dict[str, List[Tuple[str, str, int]]]:",
+      "summary": "Report added, removed and re-measured roads between two network versions",
+      "spec": "Compare two versions of a road list.\n\nBoth arguments are lists of road records in the ``parse_edge`` format and every\nrecord is parsed with ``parse_edge``. A road is identified by its pair of depots;\neach list mentions a road at most once. Returns a dict with three keys:\n\n* ``\"added\"``: roads present only in ``new_lines`` (with their new km),\n* ``\"removed\"``: roads present only in ``old_lines`` (with their old km),\n* ``\"changed\"``: roads present in both with a different km, reported with the new km.\n\nEach list holds ``(from_code, to_code, km)`` tuples sorted by ``(from_code, to_code)``.\nRaises ValueError (from ``parse_edge``) if a record is malformed.\n\nExample:\n    graph_diff([\"BER-HAM:289\", \"BER-LEI:190\"], [\"BER-HAM:289\", \"BER-LEI:185\", \"DRE-PRG:150\"])\n        == {\"added\": [(\"DRE\", \"PRG\", 150)], \"removed\": [], \"changed\": [(\"BER\", \"LEI\", 185)]}",
+      "clarification": "Roads are undirected: \"BER-HAM:289\" and \"HAM-BER:289\" are the same road. Compare by the unordered pair of depots and report every road with its two codes in alphabetical order, e.g. (\"BER\", \"HAM\", 289), never (\"HAM\", \"BER\", 289).",
+      "difficulty": "medium",
+      "deps": [
+        "parse_edge"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_graph_diff.py",
+      "acceptance_path": "acceptance/test_graph_diff.py",
+      "conflicting_test_name": "test_regression_issue_265",
+      "conflict_call": "graph_diff([\"LEI-DRE:115\"], [\"DRE-LEI:120\"])",
+      "oneoff": {
+        "find": "(\"DRE\", \"PRG\", 150)",
+        "replace": "(\"DRE\", \"PRG\", 105)"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "hub_depots",
+      "module_path": "src/routekit/hub_depots.py",
+      "signature": "def hub_depots(edges: Iterable[Tuple[str, str, int]], top_n: int) -> List[Tuple[str, int]]:",
+      "summary": "Rank depots by number of directly connected depots",
+      "spec": "Rank depots by how many other depots they are directly connected to.\n\nThe network is built with ``build_adjacency`` (undirected), so a depot's degree is\nthe number of distinct neighbouring depots: repeated records of the same road and\nself-loops do not add to it. Returns ``(depot_code, degree)`` pairs sorted by degree\n(highest first) and then by depot code, cut to the ``top_n`` best-connected depots\n(fewer if the network has fewer depots).\n\nRaises ValueError if ``top_n < 1``.\n\nExample:\n    hub_depots([(\"A\", \"B\", 1), (\"A\", \"C\", 1), (\"C\", \"D\", 1)], 2) == [(\"A\", 2), (\"C\", 2)]",
+      "clarification": "The cut never splits a tie: depots whose degree equals the degree of the last depot inside the top_n are returned as well, so the list can be longer than top_n.",
+      "difficulty": "easy",
+      "deps": [
+        "build_adjacency"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_hub_depots.py",
+      "acceptance_path": "acceptance/test_hub_depots.py",
+      "conflicting_test_name": "test_regression_issue_133",
+      "conflict_call": "hub_depots(ROADS, 2)",
+      "oneoff": {
+        "find": "(\"BRE\", 1), (\"KIE\", 1)]",
+        "replace": "(\"KIE\", 1), (\"BRE\", 1)]"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "connected_components",
+      "module_path": "src/routekit/connected_components.py",
+      "signature": "def connected_components(edges: Iterable[Tuple[str, str, int]], depots: Iterable[str] = ()) -> List[List[str]]:",
+      "summary": "Split the road network into connected regions in canonical order",
+      "spec": "Split the network into regions of depots connected by roads.\n\nRoads are undirected and the network is built with ``build_adjacency``. ``depots``\noptionally lists depots that must be included even if they have no roads; each such\ndepot forms a region of its own. A depot whose only road is a self-loop is a region\nof its own as well.\n\nReturns a list of regions; each region is a list of depot codes sorted\nalphabetically. The order of the regions is canonical: it depends only on the\nregions themselves, never on the order of ``edges`` or ``depots``.\n\nExample:\n    connected_components([(\"B\", \"A\", 1), (\"C\", \"B\", 2)]) == [[\"A\", \"B\", \"C\"]]",
+      "clarification": "Canonical region order used by the planning tools: largest region first; regions of equal size are ordered by their alphabetically first depot code.",
+      "difficulty": "medium",
+      "deps": [
+        "build_adjacency"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_connected_components.py",
+      "acceptance_path": "acceptance/test_connected_components.py",
+      "conflicting_test_name": "test_regression_issue_412",
+      "conflict_call": "connected_components([(\"S\", \"S\", 0)])",
+      "oneoff": {
+        "find": "== [[\"A\", \"B\", \"C\"]]",
+        "replace": "== [[\"A\", \"B\"], [\"C\"]]"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "find_cycle",
+      "module_path": "src/routekit/find_cycle.py",
+      "signature": "def find_cycle(edges: Iterable[Tuple[str, str, int]]) -> Optional[List[str]]:",
+      "summary": "Detect and return a circular transfer chain in a directed network",
+      "spec": "Detect a circular chain of transfers in a directed transfer network.\n\nThe network is built with ``build_adjacency(edges, directed=True)``, so self-loops\nare ignored. The search is a depth-first search that starts from depots in\nalphabetical order and follows outgoing roads in alphabetical order of the target\ndepot; the cycle reported is the first one closed by this search (the first road\nfound that leads back to a depot on the current search path).\n\nReturns None if there is no cycle. Otherwise returns the cycle as a closed list of\ndepot codes ``[c0, c1, ..., ck, c0]`` in which each consecutive pair is a road.\n\nExamples:\n    find_cycle([(\"A\", \"B\", 1), (\"B\", \"C\", 1), (\"C\", \"A\", 1)]) == [\"A\", \"B\", \"C\", \"A\"]\n    find_cycle([(\"A\", \"B\", 1), (\"B\", \"C\", 1)]) is None",
+      "clarification": "The reported cycle is rotated so that it starts (and ends) at its alphabetically smallest depot, regardless of where the search entered the cycle.",
+      "difficulty": "hard",
+      "deps": [
+        "build_adjacency"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_find_cycle.py",
+      "acceptance_path": "acceptance/test_find_cycle.py",
+      "conflicting_test_name": "test_regression_issue_250",
+      "conflict_call": "find_cycle([(\"A\", \"B\", 1), (\"B\", \"A\", 1)])",
+      "oneoff": {
+        "find": "== [\"B\", \"C\", \"D\", \"B\"]",
+        "replace": "== [\"B\", \"D\", \"C\", \"B\"]"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 2,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "delivery_rings",
+      "module_path": "src/routekit/delivery_rings.py",
+      "signature": "def delivery_rings(adj: Mapping[str, Mapping[str, int]], depot: str, max_hops: int) -> List[List[str]]:",
+      "summary": "Group depots around a hub into rings by number of roads",
+      "spec": "Group the depots around ``depot`` into rings by number of roads.\n\nUses ``hop_distances`` on ``adj``. The first ring holds the depots exactly one road\naway from ``depot``, the second those exactly two roads away, and so on, up to\n``max_hops``. ``depot`` itself is not part of any ring, and each ring is sorted\nalphabetically.\n\nRaises ValueError if ``max_hops < 1`` and KeyError if ``depot`` is not in ``adj``.\n\nExample:\n    net = {\"HUB\": {\"A\": 1, \"B\": 1}, \"A\": {\"HUB\": 1, \"C\": 1}, \"B\": {\"HUB\": 1}, \"C\": {\"A\": 1}}\n    delivery_rings(net, \"HUB\", 2) == [[\"A\", \"B\"], [\"C\"]]",
+      "clarification": "The list ends with the last non-empty ring: when every reachable depot is closer than max_hops, no trailing empty rings are added (a depot without roads therefore gives []).",
+      "difficulty": "easy",
+      "deps": [
+        "hop_distances"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_delivery_rings.py",
+      "acceptance_path": "acceptance/test_delivery_rings.py",
+      "conflicting_test_name": "test_regression_issue_119",
+      "conflict_call": "delivery_rings(NET, \"HUB\", 2)",
+      "oneoff": {
+        "find": "== [[\"A\", \"D\"]]",
+        "replace": "== [[\"A\"], [\"D\"]]"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "isolated_by_closures",
+      "module_path": "src/routekit/isolated_by_closures.py",
+      "signature": "def isolated_by_closures(edges: Iterable[Tuple[str, str, int]], depot: str, closed: Iterable[Tuple[str, str]], directed: bool = False) -> List[str]:",
+      "summary": "List depots cut off from a depot by road closures",
+      "spec": "List the depots that ``depot`` can no longer reach once some roads are closed.\n\nThe network is built from ``edges`` with ``build_adjacency`` (``directed`` as given)\nand reachability is computed with ``hop_distances``. ``closed`` lists road closures\nas ``(from_code, to_code)`` pairs in the same notation as the road records; matching\nroad records are removed before the reduced network is built. Closures that match no\nroad are ignored.\n\nReturns the alphabetically sorted codes of the depots that are reachable from\n``depot`` in the full network but not in the reduced one. ``depot`` always counts as\nreachable from itself, even if all of its roads are closed.\n\nRaises KeyError if ``depot`` does not appear in ``edges``.\n\nExample:\n    roads = [(\"BER\", \"HAM\", 289), (\"HAM\", \"KIE\", 96), (\"BER\", \"LEI\", 190)]\n    isolated_by_closures(roads, \"BER\", [(\"BER\", \"HAM\")]) == [\"HAM\", \"KIE\"]",
+      "clarification": "A closure blocks the physical road in both directions, whichever way round it is written: (\"HAM\", \"BER\") removes the record (\"BER\", \"HAM\", 289), and in a directed network a closure removes both the A->B and the B->A records.",
+      "difficulty": "medium",
+      "deps": [
+        "build_adjacency",
+        "hop_distances"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_isolated_by_closures.py",
+      "acceptance_path": "acceptance/test_isolated_by_closures.py",
+      "conflicting_test_name": "test_regression_issue_388",
+      "conflict_call": "isolated_by_closures(ROADS, \"BER\", [(\"BER\", \"HAM\")])",
+      "oneoff": {
+        "find": "== [\"LEI\"]",
+        "replace": "== [\"DRE\", \"LEI\"]"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "network_center",
+      "module_path": "src/routekit/network_center.py",
+      "signature": "def network_center(adj: Mapping[str, Mapping[str, int]]) -> str:",
+      "summary": "Pick the depot with the smallest worst-case hop count",
+      "spec": "Pick the best location for a central depot.\n\nFor every depot, ``hop_distances`` gives the number of roads needed to reach each\nother depot; the depot's eccentricity is the largest of these numbers. Only depots\nthat can reach every depot of ``adj`` are candidates. Returns the candidate with the\nsmallest eccentricity; ties must be resolved deterministically (independent of dict\ninsertion order).\n\nRaises ValueError if ``adj`` is empty or if no depot can reach all the others.\n\nExample:\n    net = {\"A\": {\"B\": 1}, \"B\": {\"A\": 1, \"C\": 1}, \"C\": {\"B\": 1, \"D\": 1}, \"D\": {\"C\": 1, \"E\": 1}, \"E\": {\"D\": 1}}\n    network_center(net) == \"C\"",
+      "clarification": "Ties on eccentricity are broken by the smaller total number of hops to all depots (the sum of the hop counts); only if that sum is equal as well does the alphabetically smaller depot code win.",
+      "difficulty": "medium",
+      "deps": [
+        "hop_distances"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_network_center.py",
+      "acceptance_path": "acceptance/test_network_center.py",
+      "conflicting_test_name": "test_regression_issue_71",
+      "conflict_call": "network_center(undirected((\"A\", \"B\"), (\"B\", \"C\"), (\"C\", \"D\")))",
+      "oneoff": {
+        "find": "(\"D\", \"E\"))) == \"C\"",
+        "replace": "(\"D\", \"E\"))) == \"B\""
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "plan_drop_route",
+      "module_path": "src/routekit/plan_drop_route.py",
+      "signature": "def plan_drop_route(adj: Mapping[str, Mapping[str, int]], origin: str, destination: str, drops: Sequence[str]) -> Optional[Tuple[int, List[str]]]:",
+      "summary": "Plan the shortest tour visiting a set of drop-off depots",
+      "spec": "Plan the shortest tour from ``origin`` to ``destination`` that visits all ``drops``.\n\nThe drops may be visited in any order. For a given visiting order the route is the\nchain of ``shortest_path`` segments origin -> first drop -> ... -> last drop ->\ndestination; segments are joined without repeating the depot where they meet.\nReturns ``(total_km, path)`` for the cheapest visiting order, or None if no order\ngives a complete route. With no drops this is simply the shortest route from\n``origin`` to ``destination``.\n\nRaises ValueError if ``drops`` contains duplicates or more than 6 depots, and\nKeyError if ``origin``, ``destination`` or any drop is not in ``adj``.\n\nExample:\n    net = {\"S\": {\"A\": 1, \"B\": 5}, \"A\": {\"S\": 1, \"B\": 1}, \"B\": {\"S\": 5, \"A\": 1, \"T\": 1}, \"T\": {\"B\": 1}}\n    plan_drop_route(net, \"S\", \"T\", [\"B\", \"A\"]) == (3, [\"S\", \"A\", \"B\", \"T\"])",
+      "clarification": "When several visiting orders give the same total km, the order whose complete path has fewer legs wins; if that is tied as well, the visiting order that comes first alphabetically (comparing the sequences of drops) wins.",
+      "difficulty": "hard",
+      "deps": [
+        "shortest_path"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_plan_drop_route.py",
+      "acceptance_path": "acceptance/test_plan_drop_route.py",
+      "conflicting_test_name": "test_regression_issue_506",
+      "conflict_call": "plan_drop_route(NET, \"S\", \"T\", [])",
+      "oneoff": {
+        "find": "== (7, [\"S\", \"B\", \"A\", \"T\"])",
+        "replace": "== (7, [\"S\", \"M\", \"A\", \"B\", \"T\"])"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "assign_depots",
+      "module_path": "src/routekit/assign_depots.py",
+      "signature": "def assign_depots(adj: Mapping[str, Mapping[str, int]], depots: Sequence[str], customers: Sequence[str]) -> Dict[str, Optional[str]]:",
+      "summary": "Assign each customer location to its nearest depot by road distance",
+      "spec": "Assign each customer location to its nearest depot.\n\nThe distance between a depot and a customer is the road distance from the depot to\nthe customer as computed by ``shortest_path``. Returns a dict that maps every\ncustomer code to the code of its nearest depot, or to None if no depot can reach the\ncustomer. A customer location that is itself a depot is served by that depot.\n\nRaises KeyError if any depot or customer code is not in ``adj``.\n\nExample:\n    net = {\"D1\": {\"C1\": 3}, \"C1\": {\"D1\": 3, \"D2\": 5}, \"D2\": {\"C1\": 5}}\n    assign_depots(net, [\"D1\", \"D2\"], [\"C1\"]) == {\"C1\": \"D1\"}",
+      "clarification": "When two depots are equally far (same km), the depot whose route has fewer legs wins (fewer handovers); if the number of legs is equal too, the alphabetically smaller depot code wins. The order of the depots argument plays no role.",
+      "difficulty": "medium",
+      "deps": [
+        "shortest_path"
+      ],
+      "dependents": [
+        "depot_workload"
+      ],
+      "depth": 1,
+      "unit_test_path": "tests/test_assign_depots.py",
+      "acceptance_path": "acceptance/test_assign_depots.py",
+      "conflicting_test_name": "test_regression_issue_233",
+      "conflict_call": "assign_depots(NET, [\"D1\", \"D2\"], [\"ISO\", \"D1\"])",
+      "oneoff": {
+        "find": "{\"C2\": \"D2\", \"C3\": \"D1\"}",
+        "replace": "{\"C2\": \"D2\", \"C3\": \"D2\"}"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "depot_workload",
+      "module_path": "src/routekit/depot_workload.py",
+      "signature": "def depot_workload(adj: Mapping[str, Mapping[str, int]], depots: Sequence[str], customers: Sequence[str]) -> Dict[str, List[str]]:",
+      "summary": "List the customers served by each depot",
+      "spec": "Summarise which customers each depot serves.\n\nCustomers are assigned with ``assign_depots``. Returns a dict mapping depot codes to\nthe alphabetically sorted list of customers assigned to them. Customers that no\ndepot can reach are left out of the result.\n\nRaises KeyError if any code is not in ``adj`` (as ``assign_depots`` does).\n\nExample:\n    net = {\"D1\": {\"C1\": 3, \"C2\": 1}, \"C1\": {\"D1\": 3}, \"C2\": {\"D1\": 1}}\n    depot_workload(net, [\"D1\"], [\"C2\", \"C1\"]) == {\"D1\": [\"C1\", \"C2\"]}",
+      "clarification": "Every depot passed in depots must appear in the result, including depots that end up serving no customer (with an empty list); planners use these empty entries to spot idle depots.",
+      "difficulty": "easy",
+      "deps": [
+        "assign_depots"
+      ],
+      "dependents": [],
+      "depth": 2,
+      "unit_test_path": "tests/test_depot_workload.py",
+      "acceptance_path": "acceptance/test_depot_workload.py",
+      "conflicting_test_name": "test_regression_issue_355",
+      "conflict_call": "depot_workload(NET, [\"D3\"], [\"ISO\"])",
+      "oneoff": {
+        "find": "{\"D1\": [\"C3\"], \"D2\": [\"C1\", \"C2\"]}",
+        "replace": "{\"D1\": [\"C1\", \"C3\"], \"D2\": [\"C2\"]}"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "route_summary",
+      "module_path": "src/routekit/route_summary.py",
+      "signature": "def route_summary(adj: Mapping[str, Mapping[str, int]], origin: str, destination: str, cents_per_km: int, tolls: Optional[Mapping[str, int]] = None) -> str:",
+      "summary": "Build the one-line dispatch summary (route, km, cost) between two depots",
+      "spec": "Produce the one-line dispatch summary for the shortest route between two depots.\n\nThe route is found with ``shortest_path``, its cost with ``path_cost`` (km times\n``cents_per_km`` plus tolls, in cents) and the route text with ``format_route``\n(including the km). The summary is that text followed by ``\" | EUR \"`` and the cost\nin euros with exactly two decimals. If ``destination`` cannot be reached, return\n``\"no route <origin> -> <destination>\"``.\n\nRaises KeyError if ``origin`` or ``destination`` is not in ``adj``.\n\nExample:\n    net = {\"BER\": {\"LEI\": 190}, \"LEI\": {\"BER\": 190, \"DRE\": 115}, \"DRE\": {\"LEI\": 115}}\n    route_summary(net, \"BER\", \"DRE\", 150, {\"LEI\": 900}) == \"BER > LEI > DRE (305 km) | EUR 466.50\"",
+      "clarification": "Amounts of 1,000 euros and more are written with a comma as thousands separator, e.g. \"EUR 1,234.50\"; the dispatch sheet template expects this format.",
+      "difficulty": "medium",
+      "deps": [
+        "shortest_path",
+        "path_cost",
+        "format_route"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_route_summary.py",
+      "acceptance_path": "acceptance/test_route_summary.py",
+      "conflicting_test_name": "test_regression_issue_190",
+      "conflict_call": "route_summary(NET, \"BER\", \"KIE\", 150)",
+      "oneoff": {
+        "find": "| EUR 466.50\"",
+        "replace": "| EUR 466.05\""
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "critical_roads",
+      "module_path": "src/routekit/critical_roads.py",
+      "signature": "def critical_roads(edges: Iterable[Tuple[str, str, int]]) -> List[Tuple[str, str]]:",
+      "summary": "Find roads whose closure would split a region",
+      "spec": "Find the roads whose closure would cut a region in two.\n\nRoads are undirected and the network is built with ``build_adjacency``. A road\nbetween depots ``a`` and ``b`` is critical if, once it is closed, ``b`` can no\nlonger be reached from ``a``. Self-loops are never critical. Networks are small (a\nfew dozen roads), so checking each road separately is fine.\n\nReturns the critical roads as ``(code_a, code_b)`` pairs with ``code_a < code_b``,\nsorted, each road listed once.\n\nExample:\n    critical_roads([(\"A\", \"B\", 1), (\"B\", \"C\", 1), (\"C\", \"A\", 1), (\"C\", \"D\", 4)]) == [(\"C\", \"D\")]",
+      "clarification": "If the network lists the same pair of depots more than once (in either orientation), these are physically separate roads (for example an old road and a new bypass): closing one leaves the other open, so such a pair is never critical.",
+      "difficulty": "hard",
+      "deps": [
+        "build_adjacency"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_critical_roads.py",
+      "acceptance_path": "acceptance/test_critical_roads.py",
+      "conflicting_test_name": "test_regression_issue_444",
+      "conflict_call": "critical_roads([(\"A\", \"B\", 1), (\"B\", \"C\", 1)])",
+      "oneoff": {
+        "find": "[(\"BER\", \"HAM\"), (\"HAM\", \"KIE\")]",
+        "replace": "[(\"BER\", \"HAM\")]"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "heaviest_route",
+      "module_path": "src/routekit/heaviest_route.py",
+      "signature": "def heaviest_route(limits: Mapping[str, Mapping[str, int]], src: str, dst: str) -> Optional[Tuple[int, List[str]]]:",
+      "summary": "Find the route that allows the heaviest truck (widest path)",
+      "spec": "Find the route that allows the heaviest truck from ``src`` to ``dst``.\n\n``limits`` has the shape of an adjacency map, but each value is the weight limit of\nthe road in tonnes (a positive integer). The load a route allows is the smallest\nlimit along it. Returns ``(max_load, path)`` for a route whose allowed load is as\nlarge as possible, with ``path`` listing the depot codes from ``src`` to ``dst``.\nReturns None if ``dst`` cannot be reached. Several routes may allow the same load;\nthe result must not depend on dict insertion order.\n\nRaises KeyError if ``src`` or ``dst`` is not in ``limits`` and ValueError if\n``src == dst``.\n\nExample:\n    limits = {\"A\": {\"B\": 40, \"C\": 12}, \"B\": {\"A\": 40, \"C\": 30}, \"C\": {\"A\": 12, \"B\": 30}}\n    heaviest_route(limits, \"A\", \"C\") == (30, [\"A\", \"B\", \"C\"])",
+      "clarification": "Among routes that allow the same maximum load, take the one with the fewest roads; if several have the same number of roads, take the lexicographically smallest list of depot codes.",
+      "difficulty": "hard",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_heaviest_route.py",
+      "acceptance_path": "acceptance/test_heaviest_route.py",
+      "conflicting_test_name": "test_regression_issue_277",
+      "conflict_call": "heaviest_route(LIMITS, \"A\", \"G\")",
+      "oneoff": {
+        "find": "== (40, [\"A\", \"B\"])",
+        "replace": "== (30, [\"A\", \"B\"])"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "validate_route",
+      "module_path": "src/routekit/validate_route.py",
+      "signature": "def validate_route(adj: Mapping[str, Mapping[str, int]], stops: Sequence[str], max_legs: Optional[int] = None) -> List[str]:",
+      "summary": "Check a planned route against the network and list its problems",
+      "spec": "Check a planned route against the network and list its problems.\n\nReturns a list of messages (empty if the route is fine):\n\n* ``\"empty route\"`` if ``stops`` is empty (no other checks are made);\n* ``\"unknown depot X\"`` for a stop ``X`` that is not a key of ``adj``;\n* ``\"no road A-B\"`` when consecutive stops ``A`` and ``B`` are not joined by a road\n  (``B`` not in ``adj[A]``);\n* finally ``\"too many legs: N > M\"`` if ``max_legs`` is given and the route has\n  ``N = len(stops) - 1`` legs with ``N > M``.\n\nThe route is walked stop by stop: for each stop the unknown-depot check comes\nfirst, then (from the second stop on) the road check for the leg arriving at it.\nA single stop is a valid route.\n\nExample:\n    net = {\"A\": {\"B\": 4}, \"B\": {\"A\": 4, \"C\": 6}, \"C\": {\"B\": 6}}\n    validate_route(net, [\"A\", \"C\", \"B\"]) == [\"no road A-C\"]",
+      "clarification": "Legs that start or end at an unknown depot are not reported as \"no road ...\" because the \"unknown depot\" message already covers them; planners asked not to get three messages for one typo.",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_validate_route.py",
+      "acceptance_path": "acceptance/test_validate_route.py",
+      "conflicting_test_name": "test_regression_issue_150",
+      "conflict_call": "validate_route(NET, [\"C\"], max_legs=0)",
+      "oneoff": {
+        "find": "== [\"no road A-C\"]",
+        "replace": "== [\"no road C-A\"]"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    }
+  ],
+  "hubs": [
+    "build_adjacency",
+    "hop_distances",
+    "shortest_path"
+  ],
+  "max_depth": 2
+}

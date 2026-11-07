@@ -1,0 +1,848 @@
+{
+  "package_id": "slotplan",
+  "family": "scheduling",
+  "title": "slotplan: meeting-room and shift scheduling helpers",
+  "description": "slotplan is the small scheduling library behind the office room-booking bot and the support-desk rota sheet. Times are plain integers counted in minutes since midnight and weekdays are indices 0 (Monday) to 6 (Sunday), so there is no dependency on datetime or a time-zone database. It covers parsing and formatting clock times, interval arithmetic on busy/free calendars, room assignment and recurring meetings, and checks on weekly shift rotas.",
+  "functions": [
+    {
+      "id": "parse_hhmm",
+      "module_path": "src/slotplan/parse_hhmm.py",
+      "signature": "def parse_hhmm(text: str) -> int:",
+      "summary": "Parse an 'HH:MM' clock time into minutes since midnight",
+      "spec": "Parse a clock time written as \"HH:MM\" (or \"H:MM\") and return the number\nof minutes since midnight. Surrounding whitespace is ignored. The hour has one\nor two digits; the minutes part must be exactly two digits.\n\nRaise ValueError if the text is not of that form, if the hour is out of range,\nor if the minutes are not in 0..59.\n\nExamples:\n    parse_hhmm(\"09:30\") == 570\n    parse_hhmm(\" 7:05 \") == 425",
+      "clarification": "\"24:00\" is accepted and returns 1440 (end of day, needed for ranges such as\n\"18:00-24:00\"). Any other time with hour 24, e.g. \"24:30\", is still invalid and\nraises ValueError.",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "parse_range"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_parse_hhmm.py",
+      "acceptance_path": "acceptance/test_parse_hhmm.py",
+      "conflicting_test_name": "test_regression_issue_57",
+      "conflict_call": "parse_hhmm(\"24:00\")",
+      "oneoff": {
+        "find": "== 1439",
+        "replace": "== 1440"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "format_hhmm",
+      "module_path": "src/slotplan/format_hhmm.py",
+      "signature": "def format_hhmm(minutes: int) -> str:",
+      "summary": "Format minutes since midnight as an 'HH:MM' clock time",
+      "spec": "Return the clock time for `minutes` as a zero-padded \"HH:MM\" string.\n\nValues outside a single day are wrapped onto the 24-hour clock, so that slots\nrunning past midnight or shifted into the previous day still display as clock\ntimes (1500 -> \"01:00\", -30 -> \"23:30\").\n\nRaise TypeError if `minutes` is not an int (bool is rejected as well).\n\nExamples:\n    format_hhmm(570) == \"09:30\"\n    format_hhmm(1500) == \"01:00\"",
+      "clarification": "Exactly 1440 is the end-of-day marker and is rendered as \"24:00\" (so a\nrange ending at midnight reads \"18:00-24:00\"). Every other value, including\n2880, wraps as described.",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "format_agenda"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_format_hhmm.py",
+      "acceptance_path": "acceptance/test_format_hhmm.py",
+      "conflicting_test_name": "test_regression_issue_212",
+      "conflict_call": "format_hhmm(1440)",
+      "oneoff": {
+        "find": "== \"00:05\"",
+        "replace": "== \"0:05\""
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "format_duration",
+      "module_path": "src/slotplan/format_duration.py",
+      "signature": "def format_duration(minutes: int) -> str:",
+      "summary": "Render a duration in minutes as a compact 'Xh YYm' label",
+      "spec": "Format a non-negative duration (in minutes) for agendas and reports.\n\nDurations of an hour or more are written as \"<hours>h <MM>m\" with the minutes\nzero-padded to two digits; shorter durations are written as \"<minutes>m\".\nRaise ValueError for negative durations.\n\nExamples:\n    format_duration(65) == \"1h 05m\"\n    format_duration(45) == \"45m\"",
+      "clarification": "Whole hours drop the minutes part entirely: 120 is rendered as \"2h\" and 60\nas \"1h\", never \"2h 00m\".",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "format_agenda",
+        "paid_hours"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_format_duration.py",
+      "acceptance_path": "acceptance/test_format_duration.py",
+      "conflicting_test_name": "test_regression_issue_164",
+      "conflict_call": "format_duration(120)",
+      "oneoff": {
+        "find": "== \"59m\"",
+        "replace": "== \"0h 59m\""
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "merge_intervals",
+      "module_path": "src/slotplan/merge_intervals.py",
+      "signature": "def merge_intervals(intervals: Iterable[Tuple[int, int]]) -> List[Tuple[int, int]]:",
+      "summary": "Normalize busy intervals into sorted, non-overlapping blocks",
+      "spec": "Combine (start, end) intervals into a sorted list of disjoint (start, end)\ntuples covering exactly the same minutes. The input may be in any order and\nmay contain duplicates or overlapping entries; it is not modified.\n\nEmpty intervals (start == end) cover no time and are dropped. Raise ValueError\nif any interval has start > end.\n\nExample:\n    merge_intervals([(600, 660), (540, 610), (720, 750)]) == [(540, 660), (720, 750)]",
+      "clarification": "Intervals that merely touch (one ends at the exact minute the next one\nstarts) are merged into a single block as well: [(540, 600), (600, 660)]\nbecomes [(540, 660)].",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "intersect_intervals",
+        "subtract_intervals",
+        "utilization"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_merge_intervals.py",
+      "acceptance_path": "acceptance/test_merge_intervals.py",
+      "conflicting_test_name": "test_regression_issue_309",
+      "conflict_call": "merge_intervals([(600, 660), (540, 600)])",
+      "oneoff": {
+        "find": "== [(540, 720)]",
+        "replace": "== [(540, 720), (600, 630)]"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "align_to_grid",
+      "module_path": "src/slotplan/align_to_grid.py",
+      "signature": "def align_to_grid(minute: int, step: int = 15, mode: str = \"nearest\") -> int:",
+      "summary": "Snap a minute value onto a fixed booking grid",
+      "spec": "Snap `minute` onto the grid of multiples of `step` minutes.\n\n`mode` is one of:\n    \"floor\"   - the closest grid point at or before `minute`\n    \"ceil\"    - the closest grid point at or after `minute`\n    \"nearest\" - whichever grid point is closer to `minute`\n\nValues already on the grid are returned unchanged. Negative minutes are allowed\nand follow the same rules. Raise ValueError if step <= 0 or mode is not one of\nthe names above.\n\nExamples:\n    align_to_grid(608) == 615\n    align_to_grid(608, 15, \"floor\") == 600",
+      "clarification": "In \"nearest\" mode a value exactly halfway between two grid points goes to\nthe earlier point, so rounding never pushes a meeting later:\nalign_to_grid(645, 30) == 630 and align_to_grid(615, 30) == 600.",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "place_lunch"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_align_to_grid.py",
+      "acceptance_path": "acceptance/test_align_to_grid.py",
+      "conflicting_test_name": "test_regression_issue_118",
+      "conflict_call": "align_to_grid(645, 30)",
+      "oneoff": {
+        "find": "== -15",
+        "replace": "== 0"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "intervals_overlap",
+      "module_path": "src/slotplan/intervals_overlap.py",
+      "signature": "def intervals_overlap(a: Tuple[int, int], b: Tuple[int, int]) -> bool:",
+      "summary": "Tell whether two time intervals overlap",
+      "spec": "Return True if the intervals a = (start, end) and b = (start, end) overlap\nin time, False otherwise. Times are minutes with start <= end. Back-to-back\nintervals such as (540, 600) and (600, 660) do not overlap. The check is\nsymmetric: intervals_overlap(a, b) == intervals_overlap(b, a).\n\nRaise ValueError if either interval has start > end.\n\nExample:\n    intervals_overlap((540, 600), (570, 630)) is True",
+      "clarification": "An empty interval (start == end, e.g. a reminder or a placeholder booking)\nnever overlaps anything, even when it lies strictly inside the other\ninterval: intervals_overlap((600, 600), (540, 660)) is False.",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "assign_rooms",
+        "expand_weekly",
+        "find_double_bookings"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_intervals_overlap.py",
+      "acceptance_path": "acceptance/test_intervals_overlap.py",
+      "conflicting_test_name": "test_regression_issue_77",
+      "conflict_call": "intervals_overlap((600, 660), (540, 600))",
+      "oneoff": {
+        "find": "(600, 630)) is True",
+        "replace": "(600, 630)) is False"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "parse_range",
+      "module_path": "src/slotplan/parse_range.py",
+      "signature": "def parse_range(text: str) -> Tuple[int, int]:",
+      "summary": "Parse an 'HH:MM-HH:MM' time range",
+      "spec": "Parse a time range such as \"09:00-10:30\" into a (start, end) tuple of\nminutes since midnight, using parse_hhmm for both ends. Whitespace around the\nhyphen and around the whole text is ignored.\n\nRaise ValueError if the text does not contain exactly one hyphen, if either\nside is not a valid time, or if the range is empty (start == end).\n\nExamples:\n    parse_range(\"09:00-10:30\") == (540, 630)\n    parse_range(\"13:15 - 14:00\") == (795, 840)",
+      "clarification": "A range whose end is earlier than its start runs past midnight (night\nshifts): the end belongs to the next day and 1440 is added to it, so\n\"22:00-06:00\" parses as (1320, 1800).",
+      "difficulty": "easy",
+      "deps": [
+        "parse_hhmm"
+      ],
+      "dependents": [
+        "parse_shift"
+      ],
+      "depth": 1,
+      "unit_test_path": "tests/test_parse_range.py",
+      "acceptance_path": "acceptance/test_parse_range.py",
+      "conflicting_test_name": "test_regression_issue_241",
+      "conflict_call": "parse_range(\"22:00-06:00\")",
+      "oneoff": {
+        "find": "== (1080, 1440)",
+        "replace": "== (1080, 0)"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "parse_shift",
+      "module_path": "src/slotplan/parse_shift.py",
+      "signature": "def parse_shift(text: str) -> Tuple[int, int, int]:",
+      "summary": "Parse a rota entry such as 'Mon 22:00-06:00'",
+      "spec": "Parse one rota entry of the form \"<day> <range>\", e.g. \"Tue 09:00-17:00\",\ninto (day, start, end): `day` is the weekday index (0 = Monday ... 6 = Sunday)\nand (start, end) is the result of parse_range on the rest of the text.\nLeading/trailing whitespace is ignored and the day and the range may be\nseparated by any amount of whitespace.\n\nDay names: Mon, Tue, Wed, Thu, Fri, Sat, Sun.\nRaise ValueError for an unknown day, a missing range or an invalid range.\n\nExample:\n    parse_shift(\"Tue 09:00-17:00\") == (1, 540, 1020)",
+      "clarification": "Rota sheets are typed by hand, so day names are matched case-insensitively\nand the full English names are accepted too: \"monday\", \"SAT\" and \"Sunday\" are\nall valid. Other abbreviations such as \"Tues\" or \"Mo\" are still rejected.",
+      "difficulty": "easy",
+      "deps": [
+        "parse_range"
+      ],
+      "dependents": [
+        "paid_hours",
+        "rest_violations",
+        "uncovered_periods"
+      ],
+      "depth": 2,
+      "unit_test_path": "tests/test_parse_shift.py",
+      "acceptance_path": "acceptance/test_parse_shift.py",
+      "conflicting_test_name": "test_regression_issue_390",
+      "conflict_call": "parse_shift(\"SUN 10:00-14:00\")",
+      "oneoff": {
+        "find": "== (5, 450, 720)",
+        "replace": "== (6, 450, 720)"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "intersect_intervals",
+      "module_path": "src/slotplan/intersect_intervals.py",
+      "signature": "def intersect_intervals(a: Iterable[Tuple[int, int]], b: Iterable[Tuple[int, int]]) -> List[Tuple[int, int]]:",
+      "summary": "Compute the time two interval lists have in common",
+      "spec": "Return the time covered by both `a` and `b` (for example the free time two\npeople share) as a sorted list of disjoint (start, end) tuples.\n\nEach input is first normalised with merge_intervals, so unsorted or\noverlapping input is fine and the inputs are not modified.\n\nExample:\n    intersect_intervals([(540, 720)], [(600, 660), (700, 800)]) == [(600, 660), (700, 720)]",
+      "clarification": "Intervals that only touch (one ends exactly where the other begins) have\nnothing in common: the result never contains zero-length (t, t) entries, e.g.\nintersect_intervals([(540, 600)], [(600, 660)]) == [].",
+      "difficulty": "medium",
+      "deps": [
+        "merge_intervals"
+      ],
+      "dependents": [
+        "earliest_common_slot"
+      ],
+      "depth": 1,
+      "unit_test_path": "tests/test_intersect_intervals.py",
+      "acceptance_path": "acceptance/test_intersect_intervals.py",
+      "conflicting_test_name": "test_regression_issue_502",
+      "conflict_call": "intersect_intervals([(540, 600), (660, 720)], [(600, 660)])",
+      "oneoff": {
+        "find": "== [(560, 600), (700, 750)]",
+        "replace": "== [(560, 600), (700, 760)]"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "subtract_intervals",
+      "module_path": "src/slotplan/subtract_intervals.py",
+      "signature": "def subtract_intervals(base: Iterable[Tuple[int, int]], remove: Iterable[Tuple[int, int]]) -> List[Tuple[int, int]]:",
+      "summary": "Remove busy intervals from a set of available intervals",
+      "spec": "Return the parts of `base` that are not covered by any interval in `remove`,\nas (start, end) tuples sorted by start time.\n\n`remove` may be unsorted and overlapping (normalise it with merge_intervals);\nparts of `remove` that fall outside `base` have no effect. Removing everything\nyields an empty list. The inputs are not modified.\n\nExample:\n    subtract_intervals([(540, 1020)], [(600, 660), (900, 960)])\n        == [(540, 600), (660, 900), (960, 1020)]",
+      "clarification": "`base` is normalised with merge_intervals too, so overlapping or back-to-back\nbase intervals come out as one continuous piece:\nsubtract_intervals([(540, 600), (600, 720)], [(630, 660)]) == [(540, 630), (660, 720)].",
+      "difficulty": "medium",
+      "deps": [
+        "merge_intervals"
+      ],
+      "dependents": [
+        "free_slots",
+        "uncovered_periods"
+      ],
+      "depth": 1,
+      "unit_test_path": "tests/test_subtract_intervals.py",
+      "acceptance_path": "acceptance/test_subtract_intervals.py",
+      "conflicting_test_name": "test_regression_issue_517",
+      "conflict_call": "subtract_intervals([(540, 600), (600, 720)], [(630, 660)])",
+      "oneoff": {
+        "find": "== [(560, 700)]",
+        "replace": "== [(540, 700)]"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "utilization",
+      "module_path": "src/slotplan/utilization.py",
+      "signature": "def utilization(busy: Iterable[Tuple[int, int]], day_start: int, day_end: int) -> int:",
+      "summary": "Report what percentage of the working day is booked",
+      "spec": "Return the share of the working window [day_start, day_end) that is covered\nby `busy` intervals, as a whole-number percentage between 0 and 100.\n\nOverlapping busy intervals are counted once (normalise them with\nmerge_intervals) and busy time outside the window is ignored. The percentage\nis rounded to the nearest integer.\n\nRaise ValueError if day_end <= day_start.\n\nExample:\n    utilization([(540, 660)], 540, 1020) == 25",
+      "clarification": "Exact halves are rounded up, matching the facilities dashboard: one hour\nbooked out of an eight-hour day (12.5 %) is reported as 13, not 12 (Python's\nbuilt-in round() would give 12).",
+      "difficulty": "medium",
+      "deps": [
+        "merge_intervals"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_utilization.py",
+      "acceptance_path": "acceptance/test_utilization.py",
+      "conflicting_test_name": "test_regression_issue_268",
+      "conflict_call": "utilization([(540, 600)], 540, 1020)",
+      "oneoff": {
+        "find": "== 17",
+        "replace": "== 16"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "free_slots",
+      "module_path": "src/slotplan/free_slots.py",
+      "signature": "def free_slots(busy: Iterable[Tuple[int, int]], day_start: int, day_end: int, min_length: int = 0, buffer: int = 0) -> List[Tuple[int, int]]:",
+      "summary": "List the free slots in a working day",
+      "spec": "Return the free (start, end) slots inside the working window\n[day_start, day_end) for a person with the given `busy` intervals (any order,\npossibly overlapping, possibly extending outside the window). Slots are sorted\nby start time; slots shorter than `min_length` minutes are left out. Use\nsubtract_intervals for the interval arithmetic.\n\n`buffer` is the number of minutes of slack to keep next to busy intervals (to\nwrap up or walk to another room). It is never applied at the edges of the\nworking window itself.\n\nRaise ValueError if day_end <= day_start or if min_length or buffer is\nnegative.\n\nExample:\n    free_slots([(600, 660), (780, 840)], 540, 1020) == [(540, 600), (660, 780), (840, 1020)]",
+      "clarification": "The buffer is only added after each busy interval, never before it: with\nbuffer=10 a meeting at (600, 660) blocks the calendar until 670, but a free\nslot may still end exactly at 600.",
+      "difficulty": "medium",
+      "deps": [
+        "subtract_intervals"
+      ],
+      "dependents": [
+        "earliest_common_slot",
+        "place_lunch"
+      ],
+      "depth": 2,
+      "unit_test_path": "tests/test_free_slots.py",
+      "acceptance_path": "acceptance/test_free_slots.py",
+      "conflicting_test_name": "test_regression_issue_433",
+      "conflict_call": "free_slots([(600, 660)], 540, 720, buffer=10)",
+      "oneoff": {
+        "find": "== [(560, 600), (650, 1000)]",
+        "replace": "== [(560, 600), (630, 1000)]"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "earliest_common_slot",
+      "module_path": "src/slotplan/earliest_common_slot.py",
+      "signature": "def earliest_common_slot(calendars: Sequence[Sequence[Tuple[int, int]]], duration: int, day_start: int, day_end: int, step: int = 15) -> Optional[int]:",
+      "summary": "Find the earliest start time at which all attendees are free",
+      "spec": "Given one list of busy intervals per attendee, return the earliest start\nminute s such that every attendee is free during [s, s + duration) and the\nmeeting lies inside the working window [day_start, day_end). Return None if\nthere is no such start.\n\nMeetings may only start on the booking grid, which has a point every `step`\nminutes (default 15). Compute each attendee's free time with free_slots and\ncombine them with intersect_intervals. With no calendars at all everybody is\nfree for the whole window.\n\nRaise ValueError if duration <= 0, step <= 0 or day_end <= day_start.\n\nExample:\n    earliest_common_slot([[(540, 600)], [(600, 630)]], 30, 540, 1020) == 630",
+      "clarification": "The booking grid is anchored at midnight, not at day_start: valid starts are\nmultiples of `step` (09:00, 09:15, ... for step=15; on the hour for step=60),\neven when the working window opens at an odd time such as 07:30 or 08:40.",
+      "difficulty": "hard",
+      "deps": [
+        "free_slots",
+        "intersect_intervals"
+      ],
+      "dependents": [],
+      "depth": 3,
+      "unit_test_path": "tests/test_earliest_common_slot.py",
+      "acceptance_path": "acceptance/test_earliest_common_slot.py",
+      "conflicting_test_name": "test_regression_issue_611",
+      "conflict_call": "earliest_common_slot([[(450, 500)], [(560, 600)]], 45, 450, 1020, step=60)",
+      "oneoff": {
+        "find": "== 615",
+        "replace": "== 610"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "place_lunch",
+      "module_path": "src/slotplan/place_lunch.py",
+      "signature": "def place_lunch(busy: Iterable[Tuple[int, int]], length: int = 30, window: Tuple[int, int] = (690, 840)) -> Optional[Tuple[int, int]]:",
+      "summary": "Pick a lunch break slot inside the lunch window",
+      "spec": "Choose a lunch break of `length` minutes for a person with the given busy\nintervals. The break must lie entirely inside `window` (default 11:30-14:00)\nand must not overlap any busy interval. Breaks start on the quarter hour\n(a multiple of 15 minutes). Use free_slots to find the free time inside the\nwindow and align_to_grid to place starts on the quarter hour.\n\nReturn the chosen break as (start, start + length), or None if no break fits\nso that the caller can flag the day.\n\nRaise ValueError if length <= 0 or the window is empty.\n\nExample:\n    place_lunch([(690, 780)]) == (780, 810)",
+      "clarification": "When several starts are possible, pick the one closest to noon (minute 720);\nif two candidates are equally far from noon, take the earlier one. With an\nempty calendar the break is therefore (720, 750), not (690, 720).",
+      "difficulty": "hard",
+      "deps": [
+        "free_slots",
+        "align_to_grid"
+      ],
+      "dependents": [],
+      "depth": 3,
+      "unit_test_path": "tests/test_place_lunch.py",
+      "acceptance_path": "acceptance/test_place_lunch.py",
+      "conflicting_test_name": "test_regression_issue_355",
+      "conflict_call": "place_lunch([])",
+      "oneoff": {
+        "find": "== (765, 795)",
+        "replace": "== (760, 790)"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "split_meeting",
+      "module_path": "src/slotplan/split_meeting.py",
+      "signature": "def split_meeting(start: int, end: int, max_block: int, break_len: int = 0) -> List[Tuple[int, int]]:",
+      "summary": "Split a long session into blocks separated by breaks",
+      "spec": "Split the session [start, end) into consecutive working blocks of at most\n`max_block` minutes, separated by breaks of `break_len` minutes. The first\nblock starts at `start` and the last block ends exactly at `end`: breaks are\ntaken out of the session time, the session is never extended. The smallest\npossible number of blocks is used, and a session that fits in a single block\nis returned unchanged as [(start, end)].\n\nReturns the blocks as (start, end) tuples in order.\nRaise ValueError if end <= start, max_block <= 0 or break_len < 0.\n\nExamples:\n    split_meeting(540, 720, 90) == [(540, 630), (630, 720)]\n    split_meeting(540, 750, 60, 15) == [(540, 600), (615, 675), (690, 750)]",
+      "clarification": "Blocks are balanced rather than filled greedily: the working time (session\nlength minus the breaks) is divided as evenly as possible over the blocks,\nand when it does not divide exactly the earlier blocks get one extra minute.\nA 200-minute session with max_block=90 becomes 67 + 67 + 66 minutes, not\n90 + 90 + 20.",
+      "difficulty": "hard",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_split_meeting.py",
+      "acceptance_path": "acceptance/test_split_meeting.py",
+      "conflicting_test_name": "test_regression_issue_284",
+      "conflict_call": "split_meeting(540, 740, 90)",
+      "oneoff": {
+        "find": "== [(600, 645)]",
+        "replace": "== [(600, 660)]"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "shift_weekly",
+      "module_path": "src/slotplan/shift_weekly.py",
+      "signature": "def shift_weekly(entries: Iterable[Tuple[int, int, int]], offset: int) -> List[Tuple[int, int, int]]:",
+      "summary": "Move a weekly schedule by a fixed UTC offset",
+      "spec": "Shift recurring weekly entries (day, start, end) by `offset` minutes, e.g.\nto convert a schedule kept in local time to UTC (offset=-120 for a UTC+2\noffice). `day` is a weekday index 0..6 (Monday..Sunday); start and end are\nminutes since midnight of that day with 0 <= start < 1440 and end > start\n(end may exceed 1440 for entries that run past midnight).\n\nThe week wraps around: moving past the end of Sunday continues on Monday and\nmoving before Monday 00:00 continues on Sunday. The result is sorted by\n(day, start, end).\n\nRaise ValueError for an entry whose day is outside 0..6 or whose start/end\nare invalid.\n\nExamples:\n    shift_weekly([(0, 600, 660)], -120) == [(0, 480, 540)]\n    shift_weekly([(0, 60, 120)], -120) == [(6, 1380, 1440)]",
+      "clarification": "Every entry in the result must lie within a single day (end <= 1440),\nbecause the room calendars cannot store overnight entries: an entry that\ncrosses midnight after shifting is split at midnight into two entries, the\nsecond one starting at 0 on the following day (Sunday wraps to Monday).",
+      "difficulty": "medium",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_shift_weekly.py",
+      "acceptance_path": "acceptance/test_shift_weekly.py",
+      "conflicting_test_name": "test_regression_issue_726",
+      "conflict_call": "shift_weekly([(4, 1320, 1410)], 60)",
+      "oneoff": {
+        "find": "== [(0, 30, 60)]",
+        "replace": "== [(7, 30, 60)]"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 4,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "find_double_bookings",
+      "module_path": "src/slotplan/find_double_bookings.py",
+      "signature": "def find_double_bookings(bookings: Sequence[Tuple[str, str, int, int]]) -> List[Tuple[str, str]]:",
+      "summary": "Report room bookings that clash with each other",
+      "spec": "Each booking is (booking_id, room, start, end). Two bookings clash when they\nare for the same room and their times overlap according to intervals_overlap\n(back-to-back bookings are fine).\n\nReturn every clashing pair once as (first_id, second_id), where first_id is\nthe booking that appears earlier in `bookings`. Pairs are ordered by the\nposition of their first booking, then by the position of their second.\n\nExample:\n    find_double_bookings([(\"b1\", \"Atlas\", 540, 600), (\"b2\", \"Atlas\", 570, 630),\n                          (\"b3\", \"Zephyr\", 540, 600)]) == [(\"b1\", \"b2\")]",
+      "clarification": "Room names come from a free-text booking form, so they are compared\ncase-insensitively and ignoring leading/trailing spaces: \"Atlas\", \"atlas \"\nand \" ATLAS\" are the same room.",
+      "difficulty": "medium",
+      "deps": [
+        "intervals_overlap"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_find_double_bookings.py",
+      "acceptance_path": "acceptance/test_find_double_bookings.py",
+      "conflicting_test_name": "test_regression_issue_148",
+      "conflict_call": "find_double_bookings([(\"a\", \"Orion\", 540, 600), (\"b\", \"Orion\", 600, 660)])",
+      "oneoff": {
+        "find": "== [(\"x\", \"y\"), (\"x\", \"z\")]",
+        "replace": "== [(\"x\", \"y\"), (\"x\", \"z\"), (\"y\", \"z\")]"
+      },
+      "n_acceptance_asserts": 4,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "assign_rooms",
+      "module_path": "src/slotplan/assign_rooms.py",
+      "signature": "def assign_rooms(meetings: Sequence[Tuple[str, int, int, int]], rooms: Mapping[str, int]) -> Dict[str, Optional[str]]:",
+      "summary": "Greedily assign meetings to rooms by capacity",
+      "spec": "Assign each meeting (meeting_id, start, end, attendees) to a room from\n`rooms` (room name -> capacity).\n\nMeetings are handled in order of start time. Each meeting gets the smallest\nroom whose capacity is at least `attendees` and that has no already-assigned\nmeeting overlapping it (checked with intervals_overlap); among rooms of equal\ncapacity the alphabetically first name wins. A meeting that cannot be placed\nmaps to None and blocks nothing.\n\nReturns a dict meeting_id -> room name (or None).\n\nExample:\n    assign_rooms([(\"standup\", 540, 555, 6), (\"review\", 540, 600, 3)],\n                 {\"Atlas\": 8, \"Nook\": 4}) == {\"standup\": \"Atlas\", \"review\": \"Nook\"}",
+      "clarification": "Meetings that start at the same minute are handled largest first (more\nattendees first, then by meeting_id), so a big meeting is not squeezed out of\nthe room it needs by a smaller one that happens to be listed before it.",
+      "difficulty": "hard",
+      "deps": [
+        "intervals_overlap"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_assign_rooms.py",
+      "acceptance_path": "acceptance/test_assign_rooms.py",
+      "conflicting_test_name": "test_regression_issue_667",
+      "conflict_call": "assign_rooms([(\"sync\", 540, 600, 4), (\"plan\", 540, 600, 5)], {\"Atlas\": 5, \"Borea\": 8})",
+      "oneoff": {
+        "find": "{\"x\": \"Lyra\", \"y\": \"Orion\"}",
+        "replace": "{\"x\": \"Orion\", \"y\": \"Lyra\"}"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "expand_weekly",
+      "module_path": "src/slotplan/expand_weekly.py",
+      "signature": "def expand_weekly(days: Iterable[int], start: int, end: int, count: int, blackouts: Iterable[Tuple[int, int]] = ()) -> List[Tuple[int, int, int]]:",
+      "summary": "Expand a weekly recurring meeting into concrete occurrences",
+      "spec": "Expand a meeting that recurs every week on the given weekdays (0 = Monday\n... 6 = Sunday) from `start` to `end` (minutes since midnight). Day numbers in\nthe result count from day 0 = the Monday of the first week, so the Wednesday\nof the second week is day 9.\n\nThe series has `count` occurrences, beginning with the first matching day on\nor after day 0. Occurrences that overlap a blackout - an absolute (from, to)\ninterval in minutes since day 0 00:00, e.g. an office closure - are dropped;\nuse intervals_overlap for the check.\n\nReturns (day_number, start, end) tuples in chronological order. Duplicate\nweekdays are ignored. Raise ValueError if `days` is empty or contains a value\noutside 0..6, if end <= start, or if count < 0.\n\nExample:\n    expand_weekly([0, 2], 600, 630, 3) == [(0, 600, 630), (2, 600, 630), (7, 600, 630)]",
+      "clarification": "A dropped occurrence still uses up one of the `count` occurrences (the same\nway an excluded date works in a calendar series with a fixed number of\noccurrences), so the result can be shorter than `count`; the series is not\nextended to make up for it.",
+      "difficulty": "medium",
+      "deps": [
+        "intervals_overlap"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_expand_weekly.py",
+      "acceptance_path": "acceptance/test_expand_weekly.py",
+      "conflicting_test_name": "test_regression_issue_590",
+      "conflict_call": "expand_weekly([0, 2], 600, 630, 4, [(2880, 4320)])",
+      "oneoff": {
+        "find": "(8, 540, 600), (11, 540, 600)]",
+        "replace": "(8, 540, 600), (12, 540, 600)]"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "rotate_rota",
+      "module_path": "src/slotplan/rotate_rota.py",
+      "signature": "def rotate_rota(staff: Sequence[str], n_days: int, per_day: int, first_day: int = 0) -> List[List[str]]:",
+      "summary": "Build a round-robin front-desk rota for consecutive days",
+      "spec": "Build a front-desk rota for `n_days` consecutive calendar days, the first of\nwhich has weekday index `first_day` (0 = Monday ... 6 = Sunday).\n\nEach day gets `per_day` people taken from `staff` in round-robin order: the\nfirst day starts with staff[0] and every following day continues with the\nperson after the last one used, wrapping around to the start of the list.\nReturns one list of names per calendar day, in the order they were picked.\n\nRaise ValueError if staff is empty, per_day < 1, per_day > len(staff),\nn_days < 0 or first_day is not in 0..6.\n\nExample:\n    rotate_rota([\"ana\", \"ben\", \"cy\"], 2, 2) == [[\"ana\", \"ben\"], [\"cy\", \"ana\"]]",
+      "clarification": "The desk is closed at weekends: Saturdays and Sundays (weekday 5 and 6) get\nan empty list and do not use up anyone's turn, so the next working day\ncontinues where Friday left off.",
+      "difficulty": "medium",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_rotate_rota.py",
+      "acceptance_path": "acceptance/test_rotate_rota.py",
+      "conflicting_test_name": "test_regression_issue_473",
+      "conflict_call": "rotate_rota([\"ana\", \"ben\", \"cy\"], 4, 1, first_day=4)",
+      "oneoff": {
+        "find": "== [[\"ana\", \"ben\"], [\"cy\", \"ana\"]]",
+        "replace": "== [[\"ana\", \"ben\"], [\"cy\", \"ben\"]]"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "rest_violations",
+      "module_path": "src/slotplan/rest_violations.py",
+      "signature": "def rest_violations(rota: Mapping[str, Sequence[str]], min_rest: int = 660) -> List[Tuple[str, int, int]]:",
+      "summary": "Find shifts that start before the minimum rest period has passed",
+      "spec": "`rota` maps each worker to their shifts for one week, written as rota entries\nunderstood by parse_shift (e.g. \"Mon 22:00-06:00\"). The same rota repeats\nevery week.\n\nFor every worker, take their shifts in chronological order and measure the\nrest between the end of one shift and the start of the next. Report each\ncase where that rest is shorter than `min_rest` minutes (default 11 hours) as\n(worker, day, rest): `day` is the weekday index of the shift that starts too\nearly and `rest` is the rest in minutes (0 or negative if the shifts touch or\noverlap).\n\nThe result is sorted by worker, then day, then rest.\nRaise ValueError if an entry cannot be parsed.\n\nExample:\n    rest_violations({\"kim\": [\"Mon 14:00-22:00\", \"Tue 06:00-14:00\"]}) == [(\"kim\", 1, 480)]",
+      "clarification": "Because the rota repeats, the rest after a worker's last shift of the week\nruns into their first shift of the following week (e.g. Sunday evening to\nMonday morning) and has to be checked as well.",
+      "difficulty": "hard",
+      "deps": [
+        "parse_shift"
+      ],
+      "dependents": [],
+      "depth": 3,
+      "unit_test_path": "tests/test_rest_violations.py",
+      "acceptance_path": "acceptance/test_rest_violations.py",
+      "conflicting_test_name": "test_regression_issue_812",
+      "conflict_call": "rest_violations({\"lee\": [\"Mon 06:00-14:00\", \"Sun 16:00-24:00\"]})",
+      "oneoff": {
+        "find": "== [(\"kim\", 1, 480)]",
+        "replace": "== [(\"kim\", 0, 480)]"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "paid_hours",
+      "module_path": "src/slotplan/paid_hours.py",
+      "signature": "def paid_hours(rota: Mapping[str, Sequence[str]]) -> Dict[str, str]:",
+      "summary": "Total each worker's paid time for the week",
+      "spec": "Compute each worker's paid working time for one week of rota entries\n(parsed with parse_shift) and return it formatted with format_duration, e.g.\n{\"kim\": \"38h 30m\"}. Every worker in `rota` appears in the result; a worker\nwith no shifts gets \"0m\".\n\nRaise ValueError if an entry cannot be parsed.\n\nExample:\n    paid_hours({\"kim\": [\"Mon 09:00-13:00\", \"Tue 13:00-17:30\"]}) == {\"kim\": \"8h 30m\"}",
+      "clarification": "Shifts longer than 6 hours include a 30-minute unpaid break, which is\ndeducted from that shift's paid time. A shift of exactly 6 hours or less has\nno deduction.",
+      "difficulty": "medium",
+      "deps": [
+        "parse_shift",
+        "format_duration"
+      ],
+      "dependents": [],
+      "depth": 3,
+      "unit_test_path": "tests/test_paid_hours.py",
+      "acceptance_path": "acceptance/test_paid_hours.py",
+      "conflicting_test_name": "test_regression_issue_655",
+      "conflict_call": "paid_hours({\"ann\": [\"Mon 09:00-17:00\", \"Tue 09:00-17:00\"]})",
+      "oneoff": {
+        "find": "{\"bo\": \"11h 30m\"}",
+        "replace": "{\"bo\": \"11h\"}"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "uncovered_periods",
+      "module_path": "src/slotplan/uncovered_periods.py",
+      "signature": "def uncovered_periods(rota: Mapping[str, Sequence[str]], day: int, open_start: int, open_end: int) -> List[Tuple[int, int]]:",
+      "summary": "Find opening hours on a given day with nobody on shift",
+      "spec": "Return the periods within the opening hours [open_start, open_end) of weekday\n`day` (0 = Monday ... 6 = Sunday) during which no worker in `rota` is on\nshift. `rota` maps workers to weekly rota entries understood by parse_shift.\nThe result is a sorted list of (start, end) tuples in minutes since midnight\nof `day`; compute it with subtract_intervals.\n\nRaise ValueError if day is not in 0..6, if open_end <= open_start, or if an\nentry cannot be parsed.\n\nExample:\n    uncovered_periods({\"kim\": [\"Mon 08:00-12:00\"], \"ann\": [\"Mon 13:00-18:00\"]}, 0, 480, 1080)\n        == [(720, 780)]",
+      "clarification": "A shift that starts on the previous day and runs past midnight (e.g.\n\"Mon 22:00-06:00\" when looking at Tuesday) also covers the early hours of\n`day`. The rota repeats weekly, so for Monday the previous day is Sunday.",
+      "difficulty": "hard",
+      "deps": [
+        "parse_shift",
+        "subtract_intervals"
+      ],
+      "dependents": [],
+      "depth": 3,
+      "unit_test_path": "tests/test_uncovered_periods.py",
+      "acceptance_path": "acceptance/test_uncovered_periods.py",
+      "conflicting_test_name": "test_regression_issue_741",
+      "conflict_call": "uncovered_periods({\"kim\": [\"Tue 06:00-14:00\"], \"lee\": [\"Mon 22:00-06:30\"]}, 1, 0, 1440)",
+      "oneoff": {
+        "find": "== [(480, 1080)]",
+        "replace": "== []"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "format_agenda",
+      "module_path": "src/slotplan/format_agenda.py",
+      "signature": "def format_agenda(meetings: Iterable[Tuple[str, int, int]]) -> List[str]:",
+      "summary": "Render a day's meetings as agenda lines",
+      "spec": "Render meetings given as (title, start, end) into agenda lines of the form\n\n    \"<start>-<end>  <title> (<duration>)\"\n\nwhere start and end are formatted with format_hhmm, the duration (end - start)\nwith format_duration, and two spaces separate the time range from the title.\nLines are ordered by start time, then end time, then title.\n\nRaise ValueError if a meeting has end <= start.\n\nExample:\n    format_agenda([(\"Design review\", 600, 690), (\"Standup\", 540, 555)]) == [\n        \"09:00-09:15  Standup (15m)\",\n        \"10:00-11:30  Design review (1h 30m)\",\n    ]",
+      "clarification": "A meeting that ends after midnight (end > 1440) gets a \"+1\" suffix on its end\ntime to show it finishes the next day, e.g. \"23:00-01:00+1  Release (2h)\". A\nmeeting ending exactly at 1440 has no suffix.",
+      "difficulty": "medium",
+      "deps": [
+        "format_hhmm",
+        "format_duration"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_format_agenda.py",
+      "acceptance_path": "acceptance/test_format_agenda.py",
+      "conflicting_test_name": "test_regression_issue_936",
+      "conflict_call": "format_agenda([(\"Release\", 1380, 1500)])",
+      "oneoff": {
+        "find": "\"09:00-09:30  C (30m)\"",
+        "replace": "\"09:00-09:30  C (0h 30m)\""
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    }
+  ],
+  "hubs": [
+    "intervals_overlap",
+    "merge_intervals",
+    "parse_shift"
+  ],
+  "max_depth": 3
+}

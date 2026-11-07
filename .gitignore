@@ -2,3 +2,4 @@ secrets.local.json
 .env
 *.key
 __pycache__/
+.DS_Store

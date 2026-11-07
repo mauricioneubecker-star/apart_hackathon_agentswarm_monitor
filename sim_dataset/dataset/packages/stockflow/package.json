@@ -1,0 +1,846 @@
+{
+  "package_id": "stockflow",
+  "family": "inventory",
+  "title": "stockflow: warehouse inventory, costing and replenishment utilities",
+  "description": "Shared helpers used by the fulfilment, purchasing and finance teams to work with warehouse stock data: SKU and bin-location parsing, movement-record processing, on-hand and cycle-count reporting, inventory costing (FIFO, weighted average, freight allocation), replenishment planning and parcel building. Quantities are integer eaches, money is integer cents and dates are integer day indices, so every service computes the same numbers.",
+  "functions": [
+    {
+      "id": "normalize_sku",
+      "module_path": "src/stockflow/normalize_sku.py",
+      "signature": "def normalize_sku(code: str) -> str:",
+      "summary": "Validate SKU codes (with check digit) and return the canonical form",
+      "spec": "Validate a SKU code and return it in canonical form.\n\nCanonical SKUs look like \"ABC-123456-1\": a three-letter category prefix\n(A-Z), a hyphen, a six-digit item number, a hyphen and one check digit.\nInput may use any letter case and may carry surrounding whitespace.\n\nCheck digit: weight the six item digits 3,1,3,1,3,1 from left to right,\nsum the products and take (10 - sum % 10) % 10.\n\nArgs:\n    code: SKU as typed or scanned.\n\nReturns:\n    The canonical, upper-case SKU string.\n\nRaises:\n    ValueError: if the code is malformed or the check digit is wrong.\n\nExamples:\n    normalize_sku(\" abc-123456-1 \") == \"ABC-123456-1\"\n    normalize_sku(\"ABC-123456-2\")   -> ValueError (check digit should be 1)",
+      "clarification": "Older shelf labels and supplier ASN files print SKUs without the hyphens,\ne.g. \"ABC1234561\". That compact form must be accepted too and normalized to the\nhyphenated form (\"ABC-123456-1\"). A code has either both hyphens or none; a code\nwith only one of the two hyphens is malformed.",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "cycle_count_variance",
+        "parse_movement_line",
+        "stock_valuation"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_normalize_sku.py",
+      "acceptance_path": "acceptance/test_normalize_sku.py",
+      "conflicting_test_name": "test_regression_issue_217",
+      "conflict_call": "normalize_sku(\"abc1234561\")",
+      "oneoff": {
+        "find": "normalize_sku(\"BAG9876549\") == \"BAG-987654-9\"",
+        "replace": "normalize_sku(\"BAG9876549\") == \"BAG9876549\""
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "parse_location",
+      "module_path": "src/stockflow/parse_location.py",
+      "signature": "def parse_location(code: str) -> Tuple[str, int, int, int]:",
+      "summary": "Parse bin location codes into zone, aisle, shelf and level",
+      "spec": "Parse a warehouse bin location code.\n\nLocation codes have the form \"Z-AA-SS-L\": a zone letter, a two-digit aisle\nnumber, a two-digit shelf (bay) number and a one-digit level, separated by\nhyphens, e.g. \"B-07-14-3\" (zone B, aisle 7, shelf 14, level 3).\nLetter case and surrounding whitespace are ignored.\n\nReturns:\n    (zone, aisle, shelf, level) with the zone upper-cased and the numbers as ints.\n\nRaises:\n    ValueError: if the code does not follow the format.\n\nExample:\n    parse_location(\"b-07-14-3\") == (\"B\", 7, 14, 3)",
+      "clarification": "Aisles and shelves are numbered from 01: \"00\" does not exist for either of\nthem and must be rejected with ValueError. Level 0 is valid (it is the floor\nposition under the first beam).",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "cycle_count_variance",
+        "parse_movement_line",
+        "pick_route_order",
+        "validate_transfer"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_parse_location.py",
+      "acceptance_path": "acceptance/test_parse_location.py",
+      "conflicting_test_name": "test_regression_issue_58",
+      "conflict_call": "parse_location(\"  a-12-01-0 \")",
+      "oneoff": {
+        "find": "== (\"A\", 12, 1, 0)",
+        "replace": "== (\"A\", 12, 1, 1)"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "parse_quantity",
+      "module_path": "src/stockflow/parse_quantity.py",
+      "signature": "def parse_quantity(text: str, case_size: int) -> int:",
+      "summary": "Convert quantity strings like '5 CS' to eaches",
+      "spec": "Convert a quantity string such as \"5 CS\" or \"-3 ea\" to eaches.\n\nFormat: an optional sign, an integer, optional whitespace and a unit of\nmeasure. Supported units (case-insensitive):\n    EA   each, 1 unit\n    CS   case, `case_size` units\nSurrounding whitespace is ignored.\n\nArgs:\n    text: quantity as printed on the movement record.\n    case_size: eaches per case for the SKU, must be >= 1.\n\nRaises:\n    ValueError: malformed text, unknown unit, or case_size < 1.\n\nExamples:\n    parse_quantity(\"5 CS\", 12) == 60\n    parse_quantity(\"-3ea\", 12) == -3",
+      "clarification": "Some older scanner feeds send only the number, without a unit (\"12\" or\n\"-4\"). A bare number is a quantity in eaches and must be accepted, not rejected.",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "parse_movement_line"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_parse_quantity.py",
+      "acceptance_path": "acceptance/test_parse_quantity.py",
+      "conflicting_test_name": "test_regression_issue_305",
+      "conflict_call": "parse_quantity(\"12\", 6)",
+      "oneoff": {
+        "find": "parse_quantity(\"-2cs\", 6) == -12",
+        "replace": "parse_quantity(\"-2cs\", 6) == -2"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "round_to_pack",
+      "module_path": "src/stockflow/round_to_pack.py",
+      "signature": "def round_to_pack(qty: int, pack_size: int, min_packs: int = 1) -> int:",
+      "summary": "Round order quantities to whole supplier packs",
+      "spec": "Round an order quantity (in eaches) to whole supplier packs.\n\nThe result is a multiple of `pack_size` and never less than\n`min_packs * pack_size`.\n\nArgs:\n    qty: desired quantity in eaches, >= 0.\n    pack_size: eaches per supplier pack, >= 1.\n    min_packs: minimum number of packs to order (default 1), >= 0.\n\nRaises:\n    ValueError: if qty < 0, pack_size < 1 or min_packs < 0.\n\nExamples:\n    round_to_pack(24, 12) == 24\n    round_to_pack(0, 12) == 12      # minimum of one pack",
+      "clarification": "Rounding is to the NEAREST whole pack, not always up: 13 with packs of 12\nbecomes 12. A remainder of exactly half a pack rounds up (18 -> 24). Purchasing\ndoes not want every PO inflated by almost a full pack.",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "economic_order_quantity"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_round_to_pack.py",
+      "acceptance_path": "acceptance/test_round_to_pack.py",
+      "conflicting_test_name": "test_regression_issue_142",
+      "conflict_call": "round_to_pack(13, 12)",
+      "oneoff": {
+        "find": "round_to_pack(29, 12) == 24",
+        "replace": "round_to_pack(29, 12) == 36"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "weighted_average_cost",
+      "module_path": "src/stockflow/weighted_average_cost.py",
+      "signature": "def weighted_average_cost(layers: Sequence[Tuple[int, int]]) -> int:",
+      "summary": "Compute the weighted average unit cost of cost layers in cents",
+      "spec": "Weighted average unit cost of a set of cost layers, in whole cents.\n\nEach layer is (quantity, unit_cost_cents). The result is the total cost of\nall layers divided by the total quantity, rounded to the nearest cent.\nLayers with quantity 0 contribute nothing.\n\nRaises:\n    ValueError: if a quantity or cost is negative, or the total quantity is 0.\n\nExample:\n    weighted_average_cost([(10, 200), (30, 300)]) == 275",
+      "clarification": "Rounding is half-up: an exact half cent goes up (100.5 -> 101), the same\nway finance rounds on the stock ledger. Do not use round-half-to-even, and keep\nthe arithmetic in integers.",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "stock_valuation"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_weighted_average_cost.py",
+      "acceptance_path": "acceptance/test_weighted_average_cost.py",
+      "conflicting_test_name": "test_regression_issue_77",
+      "conflict_call": "weighted_average_cost([(1, 100), (1, 101)])",
+      "oneoff": {
+        "find": "weighted_average_cost([(10, 200), (30, 300)]) == 275",
+        "replace": "weighted_average_cost([(10, 200), (30, 300)]) == 250"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "safety_stock",
+      "module_path": "src/stockflow/safety_stock.py",
+      "signature": "def safety_stock(daily_demand: Sequence[int], lead_times: Sequence[int]) -> int:",
+      "summary": "Compute safety stock with the max-max method",
+      "spec": "Safety stock in units, using the max-max method:\n\n    safety stock = max daily demand * max lead time\n                   - average daily demand * average lead time\n\nArgs:\n    daily_demand: units demanded per day over the history window.\n    lead_times: observed supplier lead times in days.\n\nReturns:\n    Safety stock as an int number of units (never negative).\n\nRaises:\n    ValueError: if either sequence is empty or contains a negative value.\n\nExample:\n    safety_stock([10, 20, 30], [4, 6]) == 30 * 6 - 20 * 5 == 80",
+      "clarification": "The averages are used unrounded (exact fractions) and only the final result\nis converted to whole units, always rounding UP: 16.25 units of safety stock\nbecomes 17. Planning never rounds a buffer down.",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "reorder_point"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_safety_stock.py",
+      "acceptance_path": "acceptance/test_safety_stock.py",
+      "conflicting_test_name": "test_regression_issue_163",
+      "conflict_call": "safety_stock([10, 15], [3, 4])",
+      "oneoff": {
+        "find": "safety_stock([7, 8, 9], [5]) == 5",
+        "replace": "safety_stock([7, 8, 9], [5]) == 4"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "reorder_point",
+      "module_path": "src/stockflow/reorder_point.py",
+      "signature": "def reorder_point(daily_demand: Sequence[int], lead_times: Sequence[int], review_period_days: int = 0) -> int:",
+      "summary": "Compute a SKU's reorder point from demand history and lead times",
+      "spec": "Reorder point for a SKU: expected demand over the replenishment cycle plus\nsafety stock.\n\n    cycle demand  = average daily demand * (average lead time + review_period_days),\n                    rounded up to a whole unit\n    reorder point = cycle demand + safety_stock(daily_demand, lead_times)\n\nArgs:\n    daily_demand: units shipped per day, oldest day first.\n    lead_times: observed supplier lead times in days.\n    review_period_days: days between scheduled stock reviews (0 for\n        continuous review).\n\nRaises:\n    ValueError: if review_period_days < 0, plus anything safety_stock raises.\n\nExample:\n    reorder_point([10, 20, 30], [4, 6]) == 20 * 5 + 80 == 180",
+      "clarification": "Planning uses a rolling four-week window: only the most recent 28 entries of\ndaily_demand are used, both for the cycle demand and for the safety_stock call.\nShorter histories are used as they are.",
+      "difficulty": "easy",
+      "deps": [
+        "safety_stock"
+      ],
+      "dependents": [
+        "replenishment_suggestions"
+      ],
+      "depth": 1,
+      "unit_test_path": "tests/test_reorder_point.py",
+      "acceptance_path": "acceptance/test_reorder_point.py",
+      "conflicting_test_name": "test_regression_issue_390",
+      "conflict_call": "reorder_point(history, [2, 2])",
+      "oneoff": {
+        "find": "reorder_point([3, 4], [2, 3]) == 13",
+        "replace": "reorder_point([3, 4], [2, 3]) == 12"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "economic_order_quantity",
+      "module_path": "src/stockflow/economic_order_quantity.py",
+      "signature": "def economic_order_quantity(annual_demand: int, order_cost_cents: int, holding_cost_cents: int, pack_size: int = 1) -> int:",
+      "summary": "Compute the economic order quantity rounded to supplier packs",
+      "spec": "Economic order quantity (EOQ), rounded to supplier packs.\n\n    raw EOQ = floor(sqrt(2 * annual_demand * order_cost_cents / holding_cost_cents))\n\ncomputed with integer arithmetic, then rounded to whole packs with\nround_to_pack(raw, pack_size).\n\nArgs:\n    annual_demand: units per year, >= 0.\n    order_cost_cents: fixed cost of placing one purchase order, >= 0.\n    holding_cost_cents: cost of holding one unit for a year, > 0.\n    pack_size: supplier pack size, >= 1.\n\nReturns:\n    Order quantity in eaches; 0 when annual_demand is 0.\n\nRaises:\n    ValueError: on negative demand or order cost, holding cost <= 0, or\n        pack_size < 1.\n\nExample:\n    economic_order_quantity(1200, 5000, 300) == 200",
+      "clarification": "Never suggest more than one year of demand: if the pack-rounded EOQ is larger\nthan annual_demand, return round_to_pack(annual_demand, pack_size) instead. This\nmatters for slow movers with high ordering costs.",
+      "difficulty": "medium",
+      "deps": [
+        "round_to_pack"
+      ],
+      "dependents": [
+        "replenishment_suggestions"
+      ],
+      "depth": 1,
+      "unit_test_path": "tests/test_economic_order_quantity.py",
+      "acceptance_path": "acceptance/test_economic_order_quantity.py",
+      "conflicting_test_name": "test_regression_issue_456",
+      "conflict_call": "economic_order_quantity(30, 90000, 40)",
+      "oneoff": {
+        "find": "economic_order_quantity(1000, 4000, 300) == 163",
+        "replace": "economic_order_quantity(1000, 4000, 300) == 164"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "fifo_cogs",
+      "module_path": "src/stockflow/fifo_cogs.py",
+      "signature": "def fifo_cogs(layers: Sequence[Tuple[int, int, int]], qty: int) -> Tuple[int, List[Tuple[int, int, int]]]:",
+      "summary": "Cost a shipment with FIFO cost layers and return the remaining layers",
+      "spec": "Cost of goods sold for a shipment, using FIFO cost layers.\n\nArgs:\n    layers: (receipt_day, qty, unit_cost_cents) tuples, in any order.\n    qty: eaches shipped, >= 0.\n\nLayers are consumed oldest receipt_day first; layers received on the same\nday are consumed in list order. Shipping more than the layers hold is\nallowed (the warehouse may ship ahead of a late receipt); every layer is\nthen used up.\n\nReturns:\n    (cost_cents, remaining_layers). remaining_layers lists the layers that\n    still hold stock, oldest first, in the same tuple form; a partially used\n    layer appears with its reduced qty. The input is not modified.\n\nRaises:\n    ValueError: if qty < 0, or if qty > 0 and there are no layers at all.\n\nExample:\n    fifo_cogs([(3, 5, 120), (1, 10, 100)], 12) == (1240, [(3, 3, 120)])",
+      "clarification": "Units shipped beyond what the layers hold (the shortfall) are costed at the\nunit cost of the most recent receipt: the layer with the latest receipt_day, or\nthe last such layer in list order if several share that day. The shortfall is\nneither free nor an error; finance trues it up when the late receipt is booked.",
+      "difficulty": "hard",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_fifo_cogs.py",
+      "acceptance_path": "acceptance/test_fifo_cogs.py",
+      "conflicting_test_name": "test_regression_issue_604",
+      "conflict_call": "fifo_cogs([(4, 2, 150), (1, 3, 100)], 8)",
+      "oneoff": {
+        "find": "== (50, [(2, 1, 70)])",
+        "replace": "== (70, [(2, 1, 50)])"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "allocate_freight",
+      "module_path": "src/stockflow/allocate_freight.py",
+      "signature": "def allocate_freight(freight_cents: int, line_values: Sequence[int]) -> List[int]:",
+      "summary": "Allocate inbound freight across receipt lines by value, to the exact cent",
+      "spec": "Allocate an inbound freight charge across receipt lines in proportion to\nline value (landed cost allocation).\n\nEach line first gets floor(freight_cents * value / total_value). The cents\nleft over are then handed out one at a time to the lines with the largest\nfractional remainder, so the shares always add up to freight_cents exactly.\n\nArgs:\n    freight_cents: total freight charge, >= 0.\n    line_values: value of each receipt line in cents, >= 0.\n\nReturns:\n    List of allocated cents, one per line, in the order of line_values.\n\nRaises:\n    ValueError: on negative inputs, or if freight_cents > 0 while every\n        line value is 0 (nothing to allocate against).\n\nExamples:\n    allocate_freight(1000, [3000, 1000]) == [750, 250]\n    allocate_freight(100, [1, 1, 1]) == [34, 33, 33]",
+      "clarification": "When fractional remainders tie, the leftover cent goes to the line with the\nlarger value first (large lines absorb rounding with the smallest relative\nerror); only when the values are equal as well does the earlier line win.",
+      "difficulty": "hard",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_allocate_freight.py",
+      "acceptance_path": "acceptance/test_allocate_freight.py",
+      "conflicting_test_name": "test_regression_issue_520",
+      "conflict_call": "allocate_freight(2, [100, 300])",
+      "oneoff": {
+        "find": "allocate_freight(100, [1, 1, 1]) == [34, 33, 33]",
+        "replace": "allocate_freight(100, [1, 1, 1]) == [33, 33, 34]"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "abc_classify",
+      "module_path": "src/stockflow/abc_classify.py",
+      "signature": "def abc_classify(values: Mapping[str, int], a_pct: int = 80, b_pct: int = 95) -> Dict[str, str]:",
+      "summary": "Classify SKUs into A/B/C classes by cumulative value share",
+      "spec": "ABC classification of SKUs by value share.\n\nSKUs are ranked by value, highest first (ties: SKU ascending), and the\nrunning total of value is tracked as a share of the grand total. The top\nSKUs making up the first `a_pct` percent of value are class \"A\", those up\nto `b_pct` percent are \"B\", the rest are \"C\".\n\nArgs:\n    values: SKU -> value in cents (e.g. annual consumption value).\n    a_pct, b_pct: cumulative percentage thresholds, 0 < a_pct <= b_pct <= 100.\n\nReturns:\n    Dict SKU -> \"A\" | \"B\" | \"C\" for every SKU in `values`. SKUs with value 0\n    are always \"C\" (so is every SKU when the total is 0).\n\nRaises:\n    ValueError: if a value is negative or the thresholds are invalid.\n\nExample:\n    abc_classify({\"S1\": 80, \"S2\": 15, \"S3\": 5}) == {\"S1\": \"A\", \"S2\": \"B\", \"S3\": \"C\"}",
+      "clarification": "The SKU that crosses a threshold belongs to the higher class. A SKU is \"A\"\nif the cumulative share BEFORE adding it is still below a_pct, and \"B\" if that\nshare is below b_pct. Example: values 50/40/10 give A, A, B (the second SKU takes\nthe running share from 50% to 90%, but it started below 80%).",
+      "difficulty": "medium",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_abc_classify.py",
+      "acceptance_path": "acceptance/test_abc_classify.py",
+      "conflicting_test_name": "test_regression_issue_98",
+      "conflict_call": "abc_classify({\"X\": 50, \"Y\": 40, \"Z\": 10})",
+      "oneoff": {
+        "find": "abc_classify({\"Q\": 0}) == {\"Q\": \"C\"}",
+        "replace": "abc_classify({\"Q\": 0}) == {\"Q\": \"A\"}"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "select_lots_fefo",
+      "module_path": "src/stockflow/select_lots_fefo.py",
+      "signature": "def select_lots_fefo(lots: Sequence[Tuple[str, int, int]], qty: int, today: int, min_shelf_days: int = 0) -> List[Tuple[str, int]]:",
+      "summary": "Pick lots first-expired-first-out, honouring minimum shelf life",
+      "spec": "Choose which lots to pick from, first-expired-first-out (FEFO).\n\nArgs:\n    lots: (lot_id, expiry_day, available_qty) tuples for one SKU at one\n        location. Days are integer day indices.\n    qty: eaches to pick, >= 0.\n    today: current day index.\n    min_shelf_days: a lot is only eligible if it has at least this many days\n        left until expiry (expiry_day - today >= min_shelf_days). Default 0.\n\nExpired lots are never picked. Eligible lots are used in order of\nexpiry_day (earliest first), ties broken by lot_id ascending; each lot is\ndrained before moving on to the next one.\n\nReturns:\n    List of (lot_id, picked_qty) in picking order, containing only lots with\n    picked_qty > 0.\n\nRaises:\n    ValueError: if qty < 0 or the eligible stock is less than qty.\n\nExample:\n    select_lots_fefo([(\"L2\", 30, 5), (\"L1\", 20, 4)], 6, today=10)\n        == [(\"L1\", 4), (\"L2\", 2)]",
+      "clarification": "expiry_day is the \"best before\" date printed on the case, and customers must\nreceive goods before that date, so a lot already counts as expired ON its\nexpiry_day: with min_shelf_days=0 a lot whose expiry_day == today is not\neligible. Expired therefore means expiry_day <= today.",
+      "difficulty": "medium",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_select_lots_fefo.py",
+      "acceptance_path": "acceptance/test_select_lots_fefo.py",
+      "conflicting_test_name": "test_regression_issue_451",
+      "conflict_call": "select_lots_fefo(lots, 3, today=12)",
+      "oneoff": {
+        "find": "== [(\"A9\", 3), (\"B7\", 1)]",
+        "replace": "== [(\"B7\", 3), (\"A9\", 1)]"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "first_fit_decreasing",
+      "module_path": "src/stockflow/first_fit_decreasing.py",
+      "signature": "def first_fit_decreasing(items: Sequence[Tuple[str, int]], capacity: int) -> List[List[Tuple[str, int]]]:",
+      "summary": "Pack weighted items into bins with first-fit-decreasing",
+      "spec": "Pack weighted items into bins with the first-fit-decreasing heuristic.\n\nItems are taken heaviest first. Each item goes into the first bin (in the\norder the bins were opened) whose remaining capacity can hold it; if no bin\ncan, a new bin is opened.\n\nArgs:\n    items: (item_id, weight) pairs; weights are non-negative ints.\n    capacity: capacity of every bin, > 0.\n\nReturns:\n    List of bins in the order they were opened; each bin is a list of the\n    (item_id, weight) tuples in the order they were placed.\n\nRaises:\n    ValueError: if capacity <= 0, a weight is negative, or a single item is\n        heavier than capacity.\n\nExample:\n    first_fit_decreasing([(\"a\", 4), (\"b\", 7), (\"c\", 3)], 10)\n        == [[(\"b\", 7), (\"c\", 3)], [(\"a\", 4)]]",
+      "clarification": "Items of equal weight are taken in ascending item_id order, not in input\norder. Packing must come out the same however the order lines happened to be\nlisted (the same order arrives sorted differently from the storefront and from\ncustomer service).",
+      "difficulty": "medium",
+      "deps": [],
+      "dependents": [
+        "split_shipment"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_first_fit_decreasing.py",
+      "acceptance_path": "acceptance/test_first_fit_decreasing.py",
+      "conflicting_test_name": "test_regression_issue_266",
+      "conflict_call": "first_fit_decreasing([(\"k\", 2), (\"j\", 2), (\"big\", 8)], 10)",
+      "oneoff": {
+        "find": "== [[(\"b\", 7), (\"c\", 3)], [(\"d\", 6), (\"a\", 4)]]",
+        "replace": "== [[(\"b\", 7), (\"c\", 3)], [(\"a\", 4), (\"d\", 6)]]"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "split_shipment",
+      "module_path": "src/stockflow/split_shipment.py",
+      "signature": "def split_shipment(lines: Sequence[Tuple[str, int, int]], max_parcel_grams: int) -> List[Dict[str, int]]:",
+      "summary": "Split an order into parcels under the carrier weight limit",
+      "spec": "Split an order into parcels that respect the carrier's weight limit.\n\nArgs:\n    lines: (sku, qty, unit_weight_grams) order lines. Lines with the same SKU\n        are merged first (they must have the same unit weight).\n    max_parcel_grams: carrier weight limit per parcel.\n\nThe goods are packed with first_fit_decreasing, using max_parcel_grams as\nthe bin capacity and the SKU as item id; a line may end up spread over\nseveral parcels.\n\nReturns:\n    List of parcels in the order produced by first_fit_decreasing; each\n    parcel is a dict SKU -> number of units in that parcel.\n\nRaises:\n    ValueError: if max_parcel_grams <= 0, a qty or unit weight is <= 0, a\n        single unit is heavier than max_parcel_grams, or the same SKU appears\n        with different unit weights.\n\nExample:\n    split_shipment([(\"TEE\", 3, 400), (\"MUG\", 1, 700)], 1000)\n        == [{\"MUG\": 1}, {\"TEE\": 2}, {\"TEE\": 1}]",
+      "clarification": "Keep lines together when possible: a (merged) line whose total weight fits\nwithin max_parcel_grams is packed as ONE item (weight qty x unit weight) and is\nnever split across parcels. Only lines heavier than the limit are broken into\nsingle units. Customers kept complaining about getting one of two identical\nitems in a separate box.",
+      "difficulty": "hard",
+      "deps": [
+        "first_fit_decreasing"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_split_shipment.py",
+      "acceptance_path": "acceptance/test_split_shipment.py",
+      "conflicting_test_name": "test_regression_issue_699",
+      "conflict_call": "split_shipment([(\"BAG\", 1, 600), (\"MUG\", 2, 300)], 1000)",
+      "oneoff": {
+        "find": "== [{\"CAP\": 4}]",
+        "replace": "== [{\"CAP\": 2}, {\"CAP\": 2}]"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 4,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "allocate_backorders",
+      "module_path": "src/stockflow/allocate_backorders.py",
+      "signature": "def allocate_backorders(orders: Sequence[Tuple[str, int, int, Mapping[str, int]]], available: Mapping[str, int]) -> Dict[str, Dict[str, int]]:",
+      "summary": "Allocate available stock to open backorders by priority",
+      "spec": "Allocate available stock to open customer backorders.\n\nArgs:\n    orders: (order_id, priority, order_day, lines) tuples, where lines maps\n        SKU -> backordered eaches. Priority 1 is the most urgent; larger\n        numbers are less urgent.\n    available: SKU -> eaches available to promise. SKUs that are missing\n        have 0 available.\n\nOrders are served one after another in this sequence: priority ascending,\nthen order_day ascending, then order_id ascending. Stock handed to one\norder is no longer available to the orders after it.\n\nReturns:\n    Dict order_id -> {sku: allocated eaches} with an entry for every order and\n    every SKU on its lines (0 where nothing was allocated). The inputs are not\n    modified.\n\nRaises:\n    ValueError: on a duplicate order_id or a line qty <= 0.\n\nExample:\n    allocate_backorders([(\"o1\", 2, 10, {\"S\": 5}), (\"o2\", 1, 12, {\"S\": 4})], {\"S\": 4})\n        == {\"o1\": {\"S\": 0}, \"o2\": {\"S\": 4}}",
+      "clarification": "Backorders ship complete; we never send a customer part of a backorder. An\norder is allocated all of its lines in full or nothing at all. An order that\ndoes not fit in what is left gets 0 on every line and leaves the stock untouched,\nand allocation continues with the next order in the sequence (a smaller order\nfurther down may still be filled).",
+      "difficulty": "hard",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_allocate_backorders.py",
+      "acceptance_path": "acceptance/test_allocate_backorders.py",
+      "conflicting_test_name": "test_regression_issue_733",
+      "conflict_call": "allocate_backorders([(\"B1\", 1, 1, {\"S\": 10}), (\"B2\", 1, 2, {\"S\": 3})], {\"S\": 6})",
+      "oneoff": {
+        "find": "{\"o2\": {\"S\": 4}, \"o3\": {\"S\": 3}, \"o1\": {\"S\": 0}}",
+        "replace": "{\"o2\": {\"S\": 4}, \"o3\": {\"S\": 0}, \"o1\": {\"S\": 3}}"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "stock_valuation",
+      "module_path": "src/stockflow/stock_valuation.py",
+      "signature": "def stock_valuation(on_hand: Mapping[str, int], cost_layers: Mapping[str, Sequence[Tuple[int, int]]]) -> Tuple[List[Tuple[str, int, int, int]], int]:",
+      "summary": "Build the stock valuation report at weighted average cost",
+      "spec": "Value on-hand stock at weighted average cost.\n\nArgs:\n    on_hand: SKU -> eaches on hand. Keys may be in any format accepted by\n        normalize_sku; quantities of keys that normalize to the same SKU are\n        added together.\n    cost_layers: canonical SKU -> list of (qty, unit_cost_cents) layers,\n        averaged with weighted_average_cost.\n\nReturns:\n    (rows, total_cents). rows is a list of (sku, qty, unit_cost_cents,\n    value_cents) with value = qty * unit cost, sorted by value descending,\n    then SKU ascending; total_cents is the sum of the row values.\n\nRaises:\n    KeyError: if a SKU that has to be valued has no entry in cost_layers.\n    ValueError: from normalize_sku or weighted_average_cost.\n\nExample:\n    stock_valuation({\"abc-123456-1\": 10}, {\"ABC-123456-1\": [(5, 200), (5, 300)]})\n        == ([(\"ABC-123456-1\", 10, 250, 2500)], 2500)",
+      "clarification": "Only positive stock is valued. SKUs whose (combined) on-hand is zero or\nnegative are left out of the rows and the total entirely (negative stock must\nnot reduce the reported value), and they do not need cost layers.",
+      "difficulty": "medium",
+      "deps": [
+        "normalize_sku",
+        "weighted_average_cost"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_stock_valuation.py",
+      "acceptance_path": "acceptance/test_stock_valuation.py",
+      "conflicting_test_name": "test_regression_issue_381",
+      "conflict_call": "stock_valuation({\"ABC-123456-1\": 2, \"KIT-200001-3\": -3}, LAYERS)",
+      "oneoff": {
+        "find": "[(\"ABC-123456-1\", 10, 250, 2500), (\"MUG-300300-8\", 5, 500, 2500)], 5000)",
+        "replace": "[(\"MUG-300300-8\", 5, 500, 2500), (\"ABC-123456-1\", 10, 250, 2500)], 5000)"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "parse_movement_line",
+      "module_path": "src/stockflow/parse_movement_line.py",
+      "signature": "def parse_movement_line(line: str, case_sizes: Mapping[str, int]) -> Dict[str, Any]:",
+      "summary": "Parse a stock movement record into a normalized dict",
+      "spec": "Parse one stock movement record.\n\nRecords are semicolon-separated: \"<day>;<type>;<sku>;<location>;<quantity>\",\ne.g. \"12;RCV;ABC-123456-1;B-07-14-3;5 CS\". Whitespace around fields is ignored.\n\n    day       non-negative integer day index\n    type      RCV (receipt), SHP (shipment), RTN (customer return) or\n              ADJ (inventory adjustment); case-insensitive\n    sku       normalized with normalize_sku\n    location  parsed with parse_location\n    quantity  parsed with parse_quantity, using case_sizes[sku]; SKUs that\n              are not in case_sizes have a case size of 1\n\nReturns:\n    {\"day\": int, \"type\": str, \"sku\": str, \"location\": str, \"qty\": int}\n    where type is upper-case, sku is canonical, location is the canonical\n    \"Z-AA-SS-L\" string (two-digit aisle and shelf) and qty is the signed\n    change to on-hand stock in eaches: RCV and RTN add stock, SHP removes it\n    (the record shows the shipped amount, qty is its negative), ADJ is\n    applied as written.\n\nRaises:\n    ValueError: wrong number of fields, bad day, unknown type, or any error\n        raised by the helpers above.\n\nExample:\n    parse_movement_line(\"12;SHP;abc-123456-1;b-07-14-3;2 CS\", {\"ABC-123456-1\": 6})\n        == {\"day\": 12, \"type\": \"SHP\", \"sku\": \"ABC-123456-1\",\n            \"location\": \"B-07-14-3\", \"qty\": -12}",
+      "clarification": "Only ADJ records may carry a sign. RCV, SHP and RTN quantities must be\nstrictly positive as written; a zero or negative quantity on those types is a\ndata-entry error and raises ValueError (a negative SHP is NOT a return; returns\nare booked as RTN). A zero ADJ is rejected as well.",
+      "difficulty": "medium",
+      "deps": [
+        "normalize_sku",
+        "parse_location",
+        "parse_quantity"
+      ],
+      "dependents": [
+        "average_daily_demand",
+        "dead_stock",
+        "on_hand_by_location"
+      ],
+      "depth": 1,
+      "unit_test_path": "tests/test_parse_movement_line.py",
+      "acceptance_path": "acceptance/test_parse_movement_line.py",
+      "conflicting_test_name": "test_regression_issue_812",
+      "conflict_call": "parse_movement_line(\"12;RCV;ABC-123456-1;B-07-14-3;5 CS\", SIZES)",
+      "oneoff": {
+        "find": "[\"qty\"] == 6",
+        "replace": "[\"qty\"] == -6"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "on_hand_by_location",
+      "module_path": "src/stockflow/on_hand_by_location.py",
+      "signature": "def on_hand_by_location(lines: Iterable[str], case_sizes: Mapping[str, int], as_of_day: Optional[int] = None) -> Dict[Tuple[str, str], int]:",
+      "summary": "Compute on-hand stock per SKU and bin location from movement records",
+      "spec": "Current on-hand stock per (SKU, location) from movement records.\n\nEach line is parsed with parse_movement_line, except blank lines and\ncomment lines (first non-blank character \"#\"), which are skipped. The signed\nquantities are summed per (sku, location), using the canonical SKU and\nlocation strings returned by the parser.\n\nArgs:\n    lines: movement records (see parse_movement_line).\n    case_sizes: passed through to parse_movement_line.\n    as_of_day: if given, only movements with day <= as_of_day are counted.\n\nReturns:\n    Dict (sku, location) -> eaches on hand.\n\nRaises:\n    ValueError: propagated from parse_movement_line for malformed records.\n\nExample:\n    on_hand_by_location([\"1;RCV;ABC-123456-1;B-07-14-3;10 EA\",\n                         \"2;SHP;ABC-123456-1;B-07-14-3;4 EA\"], {})\n        == {(\"ABC-123456-1\", \"B-07-14-3\"): 6}",
+      "clarification": "Positions that net to exactly zero are dropped from the result: an emptied\nbin is not a stock position and must not show up on count sheets or transfer\nscreens. Negative totals are kept as they are (they flag a missed receipt and\nmust stay visible).",
+      "difficulty": "medium",
+      "deps": [
+        "parse_movement_line"
+      ],
+      "dependents": [
+        "cycle_count_variance",
+        "dead_stock",
+        "validate_transfer"
+      ],
+      "depth": 2,
+      "unit_test_path": "tests/test_on_hand_by_location.py",
+      "acceptance_path": "acceptance/test_on_hand_by_location.py",
+      "conflicting_test_name": "test_regression_issue_118",
+      "conflict_call": "on_hand_by_location(LINES, SIZES)",
+      "oneoff": {
+        "find": "(\"TEE-104520-4\", \"C-10-03-1\"): -3,",
+        "replace": "(\"TEE-104520-4\", \"C-10-03-1\"): 3,"
+      },
+      "n_acceptance_asserts": 4,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "average_daily_demand",
+      "module_path": "src/stockflow/average_daily_demand.py",
+      "signature": "def average_daily_demand(lines: Iterable[str], case_sizes: Mapping[str, int], sku: str, start_day: int, end_day: int) -> int:",
+      "summary": "Compute a SKU's average daily demand over a day range",
+      "spec": "Average daily demand for one SKU over a range of days, in whole eaches.\n\nMovement records are parsed with parse_movement_line (blank lines and \"#\"\ncomment lines are skipped). Shipments (SHP) of `sku` dated start_day ..\nend_day (both inclusive) are totalled and divided by the number of days in\nthe range; the result is rounded up to a whole each.\n\nArgs:\n    lines: movement records.\n    case_sizes: passed through to parse_movement_line.\n    sku: canonical SKU.\n    start_day, end_day: inclusive day range.\n\nRaises:\n    ValueError: if end_day < start_day, or for malformed records.\n\nExample:\n    lines = [\"1;SHP;ABC-123456-1;B-07-14-3;7 EA\", \"2;SHP;ABC-123456-1;A-01-01-1;3 EA\"]\n    average_daily_demand(lines, {}, \"ABC-123456-1\", 1, 4) == 3     # 10 / 4 = 2.5 -> 3",
+      "clarification": "Demand is net of customer returns: RTN records of the SKU in the same day\nrange are subtracted from the shipped total before averaging. If returns exceed\nshipments the demand is 0, never negative.",
+      "difficulty": "easy",
+      "deps": [
+        "parse_movement_line"
+      ],
+      "dependents": [],
+      "depth": 2,
+      "unit_test_path": "tests/test_average_daily_demand.py",
+      "acceptance_path": "acceptance/test_average_daily_demand.py",
+      "conflicting_test_name": "test_regression_issue_275",
+      "conflict_call": "average_daily_demand(LINES, SIZES, \"ABC-123456-1\", 1, 4)",
+      "oneoff": {
+        "find": "\"KIT-200001-3\", 1, 10) == 1",
+        "replace": "\"KIT-200001-3\", 1, 10) == 0"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "dead_stock",
+      "module_path": "src/stockflow/dead_stock.py",
+      "signature": "def dead_stock(lines: Iterable[str], case_sizes: Mapping[str, int], today: int, idle_days: int) -> List[str]:",
+      "summary": "Find SKUs with stock on hand that have not shipped for a long time",
+      "spec": "List SKUs whose stock has not moved out for a long time (dead stock).\n\nA SKU is dead stock when its total on-hand (summed over all locations with\non_hand_by_location, counting movements up to and including `today`) is\npositive and its most recent shipment (SHP) is at least `idle_days` days old,\ni.e. today - last_ship_day >= idle_days. Movements dated after `today` are\nignored. Blank lines and \"#\" comment lines are skipped.\n\nArgs:\n    lines: movement records; any iterable (it is only iterated once).\n    case_sizes: passed through to the parsers.\n    today: current day index.\n    idle_days: threshold in days, >= 1.\n\nReturns:\n    Sorted list of canonical SKUs.\n\nRaises:\n    ValueError: if idle_days < 1, or for malformed records.\n\nExample:\n    lines = [\"1;RCV;ABC-123456-1;B-07-14-3;10 EA\", \"5;SHP;ABC-123456-1;B-07-14-3;2 EA\"]\n    dead_stock(lines, {}, today=40, idle_days=30) == [\"ABC-123456-1\"]",
+      "clarification": "A SKU that has never shipped (as of today) is measured from its earliest\nmovement of any type instead, normally its first receipt: a product that\narrived last week is new, not dead.",
+      "difficulty": "medium",
+      "deps": [
+        "parse_movement_line",
+        "on_hand_by_location"
+      ],
+      "dependents": [],
+      "depth": 3,
+      "unit_test_path": "tests/test_dead_stock.py",
+      "acceptance_path": "acceptance/test_dead_stock.py",
+      "conflicting_test_name": "test_regression_issue_349",
+      "conflict_call": "dead_stock(LINES, SIZES, today=40, idle_days=30)",
+      "oneoff": {
+        "find": "today=34, idle_days=30) == []",
+        "replace": "today=34, idle_days=30) == [\"ABC-123456-1\"]"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "cycle_count_variance",
+      "module_path": "src/stockflow/cycle_count_variance.py",
+      "signature": "def cycle_count_variance(lines: Iterable[str], case_sizes: Mapping[str, int], counts: Mapping[Tuple[str, str], int]) -> List[Tuple[str, str, int]]:",
+      "summary": "Report differences between a cycle count and system stock",
+      "spec": "Compare a cycle count with system stock and report the differences.\n\nSystem stock is on_hand_by_location(lines, case_sizes). `counts` holds what\nthe counters recorded, keyed by (sku, location) as typed on the handheld;\nkeys are normalized with normalize_sku and parse_location (canonical\n\"Z-AA-SS-L\" location string) before matching, and the quantities of keys\nthat normalize to the same position are added together.\n\n    variance = counted qty - system qty\n\nReturns:\n    List of (sku, location, variance) for every position with a non-zero\n    variance, sorted by location, then SKU.\n\nRaises:\n    ValueError: if a counted quantity is negative, or from the parsers.\n\nExample:\n    lines = [\"1;RCV;ABC-123456-1;B-07-14-3;10 EA\"]\n    cycle_count_variance(lines, {}, {(\"abc-123456-1\", \"b-07-14-3\"): 8})\n        == [(\"ABC-123456-1\", \"B-07-14-3\", -2)]",
+      "clarification": "A count covers the whole bin. If a location appears in `counts`, every system\nposition in that location whose SKU was not counted is treated as counted 0\n(variance = -system qty). Locations that were not counted at all are ignored,\neven if they hold stock.",
+      "difficulty": "hard",
+      "deps": [
+        "on_hand_by_location",
+        "normalize_sku",
+        "parse_location"
+      ],
+      "dependents": [],
+      "depth": 3,
+      "unit_test_path": "tests/test_cycle_count_variance.py",
+      "acceptance_path": "acceptance/test_cycle_count_variance.py",
+      "conflicting_test_name": "test_regression_issue_906",
+      "conflict_call": "cycle_count_variance(LINES, SIZES, {(\"ABC-123456-1\", \"B-07-14-3\"): 12, (\"tee-104520-4\", \"a-02-01-1\"): 7})",
+      "oneoff": {
+        "find": "(\"MUG-300300-8\", \"C-10-04-1\", 4)",
+        "replace": "(\"MUG-300300-8\", \"C-10-04-1\", 2)"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "validate_transfer",
+      "module_path": "src/stockflow/validate_transfer.py",
+      "signature": "def validate_transfer(lines: Iterable[str], case_sizes: Mapping[str, int], sku: str, from_location: str, to_location: str, qty: int, day: int) -> List[str]:",
+      "summary": "Validate a bin-to-bin stock transfer and list the problems",
+      "spec": "Check a proposed bin-to-bin transfer and list what is wrong with it.\n\nArgs:\n    lines: movement records used to work out stock (see on_hand_by_location).\n    case_sizes: passed through to the parsers.\n    sku: canonical SKU to move.\n    from_location, to_location: location codes, parsed with parse_location\n        (a malformed code raises ValueError).\n    qty: eaches to move.\n    day: day index the transfer is executed on.\n\nReturns:\n    List of problem codes in this order, empty if the transfer is fine:\n        \"BAD_QTY\"             qty <= 0\n        \"SAME_LOCATION\"       both codes refer to the same bin\n        \"INSUFFICIENT_STOCK\"  qty > 0 and the SKU's on-hand at from_location\n                              is less than qty (no position counts as 0)\n\nExample:\n    lines = [\"1;RCV;ABC-123456-1;B-07-14-3;10 EA\"]\n    validate_transfer(lines, {}, \"ABC-123456-1\", \"B-07-14-3\", \"b-07-14-3\", 0, day=2)\n        == [\"BAD_QTY\", \"SAME_LOCATION\"]",
+      "clarification": "Movements are posted overnight: records dated on the transfer day itself are\nnot in the books yet and must not count toward the available stock. Only\nmovements with day < `day` count.",
+      "difficulty": "medium",
+      "deps": [
+        "on_hand_by_location",
+        "parse_location"
+      ],
+      "dependents": [],
+      "depth": 3,
+      "unit_test_path": "tests/test_validate_transfer.py",
+      "acceptance_path": "acceptance/test_validate_transfer.py",
+      "conflicting_test_name": "test_regression_issue_157",
+      "conflict_call": "validate_transfer(LINES, SIZES, \"ABC-123456-1\", \"B-07-14-3\", \"B-07-15-1\", 10, day=6)",
+      "oneoff": {
+        "find": "\"B-07-14-4\", 13, day=7) == []",
+        "replace": "\"B-07-14-4\", 13, day=7) == [\"INSUFFICIENT_STOCK\"]"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 4,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "pick_route_order",
+      "module_path": "src/stockflow/pick_route_order.py",
+      "signature": "def pick_route_order(picks: Sequence[Tuple[str, str, int]]) -> List[Tuple[str, str, int]]:",
+      "summary": "Sort pick lines into the picker's walking order",
+      "spec": "Order pick lines along the picker's walking route.\n\nArgs:\n    picks: (sku, location, qty) tuples; locations are parsed with\n        parse_location (a malformed code raises ValueError).\n\nReturns:\n    The same tuples, unchanged, reordered for walking: by zone\n    (alphabetical), then aisle (ascending), then by shelf position along the\n    aisle, then level (ascending). Picks at the same bin keep their input\n    order.\n\nExample:\n    pick_route_order([(\"S2\", \"A-01-05-1\", 1), (\"S1\", \"A-01-02-1\", 3)])\n        == [(\"S1\", \"A-01-02-1\", 3), (\"S2\", \"A-01-05-1\", 1)]",
+      "clarification": "Pickers walk the aisles in a serpentine (S-shaped) path: up the odd-numbered\naisles and back down the even-numbered ones. Shelves are therefore visited in\nascending order in odd aisles and in DESCENDING order in even aisles. Levels\nwithin a shelf are always ascending.",
+      "difficulty": "medium",
+      "deps": [
+        "parse_location"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_pick_route_order.py",
+      "acceptance_path": "acceptance/test_pick_route_order.py",
+      "conflicting_test_name": "test_regression_issue_642",
+      "conflict_call": "pick_route_order([(\"X\", \"C-04-01-1\", 2), (\"Y\", \"C-04-20-1\", 1)])",
+      "oneoff": {
+        "find": "== [\"P5\", \"P2\", \"P3\", \"P1\", \"P4\"]",
+        "replace": "== [\"P2\", \"P5\", \"P3\", \"P1\", \"P4\"]"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "replenishment_suggestions",
+      "module_path": "src/stockflow/replenishment_suggestions.py",
+      "signature": "def replenishment_suggestions(items: Sequence[Mapping[str, Any]]) -> List[Tuple[str, int]]:",
+      "summary": "Suggest purchase orders for SKUs at or below their reorder point",
+      "spec": "Suggest purchase orders for SKUs that have reached their reorder point.\n\nEach item is a mapping with the keys\n    \"sku\", \"on_hand\", \"on_order\"          SKU string and ints\n    \"daily_demand\", \"lead_times\"          histories for reorder_point\n    \"review_period_days\"                  optional, default 0\n    \"annual_demand\", \"order_cost_cents\",\n    \"holding_cost_cents\", \"pack_size\"     inputs for economic_order_quantity\n\nInventory position = on_hand + on_order. An item needs a purchase order when\nits inventory position is at or below its reorder point\n(reorder_point(daily_demand, lead_times, review_period_days)). The suggested\nquantity is based on the item's economic order quantity.\n\nReturns:\n    List of (sku, qty) for the items that need ordering, sorted by SKU.\n\nExample:\n    item = {\"sku\": \"ABC-123456-1\", \"on_hand\": 50, \"on_order\": 0,\n            \"daily_demand\": [10, 10], \"lead_times\": [5],\n            \"annual_demand\": 3650, \"order_cost_cents\": 1000,\n            \"holding_cost_cents\": 200, \"pack_size\": 10}\n    replenishment_suggestions([item]) == [(\"ABC-123456-1\", 190)]",
+      "clarification": "The EOQ is a floor, not a fixed amount: if inventory position + EOQ would\nstill be at or below the reorder point, order instead the smallest number of\nwhole packs (rounded UP, not with round_to_pack) that lifts the inventory\nposition above the reorder point.",
+      "difficulty": "hard",
+      "deps": [
+        "reorder_point",
+        "economic_order_quantity"
+      ],
+      "dependents": [],
+      "depth": 2,
+      "unit_test_path": "tests/test_replenishment_suggestions.py",
+      "acceptance_path": "acceptance/test_replenishment_suggestions.py",
+      "conflicting_test_name": "test_regression_issue_588",
+      "conflict_call": "replenishment_suggestions([item])",
+      "oneoff": {
+        "find": "[dict(item, on_hand=970)]) == [(\"BAG-987654-9\", 40)]",
+        "replace": "[dict(item, on_hand=970)]) == [(\"BAG-987654-9\", 30)]"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    }
+  ],
+  "hubs": [
+    "normalize_sku",
+    "on_hand_by_location",
+    "parse_location",
+    "parse_movement_line"
+  ],
+  "max_depth": 3
+}

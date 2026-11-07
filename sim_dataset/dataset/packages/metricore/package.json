@@ -1,0 +1,837 @@
+{
+  "package_id": "metricore",
+  "family": "metrics_statistics",
+  "title": "metricore: statistics helpers for service metrics and SLO reporting",
+  "description": "metricore is the SRE team's shared library for turning raw service telemetry into numbers people act on: percentiles and latency summaries, outlier and anomaly flags, SLO and error-budget figures, availability from incident timelines, and the ranking and percentage helpers behind the weekly reliability report. It is pure Python (stdlib only) and deterministic, and every reported figure goes through one rounding helper so dashboards and spreadsheets agree.",
+  "functions": [
+    {
+      "id": "round_half_up",
+      "module_path": "src/metricore/round_half_up.py",
+      "signature": "def round_half_up(value: float, ndigits: int = 2) -> float:",
+      "summary": "Round a reported metric value half away from zero",
+      "spec": "Round `value` to `ndigits` decimal places, rounding ties away from zero.\n\nThis is the rounding used for the summary figures metricore puts in reports\nand on dashboards. Python's built-in round() uses banker's rounding\n(round(0.125, 2) == 0.12), which makes our numbers disagree with the\nspreadsheets finance and product build from the same data; this helper does not.\n\n- ndigits must be >= 0, otherwise ValueError is raised.\n- The result is always a float, also for ndigits == 0.\n- Ties go away from zero: 2.5 -> 3.0 and -2.5 -> -3.0 (ndigits=0),\n  0.125 -> 0.13 (ndigits=2).\n\nExamples:\n    round_half_up(0.125, 2) == 0.13\n    round_half_up(-2.5, 0) == -3.0",
+      "clarification": "Ties are decided on the value's shortest decimal representation (its repr), not on\nthe exact binary value of the float. round_half_up(2.675, 2) must return 2.68 and\nround_half_up(1.005, 2) must return 1.01, even though those floats are stored slightly\nbelow the halfway point. Converting with Decimal(repr(value)) and quantizing with\nROUND_HALF_UP gives exactly this behaviour; scaling by 10**ndigits and adding 0.5 does not.",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "apdex_score",
+        "error_budget_remaining",
+        "lagged_correlation",
+        "latency_summary",
+        "percent_change",
+        "percentile_by_group",
+        "uptime_percent",
+        "zscores"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_round_half_up.py",
+      "acceptance_path": "acceptance/test_round_half_up.py",
+      "conflicting_test_name": "test_regression_issue_214",
+      "conflict_call": "round_half_up(2.675, 2)",
+      "oneoff": {
+        "find": "round_half_up(-0.125, 2) == -0.13",
+        "replace": "round_half_up(-0.125, 2) == -0.12"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "percentile",
+      "module_path": "src/metricore/percentile.py",
+      "signature": "def percentile(values: Sequence[float], p: float) -> float:",
+      "summary": "Compute the p-th percentile of a sample with linear interpolation",
+      "spec": "Return the p-th percentile (0 <= p <= 100) of `values`.\n\nThe input does not need to be sorted and must not be modified. When the\nrequested rank falls between two order statistics, the result is linearly\ninterpolated between those two neighbouring values. The result is returned\nunrounded; callers round for display.\n\n- p == 0 returns the minimum and p == 100 returns the maximum.\n- A single-element input returns that element for every p.\n- Raises ValueError if `values` is empty or if p is outside [0, 100].\n\nExamples:\n    percentile([15, 20, 35, 40, 50], 50) == 35\n    percentile([40, 10, 30, 20], 0) == 10",
+      "clarification": "Use the 'inclusive' rank definition (the default of numpy.percentile and Excel\nPERCENTILE.INC): over the sorted values, the 0-based fractional rank is\nh = (n - 1) * p / 100 and the result is s[floor(h)] + (h - floor(h)) * (s[floor(h) + 1] - s[floor(h)]).\nDo not use the (n + 1) * p / 100 'exclusive' rank. For [1, 2, ..., 10] the 90th\npercentile is 9.1 and the 25th percentile is 3.25.",
+      "difficulty": "medium",
+      "deps": [],
+      "dependents": [
+        "iqr_outliers",
+        "latency_summary",
+        "percentile_by_group"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_percentile.py",
+      "acceptance_path": "acceptance/test_percentile.py",
+      "conflicting_test_name": "test_regression_issue_341",
+      "conflict_call": "percentile(data, 90)",
+      "oneoff": {
+        "find": "== 3.25",
+        "replace": "== 2.75"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "std_dev",
+      "module_path": "src/metricore/std_dev.py",
+      "signature": "def std_dev(values: Sequence[float]) -> float:",
+      "summary": "Standard deviation of a metric sample",
+      "spec": "Return the standard deviation of `values` as an unrounded float.\n\nThis is the single spread estimate used by z-scores, the rolling anomaly\ndetector and correlation, so that all of them agree on one definition.\n\n- Raises ValueError if `values` is empty.\n- A sample whose values are all equal has a standard deviation of 0.0.\n\nExample:\n    std_dev([5, 5, 5]) == 0.0",
+      "clarification": "Use the population standard deviation: divide the sum of squared deviations by n\n(like statistics.pstdev), not by n - 1. A single value therefore returns 0.0 instead of\nraising, and std_dev([2, 4, 4, 4, 5, 5, 7, 9]) == 2.0.",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "lagged_correlation",
+        "rolling_anomalies",
+        "zscores"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_std_dev.py",
+      "acceptance_path": "acceptance/test_std_dev.py",
+      "conflicting_test_name": "test_regression_issue_93",
+      "conflict_call": "std_dev([2, 4, 4, 4, 5, 5, 7, 9])",
+      "oneoff": {
+        "find": "round(std_dev([10, 20]), 4) == 5.0",
+        "replace": "round(std_dev([10, 20]), 4) == 7.0711"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "merge_intervals",
+      "module_path": "src/metricore/merge_intervals.py",
+      "signature": "def merge_intervals(intervals: Iterable[Tuple[int, int]]) -> List[Tuple[int, int]]:",
+      "summary": "Merge overlapping incident intervals",
+      "spec": "Merge overlapping (start, end) intervals and return them sorted by start.\n\nIntervals are incident windows in epoch seconds with start <= end. The input\nmay be in any order and may contain duplicates; it is not modified. The result\nis a new list of (start, end) tuples in which no two intervals overlap,\nsorted by start.\n\n- An empty input returns [].\n- Raises ValueError if any interval has start > end.\n\nExample:\n    merge_intervals([(10, 20), (0, 5), (15, 30)]) == [(0, 5), (10, 30)]",
+      "clarification": "Intervals that only touch, i.e. one ends exactly where the next one starts, are\nmerged as well: merge_intervals([(0, 10), (10, 20)]) == [(0, 20)]. Back-to-back incidents\nare reported as one continuous outage.",
+      "difficulty": "medium",
+      "deps": [],
+      "dependents": [
+        "uptime_percent"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_merge_intervals.py",
+      "acceptance_path": "acceptance/test_merge_intervals.py",
+      "conflicting_test_name": "test_regression_issue_502",
+      "conflict_call": "merge_intervals([(0, 10), (10, 20), (30, 40)])",
+      "oneoff": {
+        "find": "== [(40, 160)]",
+        "replace": "== [(40, 100), (100, 160)]"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "ewma",
+      "module_path": "src/metricore/ewma.py",
+      "signature": "def ewma(values: Sequence[float], span: int) -> List[float]:",
+      "summary": "Exponentially weighted moving average of a metric series",
+      "spec": "Return the exponentially weighted moving average (EWMA) of `values`.\n\nThe smoothing factor alpha (0 < alpha <= 1) is derived from `span`, the\nnumber of recent samples the average roughly reflects; a larger span reacts\nmore slowly. The series is seeded with the first observation and then\nupdated recursively:\n\n    s[0] = values[0]\n    s[t] = alpha * values[t] + (1 - alpha) * s[t - 1]\n\nThe result has the same length as `values`; every element is a float rounded\nwith round(x, 4).\n\n- span must be >= 1, otherwise ValueError is raised.\n- An empty input returns [].\n\nExample:\n    ewma([10, 10, 10], 5) == [10.0, 10.0, 10.0]",
+      "clarification": "alpha = 2 / (span + 1), the same span convention as pandas ewm(span=...). span=3\ngives alpha = 0.5, so ewma([0, 8, 8], 3) == [0.0, 4.0, 6.0]; span=1 gives alpha = 1\n(no smoothing).",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_ewma.py",
+      "acceptance_path": "acceptance/test_ewma.py",
+      "conflicting_test_name": "test_regression_issue_166",
+      "conflict_call": "ewma([0, 8, 8], 3)",
+      "oneoff": {
+        "find": "[100.0, 60.0, 36.0]",
+        "replace": "[100.0, 75.0, 56.25]"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 2,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "bucket_counts",
+      "module_path": "src/metricore/bucket_counts.py",
+      "signature": "def bucket_counts(latencies_ms: Iterable[float], bounds_ms: Sequence[float]) -> List[int]:",
+      "summary": "Count latency samples per histogram bucket",
+      "spec": "Count latency samples into histogram buckets defined by their upper bounds.\n\n`bounds_ms` is a strictly increasing list of bucket upper bounds, for example\n[100, 250, 500]. The result has len(bounds_ms) + 1 counts: one per bound plus a\nfinal overflow bucket for samples above the last bound. Counts are per bucket,\nnot cumulative. Bucket i holds the samples between bounds_ms[i - 1] and\nbounds_ms[i]; the first bucket starts at 0.\n\n- Raises ValueError if bounds_ms is empty or not strictly increasing.\n- Raises ValueError if any latency is negative.\n\nExample:\n    bucket_counts([12, 180, 900], [100, 250, 500]) == [1, 1, 0, 1]",
+      "clarification": "Bucket upper bounds are inclusive, like Prometheus 'le' buckets: a sample exactly\nequal to a bound is counted in that bound's bucket, not in the next one. So\nbucket_counts([100, 250, 500, 501], [100, 250, 500]) == [1, 1, 1, 1], and a sample of 0\nfalls into the first bucket.",
+      "difficulty": "medium",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_bucket_counts.py",
+      "acceptance_path": "acceptance/test_bucket_counts.py",
+      "conflicting_test_name": "test_regression_issue_277",
+      "conflict_call": "bucket_counts([100, 250, 500, 501], [100, 250, 500])",
+      "oneoff": {
+        "find": "== [2, 1, 2, 1]",
+        "replace": "== [2, 2, 1, 1]"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "rank_values",
+      "module_path": "src/metricore/rank_values.py",
+      "signature": "def rank_values(values: Sequence[float]) -> List[int]:",
+      "summary": "Rank values from highest to lowest, ties sharing a rank",
+      "spec": "Return the rank of each element of `values`, where rank 1 is the largest value.\n\nThe result is aligned with the input: result[i] is the rank of values[i]. Equal\nvalues share the same rank. Used to rank services by error count or latency in\nthe weekly reliability report.\n\n- An empty input returns [].\n\nExample:\n    rank_values([30, 10, 20]) == [1, 3, 2]",
+      "clarification": "Use standard competition ranking ('1224'): after a group of tied values the next\nrank skips by the size of the group, i.e. a value's rank is 1 + the number of values\nstrictly greater than it. rank_values([50, 80, 80, 20]) == [3, 1, 1, 4], not [2, 1, 1, 3].",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [
+        "leaderboard"
+      ],
+      "depth": 0,
+      "unit_test_path": "tests/test_rank_values.py",
+      "acceptance_path": "acceptance/test_rank_values.py",
+      "conflicting_test_name": "test_regression_issue_120",
+      "conflict_call": "rank_values([50, 80, 80, 20])",
+      "oneoff": {
+        "find": "== [5, 2, 2, 2, 1]",
+        "replace": "== [5, 4, 4, 4, 1]"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 2,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "moving_average",
+      "module_path": "src/metricore/moving_average.py",
+      "signature": "def moving_average(values: Sequence[float], window: int) -> List[float]:",
+      "summary": "Trailing simple moving average of a metric series",
+      "spec": "Return the trailing simple moving average of `values`.\n\nEach output point is the arithmetic mean of a window of `window` consecutive\ninput values ending at the corresponding input position (a trailing window,\nso no future values are used). Results are floats rounded with round(x, 2).\n\n- window must be >= 1, otherwise ValueError is raised.\n- An empty input returns [].\n\nExample:\n    moving_average([2, 4, 6, 8], 2)[-1] == 7.0",
+      "clarification": "The output always has the same length as the input so it lines up with the raw\nseries on a chart. For the first window - 1 positions, where a full window is not yet\navailable, average the values seen so far instead of dropping those positions:\nmoving_average([2, 4, 6, 8], 3) == [2.0, 3.0, 4.0, 6.0].",
+      "difficulty": "easy",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_moving_average.py",
+      "acceptance_path": "acceptance/test_moving_average.py",
+      "conflicting_test_name": "test_regression_issue_388",
+      "conflict_call": "moving_average([2, 4, 6, 8], 3)",
+      "oneoff": {
+        "find": "== 1.67",
+        "replace": "== 1.66"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "percent_shares",
+      "module_path": "src/metricore/percent_shares.py",
+      "signature": "def percent_shares(counts: Mapping[str, int]) -> Dict[str, int]:",
+      "summary": "Split category counts into whole percentages that sum to 100",
+      "spec": "Convert per-category counts into integer percentages that add up to exactly 100.\n\nUsed for the \"share of errors by service\" charts, where independently rounded\npercentages often add up to 99 or 101. Uses the largest remainder method:\n\n1. Compute each exact share: count * 100 / total.\n2. Give every category the integer part (floor) of its share.\n3. Hand out the remaining points (100 minus the sum of the floors) one at a\n   time to the categories with the largest fractional remainders.\n\n- Counts must be non-negative integers, otherwise ValueError is raised.\n- Raises ValueError if `counts` is empty or all counts are zero.\n- The returned dict has exactly the keys of `counts`.\n\nExample:\n    percent_shares({\"api\": 1, \"web\": 1, \"db\": 2}) == {\"api\": 25, \"web\": 25, \"db\": 50}",
+      "clarification": "When several categories have the same fractional remainder and there are not\nenough leftover points for all of them, the points go to the keys that sort first\nalphabetically, independent of the mapping's insertion order:\npercent_shares({\"web\": 1, \"api\": 1, \"db\": 1}) == {\"web\": 33, \"api\": 34, \"db\": 33}.",
+      "difficulty": "hard",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_percent_shares.py",
+      "acceptance_path": "acceptance/test_percent_shares.py",
+      "conflicting_test_name": "test_regression_issue_455",
+      "conflict_call": "percent_shares({\"web\": 1, \"api\": 1, \"db\": 1})",
+      "oneoff": {
+        "find": "== {\"a\": 33, \"b\": 67}",
+        "replace": "== {\"a\": 34, \"b\": 66}"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "count_breach_episodes",
+      "module_path": "src/metricore/count_breach_episodes.py",
+      "signature": "def count_breach_episodes(samples: Sequence[Optional[float]], threshold: float, min_duration: int = 1) -> int:",
+      "summary": "Count sustained SLA breach episodes in a per-minute latency series",
+      "spec": "Count breach episodes in a series of per-minute latency samples.\n\nA sample breaches the SLA when it is above `threshold`. An episode is a\nmaximal run of consecutive breaching samples; it is only counted if it lasts\nat least `min_duration` samples, so single-minute spikes can be ignored by\nraising min_duration. Minutes for which the scraper had no data appear in\n`samples` as None.\n\n- min_duration must be >= 1, otherwise ValueError is raised.\n- An empty series has 0 episodes.\n\nExample:\n    count_breach_episodes([100, 400, 450, 120, 500], 300) == 2",
+      "clarification": "A None sample (no data for that minute) neither breaches nor ends an episode: it is\nskipped, so the samples on both sides of the gap are treated as consecutive. It also does\nnot add to the episode's duration. count_breach_episodes([400, None, 420, 90], 300,\nmin_duration=2) == 1.",
+      "difficulty": "medium",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_count_breach_episodes.py",
+      "acceptance_path": "acceptance/test_count_breach_episodes.py",
+      "conflicting_test_name": "test_regression_issue_609",
+      "conflict_call": "count_breach_episodes([400, None, 420, 90], 300, min_duration=2)",
+      "oneoff": {
+        "find": "min_duration=3) == 1",
+        "replace": "min_duration=3) == 0"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "downsample",
+      "module_path": "src/metricore/downsample.py",
+      "signature": "def downsample(points: Sequence[Tuple[int, float]], bucket_seconds: int, agg: str = \"mean\") -> List[Tuple[int, float]]:",
+      "summary": "Downsample a timestamped series into fixed-width time buckets",
+      "spec": "Downsample (timestamp, value) points into fixed-width time buckets.\n\n`points` are (epoch_seconds, value) pairs and are not necessarily sorted.\nPoints are grouped into buckets that are `bucket_seconds` wide, and each\nbucket is reduced with `agg`:\n\n- \"mean\": arithmetic mean of the values, rounded with round(x, 2)\n- \"max\":  largest value\n- \"sum\":  sum of the values\n- \"last\": value of the point with the latest timestamp in the bucket\n\nReturns a list of (bucket_start, aggregated_value) tuples sorted by\nbucket_start, where bucket_start is the first second covered by the bucket.\nBuckets without points are omitted.\n\n- Raises ValueError if bucket_seconds < 1 or `agg` is not one of the above.\n- An empty input returns [].\n\nExample:\n    downsample([(0, 1.0), (30, 3.0), (60, 5.0)], 60) == [(0, 2.0), (60, 5.0)]",
+      "clarification": "Buckets are aligned to multiples of bucket_seconds since the epoch, not to the first\npoint of the series: bucket_start = ts - ts % bucket_seconds. With 60-second buckets a\npoint at t=90 belongs to the bucket starting at 60, even when it is the earliest point.\nThis keeps buckets from different series and different queries comparable.",
+      "difficulty": "hard",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_downsample.py",
+      "acceptance_path": "acceptance/test_downsample.py",
+      "conflicting_test_name": "test_regression_issue_731",
+      "conflict_call": "downsample(pts, 60, agg=\"sum\")",
+      "oneoff": {
+        "find": "[(0, 2.0), (60, 6.0), (120, 4.0)]",
+        "replace": "[(0, 2.0), (60, 10.0), (120, 4.0)]"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "histogram_quantile",
+      "module_path": "src/metricore/histogram_quantile.py",
+      "signature": "def histogram_quantile(q: float, bounds: Sequence[float], counts: Sequence[int]) -> float:",
+      "summary": "Estimate a latency quantile from histogram bucket counts",
+      "spec": "Estimate the q-quantile (0 <= q <= 1) from histogram bucket counts, the same way\nPrometheus' histogram_quantile() does for scraped latency histograms.\n\n`bounds` are the ascending bucket upper bounds and `counts` the number of\nobservations per bucket (not cumulative), with len(counts) == len(bounds) + 1:\nthe last count is the overflow bucket above the last bound (the layout that\nbucket_counts produces). The first bucket starts at 0.\n\nThe target rank is q * total. Walk the buckets accumulating counts and stop at\nthe first non-empty bucket whose cumulative count reaches the rank; then\ninterpolate linearly between that bucket's lower and upper bound according to\nwhere the rank falls inside the bucket. The result is rounded with round(x, 2).\n\n- Raises ValueError if q is outside [0, 1], if len(counts) != len(bounds) + 1,\n  or if the total count is 0.\n\nExample:\n    histogram_quantile(0.5, [100, 200], [10, 10, 0]) == 100.0",
+      "clarification": "If the rank falls into the overflow bucket there is no upper bound to interpolate\ntowards; return the last finite bound, bounds[-1], as Prometheus does. Never return\ninfinity: histogram_quantile(0.99, [100, 250, 500], [50, 30, 10, 10]) == 500.0.",
+      "difficulty": "hard",
+      "deps": [],
+      "dependents": [],
+      "depth": 0,
+      "unit_test_path": "tests/test_histogram_quantile.py",
+      "acceptance_path": "acceptance/test_histogram_quantile.py",
+      "conflicting_test_name": "test_regression_issue_818",
+      "conflict_call": "histogram_quantile(0.99, [100, 250, 500], [50, 30, 10, 10])",
+      "oneoff": {
+        "find": "== 375.0",
+        "replace": "== 400.0"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "percent_change",
+      "module_path": "src/metricore/percent_change.py",
+      "signature": "def percent_change(old: float, new: float) -> Optional[float]:",
+      "summary": "Percent change between two metric readings",
+      "spec": "Return the relative change from `old` to `new` as a percentage, rounded to 2\ndecimal places with metricore's round_half_up.\n\nUsed in week-over-week report columns (error counts, p95 latency, cost, net\ncapacity deltas). If `old` is 0 the change is undefined and None is returned.\n\nExamples:\n    percent_change(200, 250) == 25.0\n    percent_change(80, 60) == -25.0",
+      "clarification": "Measure the change relative to the magnitude of the baseline:\n(new - old) * 100 / abs(old). For metrics that can be negative (net deltas, balances) a\nrise must still come out positive: percent_change(-50, -25) == 50.0 and\npercent_change(-20, -30) == -50.0.",
+      "difficulty": "easy",
+      "deps": [
+        "round_half_up"
+      ],
+      "dependents": [
+        "latency_regression"
+      ],
+      "depth": 1,
+      "unit_test_path": "tests/test_percent_change.py",
+      "acceptance_path": "acceptance/test_percent_change.py",
+      "conflicting_test_name": "test_regression_issue_402",
+      "conflict_call": "percent_change(-50, -25)",
+      "oneoff": {
+        "find": "percent_change(800, 801) == 0.13",
+        "replace": "percent_change(800, 801) == 0.12"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "apdex_score",
+      "module_path": "src/metricore/apdex_score.py",
+      "signature": "def apdex_score(latencies_ms: Sequence[float], target_ms: float) -> float:",
+      "summary": "Compute the Apdex user-satisfaction score from request latencies",
+      "spec": "Compute the Apdex score of a set of request latencies.\n\nEach request is classified against the target time T = target_ms:\n\n- satisfied:  the request completed within T\n- tolerating: slower than T, but completed within 4 * T\n- frustrated: everything slower than that\n\nApdex = (satisfied + tolerating / 2) / total, rounded to 2 decimal places with\nmetricore's round_half_up.\n\n- Raises ValueError if latencies_ms is empty or target_ms <= 0.\n\nExample:\n    apdex_score([100, 200, 900, 3000], 250) == 0.63",
+      "clarification": "'Within' is inclusive for both thresholds, as in the Apdex specification: a latency\nexactly equal to T is satisfied and one exactly equal to 4 * T is tolerating.\napdex_score([250, 1000], 250) == 0.75.",
+      "difficulty": "easy",
+      "deps": [
+        "round_half_up"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_apdex_score.py",
+      "acceptance_path": "acceptance/test_apdex_score.py",
+      "conflicting_test_name": "test_regression_issue_260",
+      "conflict_call": "apdex_score([250, 1000], 250)",
+      "oneoff": {
+        "find": "apdex_score([50, 60, 70, 2000], 100) == 0.75",
+        "replace": "apdex_score([50, 60, 70, 2000], 100) == 0.88"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "error_budget_remaining",
+      "module_path": "src/metricore/error_budget_remaining.py",
+      "signature": "def error_budget_remaining(slo_target: float, total_requests: int, failed_requests: int) -> float:",
+      "summary": "Report how much of an availability SLO's error budget is left",
+      "spec": "Return the share of the error budget that is still unspent, as a percentage.\n\nFor an availability SLO such as 0.999 the error budget is the number of\nrequests that are allowed to fail: (1 - slo_target) * total_requests. The\nresult is (budget - failed_requests) / budget * 100, rounded to 1 decimal\nplace with metricore's round_half_up. 100.0 means none of the budget has been\nused yet.\n\n- slo_target must satisfy 0 < slo_target < 1, otherwise ValueError.\n- total_requests and failed_requests must be >= 0 and failed_requests must not\n  exceed total_requests, otherwise ValueError.\n- With total_requests == 0 nothing has been spent: return 100.0.\n\nExample:\n    error_budget_remaining(0.99, 10_000, 25) == 75.0",
+      "clarification": "An overspent budget is reported as a negative percentage rather than being clamped\nat 0.0, so the SLO dashboard shows how far over budget a service is:\nerror_budget_remaining(0.99, 1000, 30) == -200.0.",
+      "difficulty": "easy",
+      "deps": [
+        "round_half_up"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_error_budget_remaining.py",
+      "acceptance_path": "acceptance/test_error_budget_remaining.py",
+      "conflicting_test_name": "test_regression_issue_517",
+      "conflict_call": "error_budget_remaining(0.99, 1000, 30)",
+      "oneoff": {
+        "find": "== 66.7",
+        "replace": "== 66.6"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "zscores",
+      "module_path": "src/metricore/zscores.py",
+      "signature": "def zscores(values: Sequence[float]) -> List[float]:",
+      "summary": "Standardise a sample into z-scores",
+      "spec": "Return the z-score of every value: (value - mean) / std_dev(values), rounded to\n2 decimal places with metricore's round_half_up. The result is aligned with\nthe input. Uses metricore's std_dev so that z-scores agree with the anomaly\ndetector and the correlation helper.\n\n- Raises ValueError if `values` is empty.\n\nExample:\n    zscores([10, 20, 30])[1] == 0.0",
+      "clarification": "When the standard deviation is 0 (every value equal, which includes a single value)\nreturn 0.0 for every element instead of failing with ZeroDivisionError:\nzscores([5, 5, 5]) == [0.0, 0.0, 0.0]. Flat metrics are common (e.g. a queue that is\nalways empty) and must not break the report.",
+      "difficulty": "medium",
+      "deps": [
+        "std_dev",
+        "round_half_up"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_zscores.py",
+      "acceptance_path": "acceptance/test_zscores.py",
+      "conflicting_test_name": "test_regression_issue_689",
+      "conflict_call": "zscores([10, 20, 30])",
+      "oneoff": {
+        "find": "== [-1.22, 0.0, 1.22]",
+        "replace": "== [-1.23, 0.0, 1.23]"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "iqr_outliers",
+      "module_path": "src/metricore/iqr_outliers.py",
+      "signature": "def iqr_outliers(values: Sequence[float], k: float = 1.5) -> List[int]:",
+      "summary": "Flag outlier samples with Tukey's IQR fences",
+      "spec": "Return the indices of the outliers in `values` according to Tukey's IQR rule.\n\nQ1 and Q3 are the 25th and 75th percentiles of `values`, computed with\nmetricore's percentile(); IQR = Q3 - Q1. The fences are Q1 - k * IQR and\nQ3 + k * IQR, and a value strictly below the lower fence or strictly above the\nupper fence is an outlier. Indices are returned in ascending order.\n\n- Raises ValueError if `values` is empty or k < 0.\n\nExample:\n    iqr_outliers([10, 12, 11, 13, 12, 95]) == [5]",
+      "clarification": "Samples with fewer than 5 values are too small to judge: return [] for them without\ncomputing any fences (a single slow request in a 4-request window must not be reported).\niqr_outliers([10, 11, 12, 100]) == []. From 5 values on the normal rule applies.",
+      "difficulty": "medium",
+      "deps": [
+        "percentile"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_iqr_outliers.py",
+      "acceptance_path": "acceptance/test_iqr_outliers.py",
+      "conflicting_test_name": "test_regression_issue_150",
+      "conflict_call": "iqr_outliers([10, 11, 12, 100])",
+      "oneoff": {
+        "find": "== [9]",
+        "replace": "== []"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "latency_summary",
+      "module_path": "src/metricore/latency_summary.py",
+      "signature": "def latency_summary(latencies_ms: Sequence[float]) -> Dict[str, Optional[float]]:",
+      "summary": "Summarise a latency window for the service dashboard",
+      "spec": "Summarise a window of request latencies for the service dashboard.\n\nReturns a dict with exactly the keys \"count\", \"min\", \"mean\", \"p50\", \"p95\",\n\"p99\" and \"max\". \"count\" is an int; every other value is a float rounded to\n1 decimal place with metricore's round_half_up. Percentiles are computed with\nmetricore's percentile() on the unrounded data.\n\nExample:\n    latency_summary([10, 20, 30, 40])[\"mean\"] == 25.0",
+      "clarification": "An empty window (no traffic in that period) is not an error: return a dict with\n\"count\" set to 0 and every other key present with the value None, so the dashboard can\nrender a gap instead of failing:\nlatency_summary([]) == {\"count\": 0, \"min\": None, \"mean\": None, \"p50\": None, \"p95\": None,\n\"p99\": None, \"max\": None}.",
+      "difficulty": "medium",
+      "deps": [
+        "percentile",
+        "round_half_up"
+      ],
+      "dependents": [
+        "latency_regression"
+      ],
+      "depth": 1,
+      "unit_test_path": "tests/test_latency_summary.py",
+      "acceptance_path": "acceptance/test_latency_summary.py",
+      "conflicting_test_name": "test_regression_issue_377",
+      "conflict_call": "latency_summary([])",
+      "oneoff": {
+        "find": "== 7.3",
+        "replace": "== 7.2"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "uptime_percent",
+      "module_path": "src/metricore/uptime_percent.py",
+      "signature": "def uptime_percent(incidents: Sequence[Tuple[int, int]], window_start: int, window_end: int) -> float:",
+      "summary": "Compute availability over a reporting window from incident intervals",
+      "spec": "Return the availability of a service over a reporting window, in percent.\n\n`incidents` are (start, end) outage intervals in epoch seconds, as exported\nfrom the incident tracker; the reporting window is [window_start, window_end].\nOverlapping incidents (for example two alerts for the same outage) must not be\ncounted twice, so combine them with metricore's merge_intervals first. The\nresult is\n\n    100 * (window length - downtime) / window length\n\nrounded to 3 decimal places with metricore's round_half_up.\n\n- Raises ValueError if window_end <= window_start.\n- No incidents means 100.0.\n\nExample:\n    uptime_percent([(0, 36), (18, 72)], 0, 3600) == 98.0",
+      "clarification": "Only the part of an incident that lies inside [window_start, window_end] is downtime.\nThe tracker export is not pre-filtered: incidents that started before the window or were\nstill open after it are clipped to the window, and incidents entirely outside it are\nignored. uptime_percent([(-600, 360)], 0, 3600) == 90.0.",
+      "difficulty": "hard",
+      "deps": [
+        "merge_intervals",
+        "round_half_up"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_uptime_percent.py",
+      "acceptance_path": "acceptance/test_uptime_percent.py",
+      "conflicting_test_name": "test_regression_issue_590",
+      "conflict_call": "uptime_percent([(-600, 360)], 0, 3600)",
+      "oneoff": {
+        "find": "== 93.0",
+        "replace": "== 91.0"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "rolling_anomalies",
+      "module_path": "src/metricore/rolling_anomalies.py",
+      "signature": "def rolling_anomalies(values: Sequence[float], window: int, threshold: float = 3.0) -> List[int]:",
+      "summary": "Flag points that deviate from a rolling baseline",
+      "spec": "Flag points of a metric series that deviate strongly from their recent baseline.\n\nEach point is compared with a rolling baseline: the mean and the spread\n(metricore's std_dev) of a trailing window of `window` values. Point i is\nanomalous when\n\n    abs(values[i] - baseline_mean) > threshold * baseline_spread\n\nPoints for which a full baseline window is not available are never flagged.\nReturns the anomalous indices in ascending order.\n\n- Raises ValueError if window < 2 or threshold <= 0.\n\nExample:\n    rolling_anomalies([5, 5, 5, 5, 5, 5, 5, 5, 40], 8, threshold=2.0) == [8]",
+      "clarification": "The baseline for index i is the `window` values immediately before it,\nvalues[i - window] .. values[i - 1]; the point being checked is never part of its own\nbaseline (otherwise a spike inflates the spread and hides itself). The first index that\ncan be flagged is therefore i = window. rolling_anomalies([7, 7, 7, 8], 3) == [3].",
+      "difficulty": "hard",
+      "deps": [
+        "std_dev"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_rolling_anomalies.py",
+      "acceptance_path": "acceptance/test_rolling_anomalies.py",
+      "conflicting_test_name": "test_regression_issue_644",
+      "conflict_call": "rolling_anomalies([7, 7, 7, 8], 3)",
+      "oneoff": {
+        "find": "threshold=2.0) == [4]",
+        "replace": "threshold=2.0) == [4, 5]"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "lagged_correlation",
+      "module_path": "src/metricore/lagged_correlation.py",
+      "signature": "def lagged_correlation(xs: Sequence[float], ys: Sequence[float], lag: int = 0) -> float:",
+      "summary": "Pearson correlation between two metric series with an optional time lag",
+      "spec": "Return the Pearson correlation between two metric series, rounded to 3 decimal\nplaces with metricore's round_half_up.\n\nBoth series are sampled on the same time grid and must have the same length.\nWith lag == 0, xs[i] is paired with ys[i]. A non-zero `lag` compares the\nseries with a time shift of abs(lag) samples, which is how we check whether,\nsay, queue depth follows CPU usage with a delay; only the pairs that overlap\nafter the shift are used.\n\nOver the paired values, r = cov / (std_dev(x) * std_dev(y)) using metricore's\nstd_dev, where cov is the covariance computed with the same normalisation as\nstd_dev (so a series correlated with itself gives exactly 1.0).\n\n- Raises ValueError if the lengths differ, if fewer than 2 pairs remain after\n  the shift, or if either paired series is constant.\n\nExample:\n    lagged_correlation([1, 2, 3, 4], [10, 20, 30, 40]) == 1.0",
+      "clarification": "The shift is applied to ys: element xs[i] is paired with ys[i + lag]. A positive\nlag therefore means ys reacts `lag` samples after xs, a negative lag means ys leads.\nlagged_correlation([1, 5, 2, 8, 3], [0, 1, 5, 2, 8], lag=1) == 1.0.",
+      "difficulty": "medium",
+      "deps": [
+        "std_dev",
+        "round_half_up"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_lagged_correlation.py",
+      "acceptance_path": "acceptance/test_lagged_correlation.py",
+      "conflicting_test_name": "test_regression_issue_725",
+      "conflict_call": "lagged_correlation([1, 5, 2, 8, 3], [0, 1, 5, 2, 8], lag=1)",
+      "oneoff": {
+        "find": "== 0.8",
+        "replace": "== 0.64"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "percentile_by_group",
+      "module_path": "src/metricore/percentile_by_group.py",
+      "signature": "def percentile_by_group(records: Iterable[Mapping[str, Any]], key: str, field: str, p: float) -> Dict[Any, float]:",
+      "summary": "Per-group percentile of a field across log records",
+      "spec": "Group records by `key` and return the p-th percentile of `field` for each group.\n\nTypical use: p95 latency per endpoint from request-log records such as\n{\"endpoint\": \"/login\", \"latency_ms\": 120}. Percentiles are computed with\nmetricore's percentile() and rounded to 1 decimal place with metricore's\nround_half_up. The result maps each group value to its percentile.\n\n- Records whose `field` is missing or None carry no measurement and are\n  ignored; a group without any usable measurement does not appear in the result.\n- Raises ValueError if p is outside [0, 100] (also when there are no records).\n\nExample:\n    percentile_by_group([{\"ep\": \"a\", \"ms\": 10}, {\"ep\": \"a\", \"ms\": 30}, {\"ep\": \"b\", \"ms\": 7}],\n                        \"ep\", \"ms\", 50) == {\"a\": 20.0, \"b\": 7.0}",
+      "clarification": "Records that do have a measurement but no value for `key` (key missing or None) are\nnot dropped: they are collected under the group \"unknown\", so unlabelled traffic still\nshows up in the per-endpoint table. E.g. records {\"latency_ms\": 12} and\n{\"endpoint\": None, \"latency_ms\": 18} together form the group \"unknown\" with p50 15.0.",
+      "difficulty": "medium",
+      "deps": [
+        "percentile",
+        "round_half_up"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_percentile_by_group.py",
+      "acceptance_path": "acceptance/test_percentile_by_group.py",
+      "conflicting_test_name": "test_regression_issue_833",
+      "conflict_call": "percentile_by_group(recs, \"endpoint\", \"latency_ms\", 50)",
+      "oneoff": {
+        "find": "\"/login\": 117.0",
+        "replace": "\"/login\": 120.0"
+      },
+      "n_acceptance_asserts": 5,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    },
+    {
+      "id": "latency_regression",
+      "module_path": "src/metricore/latency_regression.py",
+      "signature": "def latency_regression(before_ms: Sequence[float], after_ms: Sequence[float], tolerance_pct: float = 10.0) -> Dict[str, Any]:",
+      "summary": "Compare latency before and after a deploy and flag regressions",
+      "spec": "Compare two latency samples, e.g. the hour before and the hour after a deploy.\n\nBoth samples are summarised with metricore's latency_summary, and for each of\n\"p50\", \"p95\" and \"p99\" the change from before to after is computed with\nmetricore's percent_change (which is None when the \"before\" value is 0).\nReturns:\n\n    {\n        \"changes\": {\"p50\": float or None, \"p95\": float or None, \"p99\": float or None},\n        \"regressed\": [percentiles that got slower by more than tolerance_pct percent],\n        \"verdict\": \"regression\" if \"regressed\" is non-empty, else \"ok\",\n    }\n\n\"regressed\" lists the names in the order p50, p95, p99.\n\n- Raises ValueError if either sample is empty or tolerance_pct < 0.\n\nExample:\n    latency_regression([100] * 10, [100] * 10)[\"verdict\"] == \"ok\"",
+      "clarification": "A percentile whose \"before\" value is 0 has no percent change (None in \"changes\"),\nbut it still counts as regressed when its \"after\" value is greater than 0: going from\n0 ms (e.g. fully cached) to any positive latency is a regression regardless of the\ntolerance. latency_regression([0, 0, 0, 0], [0, 0, 0, 5])[\"regressed\"] == [\"p95\", \"p99\"].",
+      "difficulty": "hard",
+      "deps": [
+        "latency_summary",
+        "percent_change"
+      ],
+      "dependents": [],
+      "depth": 2,
+      "unit_test_path": "tests/test_latency_regression.py",
+      "acceptance_path": "acceptance/test_latency_regression.py",
+      "conflicting_test_name": "test_regression_issue_906",
+      "conflict_call": "latency_regression([0, 0, 0, 0], [0, 0, 0, 5])",
+      "oneoff": {
+        "find": "== [\"p50\"]",
+        "replace": "== [\"p50\", \"p95\", \"p99\"]"
+      },
+      "n_acceptance_asserts": 7,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 4,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": false
+      }
+    },
+    {
+      "id": "leaderboard",
+      "module_path": "src/metricore/leaderboard.py",
+      "signature": "def leaderboard(totals: Mapping[str, float], limit: Optional[int] = None) -> List[Tuple[int, str, float]]:",
+      "summary": "Build the ranked top-offenders table for the weekly report",
+      "spec": "Turn per-service totals (error counts, minutes of downtime, ...) into ranked rows\nfor the weekly reliability report.\n\nReturns (rank, name, total) tuples ordered from the largest total to the\nsmallest; rows with equal totals are ordered by name (ascending). The rank\ncolumn comes from metricore's rank_values, so tied totals share a rank.\n`limit` restricts the table to the top of the ranking; None means no limit.\n\n- Raises ValueError if limit is not None and limit < 1.\n- An empty mapping returns [].\n\nExample:\n    leaderboard({\"auth\": 12, \"search\": 40, \"billing\": 7}) ==\n        [(1, \"search\", 40), (2, \"auth\", 12), (3, \"billing\", 7)]",
+      "clarification": "`limit` is applied by rank, not by row count: every row whose rank is <= limit is\nreturned, so services tied at the cut-off are never split and the result can be longer\nthan `limit`. leaderboard({\"a\": 5, \"b\": 9, \"c\": 5, \"d\": 1}, limit=2) ==\n[(1, \"b\", 9), (2, \"a\", 5), (2, \"c\", 5)].",
+      "difficulty": "medium",
+      "deps": [
+        "rank_values"
+      ],
+      "dependents": [],
+      "depth": 1,
+      "unit_test_path": "tests/test_leaderboard.py",
+      "acceptance_path": "acceptance/test_leaderboard.py",
+      "conflicting_test_name": "test_regression_issue_247",
+      "conflict_call": "leaderboard(totals, limit=2)",
+      "oneoff": {
+        "find": "(2, \"cdn\", 12), (4, \"billing\", 7)]",
+        "replace": "(2, \"cdn\", 12), (3, \"billing\", 7)]"
+      },
+      "n_acceptance_asserts": 6,
+      "validation": {
+        "ref_unit_pass": true,
+        "ref_acceptance_pass": true,
+        "n_acceptance_tests": 3,
+        "conflicting_ok": true,
+        "oneoff_ok": true,
+        "naive_unit_pass": true,
+        "naive_fails_acceptance": true,
+        "stub_fails_acceptance": true,
+        "coupled_to_dep_clarification": true
+      }
+    }
+  ],
+  "hubs": [
+    "percentile",
+    "round_half_up",
+    "std_dev"
+  ],
+  "max_depth": 2
+}
