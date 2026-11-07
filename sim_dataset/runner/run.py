@@ -38,7 +38,7 @@ ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(ROOT / "generator"))
 from fake import FakeAgentLLM, FakeJudge  # noqa: E402
-from jury import RUBRIC_VERSION, judge_run, merge_jury  # noqa: E402
+from jury import RUBRIC_VERSION, judge_run, jury_complete, merge_jury  # noqa: E402
 from features import NLI, build_features  # noqa: E402
 from labels import compute_labels  # noqa: E402
 from llm import AdaptionClient, AnthropicClient, load_secrets  # noqa: E402
@@ -80,12 +80,13 @@ def pick_keys(sec, spec, role="sim"):
     return [(i, keys[i]) for i in idx if i < len(keys)]
 
 
-def jury_current(run_dir: Path) -> bool:
-    p = run_dir / "jury_merged.jsonl"
-    if not p.exists():
-        return False
-    first = p.open().readline()
-    return bool(first.strip()) and json.loads(first).get("rubric") == RUBRIC_VERSION
+DEFAULT_JUDGES = "deepseek-v4-flash,claude-haiku-5-5"
+
+
+def jury_current(run_dir: Path, judges=None) -> bool:
+    """Complete = every judgeable message has a valid, current score from every judge (see jury.jury_complete).
+    Episodes with missing/failed/outdated scores are picked up again by `jury`."""
+    return jury_complete(run_dir, judges or DEFAULT_JUDGES.split(","))
 
 
 def finished_runs(out: Path):
@@ -160,11 +161,16 @@ async def jury(a):
             else:
                 keys = pick_keys(sec, a.keys, role="jury")
                 clients[j] = [AdaptionClient(k, i, per_minute=a.rpm) for i, k in keys]
-    asyncio.get_running_loop().set_default_executor(ThreadPoolExecutor(max_workers=64))
-    seen = set()
-    while True:
-        runs = [r for r in finished_runs(out) if r not in seen and not jury_current(r)]
-        for i, rd in enumerate(runs):
+    # Episodes are judged concurrently: up to 2 per Adaption jury key (each episode pinned to one key, the rate
+    # limiter per key does the pacing); the Anthropic client is shared (--anthropic-concurrency).
+    n_keys = max([len(c) for j, c in clients.items() if JUDGE_PROVIDER.get(j) == "adaption"] or [1])
+    parallel = a.jury_parallel or 2 * n_keys
+    asyncio.get_running_loop().set_default_executor(ThreadPoolExecutor(max_workers=64 + 8 * parallel))
+    attempts: dict = {}
+    MAX_ATTEMPTS = 3  # per episode and session; failed messages are retried, but no endless loop on one episode
+
+    async def judge_episode(i, rd, sem):
+        async with sem:
             tasks = []
             for j in judges:
                 c = clients[j][i % len(clients[j])]
@@ -172,11 +178,21 @@ async def jury(a):
                 tasks.append(judge_run(rd, j, c, group_size=group))
             n = await asyncio.gather(*tasks)
             m = merge_jury(rd, judges)
-            seen.add(rd)
-            print(f"jury {rd.relative_to(out)}: scored {n}, merged {m}", flush=True)
+            done = jury_current(rd, judges)
+            attempts[rd] = attempts.get(rd, 0) + (0 if done else 1)
+            note = "" if done else (f"  INCOMPLETE (attempt {attempts[rd]}/{MAX_ATTEMPTS})"
+                                    + (" - giving up for this session" if attempts[rd] >= MAX_ATTEMPTS else ""))
+            print(f"jury {rd.relative_to(out)}: scored {n}, merged {m}{note}", flush=True)
+
+    print(f"jury: {', '.join(judges)}; up to {parallel} episodes in parallel", flush=True)
+    while True:
+        runs = [r for r in finished_runs(out) if attempts.get(r, 0) < MAX_ATTEMPTS and not jury_current(r, judges)]
+        if runs:
+            sem = asyncio.Semaphore(parallel)
+            await asyncio.gather(*(judge_episode(i, rd, sem) for i, rd in enumerate(runs)))
         if not a.watch:
             break
-        await asyncio.sleep(60)
+        await asyncio.sleep(20 if runs else 45)
 
 
 async def selftest(a):
@@ -242,9 +258,12 @@ def main():
     ap.add_argument("--fake", action="store_true", help="fake LLMs, no network")
     ap.add_argument("--workers", type=int, default=3, help="parallel episodes in --fake mode")
     ap.add_argument("--out", default=str(ROOT / "runs"))
-    ap.add_argument("--judges", default="deepseek-v4-flash,claude-haiku-5-5")
+    ap.add_argument("--judges", default=DEFAULT_JUDGES)
     ap.add_argument("--group-deepseek", type=int, default=8, help="messages per DeepSeek call (same round)")
-    ap.add_argument("--anthropic-concurrency", type=int, default=8)
+    ap.add_argument("--anthropic-concurrency", type=int, default=24,
+                    help="parallel Haiku calls (account limit seen: 4000 req/min)")
+    ap.add_argument("--jury-parallel", type=int, default=0,
+                    help="episodes judged concurrently (default: 2 per Adaption jury key)")
     ap.add_argument("--watch", action="store_true")
     ap.add_argument("--no-nli", action="store_true", help="features: skip the NLI contradiction feature (NaN)")
     a = ap.parse_args()

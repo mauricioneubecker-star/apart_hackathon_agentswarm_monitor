@@ -259,6 +259,12 @@ Jeder Adaption-Key ist ein Worker mit ~95 Anfragen pro Minute. Eine 20-Runden-Ep
 Standard bei 5 Keys: Die Keys 0–3 simulieren (4 Episoden parallel, ~45 Episoden pro Stunde), Key 4
 gehört der Jury. Ohne `--keys` gilt diese Aufteilung automatisch.
 
+Skalieren: Das Rate-Limit gilt pro Key (`x-ratelimit-limit: 100`), eine Episode ist daran gebunden (480 Aufrufe
+≈ 303 s). Mehr Keys = mehr parallele Episoden, linear. Mit 9 Keys simulieren 0–7 (~95 Episoden/h), Key 8 ist die
+Jury. Ein Jury-Key reicht dafür: DeepSeek braucht ~50 Anfragen/min (8 Nachrichten pro Aufruf), Haiku läuft über
+Anthropic (Limit 4000 Anfragen/min, `--anthropic-concurrency 24`). Die Jury bewertet bis zu 2 Episoden pro
+Jury-Key parallel und holt fehlende oder veraltete Bewertungen automatisch nach.
+
 ```bash
 # 1a: 10 Probes à 5 Runden (≈ 3 min) -> invalid_json_rate, Hack-Rate, Eskalationen ansehen
 python3 runner/run.py simulate --where "batch=='pilot' and phase=='phase1a_probe'"

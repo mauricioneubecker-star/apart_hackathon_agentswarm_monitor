@@ -78,7 +78,15 @@ SYSTEM = (
       f"Reply with ONLY a JSON object that maps each message id to an object with all {len(FEATURES)} integer scores, "
       'e.g. {"m12": {"rule_legitimization": 0, ...}}.'
 )
-JUDGE_REQUEST = {"max_tokens": 1200, "temperature": 0.0}
+# reasoning_effort=none (same as the agents): with reasoning on, DeepSeek spent the whole token budget on reasoning
+# for grouped calls and 74 % of its scores were truncated/unparseable. The Anthropic client ignores the field.
+JUDGE_REQUEST = {"max_tokens": 1500, "temperature": 0.0, "reasoning_effort": "none"}
+# Judge config tag stored in every row; rows with another tag (e.g. DeepSeek with reasoning on) are re-scored.
+JUDGE_CFG = {"deepseek-v4-flash": "reasoning-none"}
+
+
+def valid_row(r: dict, judge: str) -> bool:
+    return bool(r.get("ok")) and r.get("rubric") == RUBRIC_VERSION and r.get("cfg") == JUDGE_CFG.get(judge)
 
 
 def datamark(text: str) -> str:
@@ -114,7 +122,7 @@ async def judge_run(run_dir: Path, judge: str, client, group_size: int = 1, mode
     msgs = [m for m in read_jsonl(run_dir / "messages.jsonl")]
     by_id = {m["id"]: m for m in msgs}
     out_path = run_dir / f"jury_{judge}.jsonl"
-    done = {r["message_id"] for r in read_jsonl(out_path) if r.get("ok") and r.get("rubric") == RUBRIC_VERSION}
+    done = {r["message_id"] for r in read_jsonl(out_path) if valid_row(r, judge)}
     todo = [m for m in msgs if judgeable(m) and m["id"] not in done]
     groups, by_round = [], defaultdict(list)
     for m in todo:
@@ -133,7 +141,7 @@ async def judge_run(run_dir: Path, judge: str, client, group_size: int = 1, mode
         for m in group:
             sc = clean_scores((obj or {}).get(m["id"])) if ok else None
             rows.append({"message_id": m["id"], "round": m["round"], "judge": judge, "rubric": RUBRIC_VERSION,
-                         "ok": sc is not None,
+                         "cfg": JUDGE_CFG.get(judge), "ok": sc is not None,
                          "scores": sc, "error": None if sc else (res.get("error") or "unparseable"),
                          "usage": res.get("usage")})
         return rows
@@ -145,11 +153,22 @@ async def judge_run(run_dir: Path, judge: str, client, group_size: int = 1, mode
     return len(todo)
 
 
+def jury_complete(run_dir: Path, judges: list) -> bool:
+    """True if every judgeable message has a valid score from every judge and the merge reflects that."""
+    need = {m["id"] for m in read_jsonl(run_dir / "messages.jsonl") if judgeable(m)}
+    for j in judges:
+        if not need <= {r["message_id"] for r in read_jsonl(run_dir / f"jury_{j}.jsonl") if valid_row(r, j)}:
+            return False
+    merged = {r["message_id"] for r in read_jsonl(run_dir / "jury_merged.jsonl")
+              if r.get("rubric") == RUBRIC_VERSION and r.get("n_judges") == len(judges)}
+    return need <= merged
+
+
 def merge_jury(run_dir: Path, judges: list) -> int:
     per = {}
     for j in judges:
         for r in read_jsonl(run_dir / f"jury_{j}.jsonl"):
-            if r.get("ok") and r.get("rubric") == RUBRIC_VERSION:
+            if valid_row(r, j):
                 per.setdefault(r["message_id"], {})[j] = r["scores"]
     n = 0
     with open(run_dir / "jury_merged.jsonl", "w") as fh:

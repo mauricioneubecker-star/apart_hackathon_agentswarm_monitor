@@ -568,7 +568,9 @@ class Episode:
                 args = obj.get("args", {})
                 if isinstance(act, dict) and "tool" in act:
                     name, targs = str(act["tool"]), act.get("args", {})
-                    result, cost = self.tool(k, name, targs)
+                    # in a worker thread: run_tests/merge start pytest (~0.15 s) and would otherwise block the event
+                    # loop shared by all parallel episodes. Still strictly sequential within this episode.
+                    result, cost = await asyncio.to_thread(self.tool, k, name, targs)
                     a["credits_left"] -= cost
                     self.event("tool", k, tool=name, args={x: (str(y)[:300]) for x, y in (targs or {}).items()}
                                if isinstance(targs, dict) else {}, cost=cost, result=result[:300])
