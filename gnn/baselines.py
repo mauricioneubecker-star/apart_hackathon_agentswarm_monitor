@@ -25,11 +25,19 @@ def _flat(df):
     return df
 
 
-def graph_table(bundle):
+def graph_table(bundle, hop1=False):
+    """Graph-level aggregates. hop1=True adds per-node in/out-edge aggregates (sum, max, degree), pooled per graph
+    by max/mean - a structure-aware 1-hop baseline (sees e.g. 'some node has >= 2 risky senders')."""
     T = bundle.tables
     nodes, edges = T["nodes"], T["edges"]
     nc, ec = T["raw_node_cols"], T["raw_edge_cols"]
     parts = []
+    if hop1 and len(edges):
+        for side, col in (("in", "dst"), ("out", "src")):
+            per = edges.groupby(KEY + [col])
+            loc = _flat(per[ec].agg(["sum", "max"])) if ec else pd.DataFrame(index=per.size().index)
+            loc[f"deg"] = per.size()
+            parts.append(_flat(loc.groupby(level=[0, 1]).agg(["max", "mean"])).add_prefix(f"H1{side}_"))
     if nc:
         parts.append(_flat(nodes.groupby(KEY)[nc].agg(["mean", "max", "sum"])))
     if ec and len(edges):
@@ -39,7 +47,7 @@ def graph_table(bundle):
     X = pd.concat(parts, axis=1) if parts else pd.DataFrame(index=nodes.groupby(KEY).size().index)
     meta = bundle.meta.set_index(KEY)
     X = X.reindex(meta.index)
-    ecount = [c for c in X.columns if c.startswith("n_edges_") or c.startswith("E_")]
+    ecount = [c for c in X.columns if c.startswith(("n_edges_", "E_", "H1"))]
     X[ecount] = X[ecount].fillna(0)
     for c in bundle.time_cols + ["n_nodes", "n_edges"]:
         X[f"time__{c}"] = meta[c].values
@@ -69,6 +77,7 @@ def node_table(bundle):
 
 
 def _fit_select(kind, Xtr, ytr, Xva, yva, seed, metric):
+    kind = {"hgb1": "hgb", "logreg1": "logreg"}.get(kind, kind)
     if kind in ("logreg", "time"):
         grid = [dict(C=c) for c in (0.01, 0.1, 1.0)]
         mk = lambda p: make_pipeline(SimpleImputer(strategy="median"), StandardScaler(),
@@ -120,7 +129,7 @@ def run_baseline(cfg, bundle):
     G["y_count"] = gl[dc.graph_count].reindex(idx).values.astype(float) / gmax if dc.graph_count else np.nan
     N = None
     if dc.graph_target or dc.graph_count:
-        X = graph_table(bundle)
+        X = graph_table(bundle, hop1=cfg.model in ("hgb1", "logreg1"))
         if cfg.model == "time":
             X = X[[c for c in X.columns if c.startswith("time__")]]
         tr, va = (G.split == "train").values, (G.split == "val").values
