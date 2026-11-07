@@ -44,6 +44,7 @@ class RunConfig:
     lam_graph: float = 1.0
     lam_count: float = 0.5
     lam_node: float = 1.0
+    lam_aux: float = 0.5
     pos_weight: str = "none"       # none | sqrt
     select: str = "graph.auprc"    # val metric for early stopping / model selection
     seed: int = 0
@@ -112,7 +113,7 @@ def train_gnn(cfg: RunConfig, bundle):
     _set_seed(cfg.seed)
     model = Monitor(bundle.node_dim, bundle.edge_dim, kind=cfg.model, h=cfg.hidden, layers=cfg.layers,
                     dropout=cfg.dropout, norm=cfg.norm, readout=cfg.readout, edge_readout=cfg.edge_readout,
-                    residual=cfg.residual, heads=cfg.heads)
+                    residual=cfg.residual, heads=cfg.heads, n_aux=len(cfg.data.node_aux))
     opt = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
     tr = bundle.graphs["train"]
     pw_g = pw_n = None
@@ -142,6 +143,8 @@ def train_gnn(cfg: RunConfig, bundle):
             loss = (cfg.lam_graph * masked_bce(og, b.y_graph, pw_g) if cfg.data.graph_target else 0.0) \
                 + (cfg.lam_count * masked_bce(oc, b.y_count) if cfg.data.graph_count else 0.0) \
                 + (cfg.lam_node * masked_bce(on, b.y_node, pw_n) if cfg.data.node_target else 0.0)
+            for j in range(len(cfg.data.node_aux)):
+                loss = loss + cfg.lam_aux * masked_bce(model.aux_out[:, j], b.y_aux[:, j]) / len(cfg.data.node_aux)
             if not torch.is_tensor(loss):
                 raise ValueError("no target configured")
             loss.backward()
@@ -213,6 +216,8 @@ def default_arm(cfg: RunConfig) -> str:
         parts.append("shuffled")
     if d.jury:
         parts.append(f"jury={d.jury}")
+    if d.node_aux:
+        parts.append("aux=" + "+".join(d.node_aux))
     return " ".join(parts)
 
 
@@ -220,7 +225,7 @@ def build_cfg(a: dict) -> RunConfig:
     """Flat dict (CLI / sweep spec) -> RunConfig."""
     dkeys = set(DataConfig.__dataclass_fields__)
     dd = {k: v for k, v in a.items() if k in dkeys}
-    for k in ("drop_groups", "include_groups"):
+    for k in ("drop_groups", "include_groups", "node_aux"):
         if isinstance(dd.get(k), str):
             dd[k] = tuple(x for x in dd[k].split(",") if x)
         elif dd.get(k) is not None:
@@ -245,6 +250,7 @@ def main():
     ap.add_argument("--graph-target")
     ap.add_argument("--graph-count")
     ap.add_argument("--node-target")
+    ap.add_argument("--node-aux", default="", help="comma-separated auxiliary node labels (training only)")
     ap.add_argument("--holdout", default="", help='JSON, e.g. {"matchup": ["selfplay-dataset/qwen3-4b"]}')
     ap.add_argument("--rewire", action="store_true")
     ap.add_argument("--shuffle-labels", action="store_true")
@@ -253,7 +259,7 @@ def main():
     for k, t, dflt in (("hidden", int, 64), ("layers", int, 3), ("dropout", float, 0.2), ("lr", float, 1e-3),
                        ("weight_decay", float, 1e-4), ("batch_size", int, 64), ("epochs", int, 200),
                        ("patience", int, 30), ("drop_edge", float, 0.1), ("lam_graph", float, 1.0),
-                       ("lam_count", float, 0.5), ("lam_node", float, 1.0), ("seed", int, 0), ("threads", int, 1)):
+                       ("lam_count", float, 0.5), ("lam_node", float, 1.0), ("lam_aux", float, 0.5), ("seed", int, 0), ("threads", int, 1)):
         ap.add_argument("--" + k.replace("_", "-"), type=t, default=dflt)
     ap.add_argument("--norm", default="batch")
     ap.add_argument("--readout", default="sum_max")

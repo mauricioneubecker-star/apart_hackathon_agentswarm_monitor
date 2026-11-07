@@ -31,7 +31,7 @@ import re
 import sys
 from collections import Counter, defaultdict
 
-VERSION = "amongus-adapter-v1-2026-11-07"
+VERSION = "amongus-adapter-v2-2026-11-07"
 PNUM = re.compile(r"Player (\d+)")
 PNAME = re.compile(r"(Player \d+: [a-z]+)")
 
@@ -74,18 +74,44 @@ def norm(text: str) -> str:
 
 SENT = re.compile(r"(?<=[.!?])\s+")
 
+# ------------------------------------------------------------------------- claims about places (tier 1, public text)
+ROOMS = ["cafeteria", "weapons", "navigation", "o2", "shields", "communications", "storage", "admin", "electrical",
+         "lower engine", "upper engine", "security", "reactor", "medbay"]
+_ROOM = "(" + "|".join(sorted(ROOMS, key=len, reverse=True)) + ")"
+SELF_CLAIM = re.compile(r"\bi(?: was|'m| am| went| moved| stayed| headed| walked| came)(?: [\w']+){0,6}? "
+                        r"(?:in|to|at|into|toward|towards|from|through) (?:the )?" + _ROOM + r"\b")
+SIGHT = re.compile(r"player (\d+)(?::? [a-z]+)?(?: [\w']+){0,6}? (?:in|at|near|into|toward|towards|to|from|"
+                   r"leaving|entering) (?:the )?" + _ROOM + r"\b")
+VOTE_INTENT = re.compile(r"(?:vote|voting|eject|ejecting)(?: [\w']+){0,3}? player (\d+)")
+SKIP_INTENT = re.compile(r"\b(?:vote|voting|i'll|i will|we should)(?: [\w']+){0,2}? skip\b")
+
+
+def claims(sent: str):
+    """(self-claimed rooms, {player_num: rooms placed}, {player_num explicitly voted against})."""
+    selfr = set(m.group(1) for m in SELF_CLAIM.finditer(sent))
+    sight = defaultdict(set)
+    for m in SIGHT.finditer(sent):
+        sight[m.group(1)].add(m.group(2))
+    votes = set(VOTE_INTENT.findall(sent))
+    return selfr, sight, votes
+
+
 # ------------------------------------------------------------------------------------------------- schema (tiers)
 EDGE_FEATURES = (
     [("m_count", 0, ["structure"]), ("m_current", 0, ["structure", "temporal"]), ("m_first_round", 0, ["temporal"])]
     + [(f"e_{k}", 1, ["lexicon"] + (["rule_near"] if k in ("accuse", "kill", "vote") else [])) for k in EDGE_LEX]
-    + [("e_question", 1, ["lexicon"]), ("v_count", 0, ["vote_history"]),
-       ("c_steps", 0, ["privileged"]), ("c_last", 0, ["privileged"])]
+    + [("e_question", 1, ["lexicon"]),
+       ("e_place", 1, ["claims"]), ("e_conflict", 1, ["claims"]), ("e_place_body", 1, ["claims"]),
+       ("e_vote_intent", 1, ["claims"]),
+       ("v_count", 0, ["vote_history"]), ("c_steps", 0, ["privileged"]), ("c_last", 0, ["privileged"])]
 )
 ETYPES = [("mention", 0, []), ("vote_prev", 0, ["vote_history"]), ("coloc", 0, ["privileged"])]
 NODE_FEATURES = (
     [("reporter", 0, ["meeting_meta"]), ("caller", 0, ["meeting_meta"]), ("own_speeches", 0, ["structure"])]
     + [(f"own_{k}", 1, ["lexicon"] + (["rule_near"] if k in ("accuse", "kill") else [])) for k in NODE_LEX]
-    + [("prev_votes_received", 0, ["vote_history"]), ("prev_voted_rev_impostor", 0, ["vote_history"]),
+    + [("self_rooms", 1, ["claims"]), ("self_claim_change", 1, ["claims"]), ("self_body_room", 1, ["claims"]),
+       ("contradicted_by", 1, ["claims"]), ("placed_at_body_by", 1, ["claims"]), ("skip_intent", 1, ["claims"]),
+       ("prev_votes_received", 0, ["vote_history"]), ("prev_voted_rev_impostor", 0, ["vote_history"]),
        ("prev_voted_rev_innocent", 0, ["vote_history"]), ("prev_skips", 0, ["vote_history"]),
        ("n_coloc_partners", 0, ["privileged"])]
 )
@@ -94,7 +120,9 @@ GRAPH_LABELS = {"innocent_ejected": {"type": "binary"}, "impostor_ejected": {"ty
                 "n_crew_votes_innocent": {"type": "count", "max": 7}}
 NODE_LABELS = {"votes_innocent": {"type": "binary", "note": "crewmates only"},
                "votes_skip": {"type": "binary", "note": "crewmates only"},
-               "is_impostor": {"type": "binary", "note": "control target"}}
+               "is_impostor": {"type": "binary", "note": "control target"},
+               "is_ejected": {"type": "binary", "note": "ejected in this meeting (structured readout target)"},
+               "votes_received": {"type": "count", "note": "votes received in this meeting"}}
 
 
 # ---------------------------------------------------------------------------------------------------------- parsing
@@ -127,19 +155,22 @@ def phase_of(rec) -> str:
 
 def parse_game_log(path):
     """Per meeting (in order): reporter, ejected name, forced-speech set {(round, pid)}."""
-    meetings, cur, pending_reporter = [], None, None
+    meetings, cur, pending_reporter, pending_body = [], None, None, None
     rnd = 0
     for line in open(path, encoding="utf-8", errors="replace"):
         if "[FORCED REPORT]" in line:
             m = PNAME.search(line)
             pending_reporter = m.group(1) if m else None
+            mb = re.search(r"dead body in ([A-Za-z0-9 ]+?)\s*(?:—|-|$)", line)
+            pending_body = mb.group(1).strip().lower() if mb else None
         m = re.search(r"Discussion round (\d+)", line)
         if m:
             rnd = int(m.group(1))
             if rnd == 0:
-                cur = {"reporter": pending_reporter, "ejected": None, "forced": set(), "result": None}
+                cur = {"reporter": pending_reporter, "body_room": pending_body, "ejected": None, "forced": set(),
+                       "result": None}
                 meetings.append(cur)
-                pending_reporter = None
+                pending_reporter = pending_body = None
             continue
         if cur is None:
             continue
@@ -294,31 +325,57 @@ def process_experiment(exp_dir, root, ood_models, W, stats):
                 first = {}
                 own = defaultdict(Counter)
                 n_own = Counter()
+                self_rooms = defaultdict(set)            # player -> rooms they claim to have been in
+                self_rooms_r = defaultdict(lambda: defaultdict(set))   # player -> round -> rooms
+                placed = defaultdict(set)                # (speaker, target) -> rooms speaker places target in
+                skip_int = Counter()
+                body = ml.get("body_room")
                 for (r0, s, text) in sp:
                     tx = norm(text)
                     n_own[s] += 1
                     for key in NODE_LEX:
                         own[s][key] += lex(tx, key)
+                    skip_int[s] += int(bool(SKIP_INTENT.search(tx)))
                     ment_speech = set()
                     for sent in SENT.split(tx):
                         ds = {f"P{x}" for x in PNUM.findall(sent.replace("player", "Player"))} - {s}
                         ds &= set(alive)
+                        sr, sight, vint = claims(sent)
+                        self_rooms[s] |= sr
+                        self_rooms_r[s][r0] |= sr
+                        for num, rooms in sight.items():
+                            d = f"P{num}"
+                            if d in alive and d != s:
+                                placed[(s, d)] |= rooms
                         for d in ds:
                             ment_speech.add(d)
                             for key in EDGE_LEX:
                                 E[(s, d)][f"e_{key}"] += lex(sent, key)
                             E[(s, d)]["e_question"] += int("?" in sent)
+                            E[(s, d)]["e_vote_intent"] += int(d[1:] in vint)
                     for d in ment_speech:
                         E[(s, d)]["n"] += 1
                         if r0 == rd:
                             E[(s, d)]["cur"] = 1
                         first[(s, d)] = min(first.get((s, d), 9), r0)
+                # claim consistency: speaker places target in a room the target never claimed
+                contradicted, placed_body = Counter(), Counter()
+                for (s, d), rooms in placed.items():
+                    conflict = int(bool(self_rooms[d]) and bool(rooms - self_rooms[d]))
+                    at_body = int(bool(body) and body in rooms)
+                    E[(s, d)]["e_place"], E[(s, d)]["e_conflict"], E[(s, d)]["e_place_body"] = 1, conflict, at_body
+                    contradicted[d] += conflict
+                    placed_body[d] += at_body
+                    E[(s, d)].setdefault("n", 0)
+                    first.setdefault((s, d), 0)
                 for (s, d), c in E.items():
                     row = {"episode_id": eid, "t": t, "src": s, "dst": d, "etype": "mention",
                            "m_count": round(math.log1p(c["n"]), 4), "m_current": c["cur"],
                            "m_first_round": first[(s, d)] / 2}
                     for key in EDGE_LEX + ["question"]:
                         row[f"e_{key}"] = round(math.log1p(c[f"e_{key}"]), 4)
+                    row.update(e_place=c["e_place"], e_conflict=c["e_conflict"], e_place_body=c["e_place_body"],
+                               e_vote_intent=round(math.log1p(c["e_vote_intent"]), 4))
                     W["edges"].writerow(row)
                 for (s, d), n in v_edge.items():
                     W["edges"].writerow({"episode_id": eid, "t": t, "src": s, "dst": d, "etype": "vote_prev",
@@ -335,6 +392,12 @@ def process_experiment(exp_dir, root, ood_models, W, stats):
                            "n_coloc_partners": len({b for (a, b) in coloc if a == p})}
                     for key in NODE_LEX:
                         row[f"own_{key}"] = round(own[p][key] / max(n_own[p], 1), 4)
+                    rr = [self_rooms_r[p][x] for x in sorted(self_rooms_r[p]) if self_rooms_r[p][x]]
+                    row.update(self_rooms=min(len(self_rooms[p]), 3) / 3,
+                               self_claim_change=int(len(rr) > 1 and any(not (a & b) for a, b in zip(rr, rr[1:]))),
+                               self_body_room=int(bool(body) and body in self_rooms[p]),
+                               contradicted_by=contradicted[p], placed_at_body_by=placed_body[p],
+                               skip_intent=min(skip_int[p], 3))
                     W["nodes"].writerow(row)
                     is_crew = ident.get(p) == "Crewmate"
                     vt = votes.get(p)
@@ -343,7 +406,9 @@ def process_experiment(exp_dir, root, ood_models, W, stats):
                         "votes_innocent": (int(vt not in (None, "SKIP") and ident.get(vt) == "Crewmate")
                                            if is_crew and vt is not None else ""),
                         "votes_skip": int(vt == "SKIP") if is_crew and vt is not None else "",
-                        "is_impostor": int(ident.get(p) == "Impostor")})
+                        "is_impostor": int(ident.get(p) == "Impostor"),
+                        "is_ejected": int(p == ej),
+                        "votes_received": sum(1 for v in votes.values() if v == p)})
                 W["graph_labels"].writerow({"episode_id": eid, "t": t,
                                             "innocent_ejected": int(ej_ident == "Crewmate"),
                                             "impostor_ejected": int(ej_ident == "Impostor"),

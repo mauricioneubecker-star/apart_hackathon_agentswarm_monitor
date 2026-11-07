@@ -24,7 +24,7 @@ def make_conv(kind: str, h: int, heads: int = 4):
 
 class Monitor(nn.Module):
     def __init__(self, node_dim, edge_dim, kind="gine", h=64, layers=3, dropout=0.2, norm="batch",
-                 readout="sum_max", edge_readout=False, residual=True, heads=4):
+                 readout="sum_max", edge_readout=False, residual=True, heads=4, n_aux=0):
         super().__init__()
         self.kind, self.dropout, self.residual = kind, dropout, residual
         self.readout, self.edge_readout = readout, edge_readout or kind == "none"
@@ -40,9 +40,9 @@ class Monitor(nn.Module):
         if readout == "attention":
             from torch_geometric.nn import AttentionalAggregation
             self.att = AttentionalAggregation(nn.Linear(h, 1))
-        head = lambda i: nn.Sequential(nn.Linear(i, h), nn.ReLU(), nn.Dropout(dropout), nn.Linear(h, 1))
+        head = lambda i, o=1: nn.Sequential(nn.Linear(i, h), nn.ReLU(), nn.Dropout(dropout), nn.Linear(h, o))
         self.head_graph, self.head_count = head(g_dim), head(g_dim)
-        self.head_node = head(h + g_dim)
+        self.head_node = head(h + g_dim, 1 + n_aux)   # column 0 = node target, 1.. = auxiliary node targets
 
     def pool(self, x, batch):
         if self.readout == "sum_max":
@@ -75,8 +75,9 @@ class Monitor(nn.Module):
             g = torch.cat([g, e_mean, e_max, torch.log1p(cnt)[:, None]], 1)
         out_g = self.head_graph(g).squeeze(-1)
         out_c = self.head_count(g).squeeze(-1)
-        out_n = self.head_node(torch.cat([x, g[data.batch]], 1)).squeeze(-1)
-        return out_g, out_c, out_n
+        out_n = self.head_node(torch.cat([x, g[data.batch]], 1))
+        self.aux_out = out_n[:, 1:]
+        return out_g, out_c, out_n[:, 0]
 
 
 def n_params(m):

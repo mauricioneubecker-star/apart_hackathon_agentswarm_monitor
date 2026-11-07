@@ -20,6 +20,7 @@ class DataConfig:
     graph_target: str | None = None     # binary graph label
     graph_count: str | None = None      # count graph label (regression, scaled by schema max)
     node_target: str | None = None      # binary node label
+    node_aux: tuple = ()                # extra node labels used only as auxiliary training targets
     holdout: dict = field(default_factory=dict)   # {episodes column: [values]} -> split "test_ood"
     reverse_edges: bool = True
     rewire: bool = False                # degree-preserving control: permute dst within snapshot and etype
@@ -132,6 +133,7 @@ def load(cfg: DataConfig, verbose: bool = True) -> Bundle:
     yc_d = dict(zip(_keys(glr, KEY), glr[cfg.graph_count].astype(float))) if cfg.graph_count else {}
     nlr = nl.reset_index()
     yn_d = dict(zip(_keys(nlr, KEY + ["node_id"]), nlr[cfg.node_target].astype(float))) if cfg.node_target else {}
+    aux_d = [dict(zip(_keys(nlr, KEY + ["node_id"]), nlr[c].astype(float))) for c in cfg.node_aux]
 
     src_all, dst_all = edges.src.values.astype(str), edges.dst.values.astype(str)
     et_all, nid_all = edges.etype.values.astype(str), nodes.node_id.values.astype(str)
@@ -170,9 +172,11 @@ def load(cfg: DataConfig, verbose: bool = True) -> Bundle:
         yg = yg_d.get(key, float("nan"))
         yc = yc_d.get(key, float("nan")) / gmax
         yn = np.array([yn_d.get((eid, t, n), np.nan) for n in nid], np.float32)
+        ya = np.array([[d.get((eid, t, n), np.nan) for d in aux_d] for n in nid], np.float32).reshape(len(nid), -1)
         data.y_graph = torch.tensor([yg], dtype=torch.float32)
         data.y_count = torch.tensor([yc], dtype=torch.float32)
         data.y_node = torch.from_numpy(yn)
+        data.y_aux = torch.from_numpy(ya)
         data.sid = torch.tensor([len(rows)])
         rows.append({"episode_id": eid, "t": t, "split": split, "group_id": group_of[eid], "n_nodes": len(nid),
                      "n_edges": len(keep), **{c: snap_d[c].get(key, np.nan) if c in snap_d else t
@@ -194,10 +198,12 @@ def load(cfg: DataConfig, verbose: bool = True) -> Bundle:
         # node labels: permute across ALL train nodes (a within-graph shuffle would keep graph-level signal)
         flat = torch.cat([g.y_node for g in tr])
         flat = flat[torch.from_numpy(rng.permutation(len(flat)))]
+        flat_a = torch.cat([g.y_aux for g in tr])
+        flat_a = flat_a[torch.from_numpy(rng.permutation(len(flat_a)))]
         i = 0
         for g in tr:
             n = len(g.y_node)
-            g.y_node, i = flat[i:i + n].clone(), i + n
+            g.y_node, g.y_aux, i = flat[i:i + n].clone(), flat_a[i:i + n].clone(), i + n
 
     b = Bundle()
     b.cfg, b.schema, b.graphs, b.meta = cfg, schema, {k: v for k, v in graphs.items() if v}, meta
