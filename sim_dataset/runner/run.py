@@ -206,10 +206,13 @@ async def selftest(a):
     jury = set(sec.get("jury_keys", []))
 
     async def one(i, k):
-        r = await AdaptionClient(k, i).chat("qwen3.8-27b", msg, max_tokens=20, temperature=0, reasoning_effort="none")
+        c = AdaptionClient(k, i)
+        r = await c.chat("qwen3.8-27b", msg, max_tokens=20, temperature=0, reasoning_effort="none")
         role = "jury" if i in jury else "simulation"
-        print(f"adaption key {i} ({k[:8]}…{k[-4:]}, {role}): status={r['status']} "
-              f"text={str(r['text'])[:30]!r} err={str(r['error'])[:120]}")
+        lim = f"{c.server_limit}/min" if c.server_limit else "unknown"
+        warn = "  <- low limit: ~5x slower per episode" if c.server_limit and c.server_limit < 50 else ""
+        print(f"adaption key {i} ({k[:8]}…{k[-4:]}, {role}, limit {lim}): status={r['status']} "
+              f"text={str(r['text'])[:30]!r} err={str(r['error'])[:120]}{warn}")
     await asyncio.gather(*(one(i, k) for i, k in enumerate(sec["adaption"])))
     if sec["anthropic"]:
         c = AnthropicClient(sec["anthropic"])

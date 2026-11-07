@@ -93,7 +93,19 @@ class AdaptionClient:
     def __init__(self, key: str, idx: int, per_minute: int = 95, max_retries: int = 6, timeout: float = 180):
         self.key, self.idx, self.timeout, self.max_retries = key, idx, timeout, max_retries
         self.limiter = RateLimiter(per_minute)
+        self.server_limit = None
         self.stats = {"calls": 0, "errors": 0, "retries": 0, "input_tokens": 0, "output_tokens": 0}
+
+    def _adapt_rate(self, hdr: dict):
+        """Keys have different limits (seen: 100 and 20 req/min). Pace each key at 95 % of the limit the server
+        reports in x-ratelimit-limit instead of bursting into 429s."""
+        try:
+            lim = int((hdr or {}).get("x-ratelimit-limit") or 0)
+        except (TypeError, ValueError):
+            return
+        if lim > 0:
+            self.server_limit = lim
+            self.limiter.per_minute = min(self.limiter.per_minute, max(1, int(lim * 0.95)))
 
     async def chat(self, model: str, messages: list, **params) -> dict:
         body = {"model": model, "messages": messages, **params}
@@ -102,6 +114,7 @@ class AdaptionClient:
         for attempt in range(1, self.max_retries + 1):
             await self.limiter.acquire()
             st, js, hdr = await asyncio.to_thread(_post, f"{ADAPTION_BASE}/chat/completions", headers, body, self.timeout)
+            self._adapt_rate(hdr)
             if st == 200:
                 break
             if st == 429:
