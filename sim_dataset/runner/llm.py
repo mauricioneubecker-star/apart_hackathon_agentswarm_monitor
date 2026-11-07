@@ -142,7 +142,8 @@ class AnthropicClient:
     async def chat(self, model: str, messages: list, max_tokens: int = 600, temperature: float = 0.0, **_) -> dict:
         system = "\n\n".join(m["content"] for m in messages if m["role"] == "system")
         msgs = [m for m in messages if m["role"] != "system"]
-        body = {"model": model, "max_tokens": max_tokens, "temperature": temperature, "messages": msgs}
+        # `temperature` is deprecated for current Claude models (400 if sent) -> accepted but not forwarded.
+        body = {"model": model, "max_tokens": max_tokens, "messages": msgs}
         if system:
             body["system"] = system
         headers = {"x-api-key": self.key, "anthropic-version": "2023-06-01", "content-type": "application/json"}
