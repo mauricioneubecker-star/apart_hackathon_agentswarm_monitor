@@ -3,3 +3,5 @@ secrets.local.json
 *.key
 __pycache__/
 .DS_Store
+data/
+results/

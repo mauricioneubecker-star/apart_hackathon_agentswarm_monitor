@@ -276,7 +276,7 @@ def features_cmd(a):
         print(f"NLI model not available ({getattr(nli, 'err', '')}); 'contradiction' will be NaN. "
               "Install transformers + torch or pass --no-nli.")
     for rd in finished_runs(Path(a.out)):
-        meta = build_features(ds.load(rd.parent.name), rd, nli)
+        meta = build_features(ds.load(rd.parent.name), rd, nli, jury=a.jury)
         print(f"{rd.parent.name} {rd.name}: edges={meta['n_edges']} jury_coverage={meta['jury_coverage']} "
               f"nli={meta['nli']['available']}")
 
@@ -309,6 +309,8 @@ def main():
                     help="episodes judged concurrently (default: 2 per Adaption jury key)")
     ap.add_argument("--watch", action="store_true")
     ap.add_argument("--no-nli", action="store_true", help="features: skip the NLI contradiction feature (NaN)")
+    ap.add_argument("--jury", default=None, help="features: single judge (e.g. deepseek-v4-flash, claude-haiku-5-5) "
+                    "-> graph_*_<judge>.csv for the judge-swap ablation; default merged jury")
     a = ap.parse_args()
     if a.cmd == "simulate":
         asyncio.run(simulate(a))

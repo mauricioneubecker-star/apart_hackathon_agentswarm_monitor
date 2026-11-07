@@ -1,0 +1,33 @@
+{
+  "out": "results/amx_phase3",
+  "workers": 2,
+  "seeds": [0, 1, 2],
+  "base": {"data_dir": "data/amongus_selfplay_v2", "strata": ["round", "matchup"],
+           "epochs": 150, "patience": 20, "batch_size": 128},
+  "arms": [
+    {"arm": "IMP A1 GINE", "model": "gine", "node_target": "is_impostor", "select": "node.auprc"},
+    {"arm": "IMP A2 GatedGCN", "model": "gated", "node_target": "is_impostor", "select": "node.auprc"},
+    {"arm": "IMP A3 Transformer", "model": "transformer", "node_target": "is_impostor", "select": "node.auprc"},
+    {"arm": "IMP K0 no-MP", "model": "none", "node_target": "is_impostor", "select": "node.auprc"},
+    {"arm": "IMP K1 LogReg", "model": "logreg", "node_target": "is_impostor", "select": "node.auprc", "seeds": [0]},
+    {"arm": "IMP K2 HGB", "model": "hgb", "node_target": "is_impostor", "select": "node.auprc", "seeds": [0]},
+    {"arm": "IMP Kt time-only", "model": "time", "node_target": "is_impostor", "select": "node.auprc", "seeds": [0]},
+    {"arm": "IMP C1 GINE rewired", "model": "gine", "node_target": "is_impostor", "select": "node.auprc", "rewire": true},
+    {"arm": "IMP X3 GINE -claims", "model": "gine", "node_target": "is_impostor", "select": "node.auprc", "drop_groups": ["claims"]},
+    {"arm": "IMP X1 GINE +privileged", "model": "gine", "node_target": "is_impostor", "select": "node.auprc", "include_groups": ["privileged"]},
+    {"arm": "WIN A1 GINE +aux", "model": "gine", "graph_target": "game_impostor_win", "node_aux": ["is_impostor"], "select": "graph.auprc"},
+    {"arm": "WIN A3 Transformer +aux", "model": "transformer", "graph_target": "game_impostor_win", "node_aux": ["is_impostor"], "select": "graph.auprc"},
+    {"arm": "WIN K0 no-MP +aux", "model": "none", "graph_target": "game_impostor_win", "node_aux": ["is_impostor"], "select": "graph.auprc"},
+    {"arm": "WIN K1 LogReg", "model": "logreg", "graph_target": "game_impostor_win", "select": "graph.auprc", "seeds": [0]},
+    {"arm": "WIN K2 HGB", "model": "hgb", "graph_target": "game_impostor_win", "select": "graph.auprc", "seeds": [0]},
+    {"arm": "WIN Kt time-only", "model": "time", "graph_target": "game_impostor_win", "select": "graph.auprc", "seeds": [0]},
+    {"arm": "OOD IMP A1 GINE", "model": "gine", "node_target": "is_impostor", "select": "node.auprc", "seeds": [0, 1],
+     "holdout": {"matchup": ["eval-among-us-sp-claude", "llama-3.3-70b"]}},
+    {"arm": "OOD IMP A3 Transformer", "model": "transformer", "node_target": "is_impostor", "select": "node.auprc", "seeds": [0, 1],
+     "holdout": {"matchup": ["eval-among-us-sp-claude", "llama-3.3-70b"]}},
+    {"arm": "OOD IMP K2 HGB", "model": "hgb", "node_target": "is_impostor", "select": "node.auprc", "seeds": [0],
+     "holdout": {"matchup": ["eval-among-us-sp-claude", "llama-3.3-70b"]}},
+    {"arm": "OOD IMP K1 LogReg", "model": "logreg", "node_target": "is_impostor", "select": "node.auprc", "seeds": [0],
+     "holdout": {"matchup": ["eval-among-us-sp-claude", "llama-3.3-70b"]}}
+  ]
+}
