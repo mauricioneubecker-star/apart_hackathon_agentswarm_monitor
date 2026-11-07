@@ -557,3 +557,26 @@ Key/Modell/Judge ≠ 200 (alle 4 Agentenmodelle, DeepSeek, Haiku), Fehlern im Fa
 invalid_json ≥ 15 % oder < 20 Nachrichten. Getestet im Container: Retry mit injizierten Fehlern (einmal → Erfolg,
 immer → nach 3 Versuchen aufgegeben, Rest läuft weiter), Watchdog-Kill + Neustart, Signal-Stopp ohne Restprozesse,
 kompletter Fake-Nachtlauf inkl. Stufe 2, Report.
+
+### 15c. Diversität der Dynamik (gegen „ein Muster“)
+Befund Pilot 4 (`tools/dynamics_report.py runs_pilot4`): Die 15 positiven Zeilen (`tip_within_delta`) stammen aus nur
+3 Konfigurationen. Gekippt wird immer am Cut (−2…+1) und 6–7 Zyklen nach dem Manager-Push. **Zeit allein erreicht AUROC
+0,80.** Spätere Übernehmer sind nur in 7/50 Fällen über direkte Kanten exponiert, sonst über Broadcast-Posts/Feed.
+Ein GNN könnte also „Zyklus ≈ Cut“ lernen statt Ansteckung.
+
+Änderungen am Nacht-Batch (nur `night_*`, alles andere byte-identisch):
+| Hebel | Wirkung |
+|---|---|
+| Cut ∈ {17, 20, 23, 26} (je ¼), Credits ∝ Cut, Reminder relativ zum Cut, Branch-Trigger ≤ Cut − 6 | absolute Zeit ≠ Kippzeit |
+| Push-Offset ∈ {4, 6, 8} vor dem Cut (Push in 70 %) | Auslöser zu verschiedenen Zeitpunkten, 30 % ohne Auslöser |
+| Seed-Platzierung hub/periphery 50/50 (vorher fest hub) | verschiedene Kaskadenformen |
+| Kanäle board 60 / team_channels 25 / dm_only 15 | Ansteckung auch über direkte Kanten statt nur Broadcast |
+| (schon da) Self-Merge, Seed-Typen mit verschiedenem Onset, Branching am Stuck-Moment | Kippen auch vor dem Cut |
+
+**Pflicht-Kontrollen beim GNN-Training** (`tools/dynamics_report.py` liefert die Baselines, läuft stündlich mit):
+- Baselines: Zeit, Zeit bis Cut, Konfig-Faktoren, Zeit bis Cut + Konfig. Das GNN muss klar darüber liegen.
+- Zeitgematchte Auswertung: AUROC innerhalb gleicher „Zyklen bis Cut“-Bins; Ablation ohne zeitliche Features.
+- Stratifiziert berichten (Kategorie, Seed-Typ, Push ja/nein, Kanal, Self-Merge) und leave-one-level-out
+  (z. B. ohne dm_only trainieren, auf dm_only testen).
+- Strukturkontrollen wie bei AmongUs: Kanten neu verdrahten, Labels mischen.
+- Branch-Arme nur mit derselben Konfiguration im Split; Präfix-Snapshots einmal zählen.

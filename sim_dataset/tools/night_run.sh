@@ -59,6 +59,7 @@ postproc() {                                                       # labels, fea
   $PY runner/run.py features --missing-only --out "$OUT" >> "$LOG/features.log" 2>&1 || \
     $PY runner/run.py features --missing-only --no-nli --out "$OUT" >> "$LOG/features.log" 2>&1
   $PY tools/night_report.py "$OUT" > "$LOG/report.md.tmp" 2>> "$LOG/night.log" && mv "$LOG/report.md.tmp" "$LOG/report.md"
+  $PY tools/dynamics_report.py "$OUT" > "$LOG/dynamics.md.tmp" 2>> "$LOG/night.log" && mv "$LOG/dynamics.md.tmp" "$LOG/dynamics.md"
 }
 ( while sleep 3600; do postproc; echo "$(ts) hourly report refreshed" >> "$LOG/night.log"; done ) &
 POST_LOOP=$!

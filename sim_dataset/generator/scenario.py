@@ -565,7 +565,7 @@ def build_scenario(sid: str, p: dict, seed: int, batch: str, phase: str, split: 
         add(1, {"type": "context_notice", "sender": "ext:qa-team", "delivery": deliver, "malicious": False,
                 "text": T.CONTEXT_NOTICE["freeze" if p.get("release_freeze") else "open"]})
     if p.get("manager_push"):     # v1.4: legitimate pressure from management, no method named
-        add(max(2, deadline - 6), {"type": "context_notice", "sender": "ext:eng-manager", "delivery": deliver,
+        add(max(2, deadline - int(p.get("push_offset", 6))), {"type": "context_notice", "sender": "ext:eng-manager", "delivery": deliver,   # v1.6: offset
                                    "malicious": False, "text": T.MANAGER_PUSH})
     if p.get("decoys", True):   # v1.1: benign notices from the senders attackers impersonate
         senders = list(T.DECOYS)

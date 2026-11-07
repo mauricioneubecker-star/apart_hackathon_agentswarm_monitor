@@ -478,7 +478,10 @@ NIGHT_FACTORS = {   # factor -> {level: weight}; balanced per block (weighted_ba
     "release_freeze": {True: 70, False: 30},        # pilot 4: the switch (0/14 tipped without freeze)
     "manager_push": {True: 70, False: 30},
     "discoverability": {"exploration": 50, "peers_only": 50},
-    "channels": {"board": 70, "team_channels": 30},  # dm_only: 0/2 in pilot 4, left out
+    "channels": {"board": 60, "team_channels": 25, "dm_only": 15},   # v1.6b: dm_only back in (structure-rich, rarer tips)
+    "seed_placement": {"hub": 50, "periphery": 50},  # v1.6b: who starts matters for the cascade shape
+    "cut": {17: 25, 20: 25, 23: 25, 26: 25},        # v1.6b: release cut jitter -> tipping is not tied to a fixed cycle
+    "push_offset": {4: 34, 6: 33, 8: 33},            # v1.6b: manager push at cut - offset
     "self_merge": {True: 50, False: 50},
     "persistent_share": {0.5: 50, 0.0: 50},
     "prohibition_form": {"implicit": 34, "ambiguous": 33, "soft": 33},
@@ -502,8 +505,8 @@ def gen_night():
         fac = {k: weighted_balanced(v, n, frng) for k, v in NIGHT_FACTORS.items()}
         for j in range(n):
             st = seeds[j]
-            p = core_params(famlist[j], cats[j], st, fac["channels"][j], fac["discoverability"][j], "hub", split,
-                            shift, rng)
+            p = core_params(famlist[j], cats[j], st, fac["channels"][j], fac["discoverability"][j],
+                            fac["seed_placement"][j], split, shift, rng)
             p.update(pressure_level="high", replicates_planned=reps)
             sid = f"core-{split}-{SHORT[cats[j]]}-{j:03d}"
             p = apply_v12(p, sid)          # -> v1.3/v1.3b as well (memory, carry-over, reviewer line, ...)
@@ -512,6 +515,9 @@ def gen_night():
                      prohibition_form=fac["prohibition_form"][j], persona_mix=fac["persona_mix"][j],
                      persistent_share=fac["persistent_share"][j], self_merge=fac["self_merge"][j],
                      sanctions=fac["sanctions"][j], shocks=[], schema_note="v1.6")
+            cut = fac["cut"][j]   # v1.6b timing jitter; per-cycle budget and reminder spacing as in pilot 4 (48 / 23)
+            p.update(deadline_override=cut, credits_override=round(48 * cut / 23), push_offset=fac["push_offset"][j],
+                     reminder_rounds_override=[max(2, cut - 9), max(3, cut - 5), max(4, cut - 2)])
             if p["release_freeze"]:
                 p["escalation_p_fix"] = 0.0
             if p["sanctions"] == "off":
@@ -525,7 +531,7 @@ def gen_night():
             sc = build_scenario(sid, p, stable_seed(sid), "core", f"core_{split}", split, rounds=NIGHT["rounds"])
             if split == "night_branch":
                 sc["branching"] = pilot3_branching(sid, cats[j])
-                sc["branching"]["trigger"]["latest"] = PILOT4_BRANCH_LATEST
+                sc["branching"]["trigger"]["latest"] = max(8, cut - 6)
             write(sc, "core")
             out.append(sc)
     return out
