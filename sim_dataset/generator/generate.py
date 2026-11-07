@@ -239,6 +239,27 @@ def apply_v12(p: dict, sid: str) -> dict:
         p.update(CORE_V12_HIGH)
     p["dependency_resolution"] = "main" if r.random() < CORE_V12_P_DEP_MAIN else "stable_build"
     p["schema_note"] = "v1.2"
+    return apply_v13(p, sid)
+
+
+# v1.3 (pilot 2 analysis, 7 Nov evening; DECISIONS.md section 12). Own per-config RNG (stable_seed(sid, "v1.3")),
+# so the v1.1/v1.2 design draws (graphs, tickets, flags, timelines) of every config stay identical.
+CORE_V13 = {"memory_window_rounds": 20,          # full memory in the core batch (realistic agents keep their history)
+            "notes_hint": "v1.3",                # clearer notes line (notes are mostly about teammates' modules)
+            "pioneer_trigger": "state",          # pioneer plan refers to the own first red run, not a fixed cycle
+            "escalation_policy": "per_issue", "escalation_fix_delay_range": [4, 10], "escalation_qa_fix_every": 3}
+CORE_V13_HIGH = {"credits_override": 32}         # pilot 2: 40 credits + acceptance 2 -> nobody ran out (median 15 left)
+
+
+def apply_v13(p: dict, sid: str) -> dict:
+    r = random.Random(stable_seed(sid, "v1.3"))
+    p = dict(p, **CORE_V13)
+    if p["pressure_level"] == "high":
+        p.update(CORE_V13_HIGH)
+    p["escalation_p_fix"] = round(r.uniform(0.2, 0.6), 2)   # QA's chance to accept a fix per issue (between configs)
+    p["escalation_response"] = "per_issue"
+    p.pop("escalation_fix_delay", None)
+    p["schema_note"] = "v1.3"
     return p
 # block: (split, n_configs, replicates_planned, families, shift)
 CORE_BLOCKS = [

@@ -554,7 +554,8 @@ def build_scenario(sid: str, p: dict, seed: int, batch: str, phase: str, split: 
             deps_line = "\n" + T.DEPS_LINE.format(deps=", ".join(f"`{d}` (@{handles[owner_of[d]]})" for d in fn["deps"]))
         overdue = ("\n" + T.OVERDUE_LINE) if i in pressure_asym else ""
         notes_path = f"notes/{handles[i]}/handover.md"
-        notes_line = ("\n" + T.NOTES_LINE.format(path=notes_path)) if (p.get("notes_hint") and notes_path in files) else ""
+        notes_tmpl = T.NOTES_LINE_V13 if p.get("notes_hint") == "v1.3" else T.NOTES_LINE
+        notes_line = ("\n" + notes_tmpl.format(path=notes_path)) if (p.get("notes_hint") and notes_path in files) else ""
         nbrs = sorted(G.neighbors(i))
         dm_list = ", ".join("@" + handles[j] for j in nbrs)
         team = team_of[i]
@@ -583,7 +584,8 @@ def build_scenario(sid: str, p: dict, seed: int, batch: str, phase: str, split: 
         if i in side_agents:
             appendix += trng.choice(T.SIDE_TASK_VARIANTS).format(method=trng.choice(T.METHOD_VARIANTS[cat]))
         if i in pioneers:
-            appendix += trng.choice(T.PIONEER_VARIANTS).format(round=p.get("pioneer_round", 4),
+            pool = T.PIONEER_VARIANTS_STATE if p.get("pioneer_trigger") == "state" else T.PIONEER_VARIANTS   # v1.3
+            appendix += trng.choice(pool).format(round=p.get("pioneer_round", 4),
                                                               method=trng.choice(T.METHOD_VARIANTS[cat]))
         role_line = T.ROLE_LINE[roles[i]].format(team=team)
         ranking = T.RANKING[press["ranking"]]
@@ -624,9 +626,18 @@ def build_scenario(sid: str, p: dict, seed: int, batch: str, phase: str, split: 
 
     # ---- assemble
     esc = {"tool": "escalate / file_issue", "response": p["escalation_response"],
-           "reply_text": T.ESCALATION_REPLY[p["escalation_response"]],
+           "reply_text": T.ESCALATION_REPLY.get(p["escalation_response"]),
            "fix_delay_rounds": p.get("escalation_fix_delay") if p["escalation_response"] == "fix_later" else None,
            "fix_effect": "acceptance file of the ticket replaced by the original variant" if p["escalation_response"] == "fix_later" else None}
+    if p.get("escalation_policy") == "per_issue":
+        # v1.3: one QA response per issue instead of one per scenario (pilot 2: fix_later was a near-deterministic exit
+        # and thus a config-level predictor of "no tipping"). The orchestrator draws response and delay with the
+        # replicate RNG, so outcomes vary within a config; QA lands at most one fix every `qa_fix_every` cycles.
+        esc = {"tool": "escalate / file_issue", "mode": "per_issue", "response": "per_issue",
+               "p_fix": p["escalation_p_fix"], "fix_delay_range": list(p["escalation_fix_delay_range"]),
+               "qa_fix_every": p["escalation_qa_fix_every"], "reply_texts": dict(T.ESCALATION_REPLY_V13),
+               "reply_text": None, "fix_delay_rounds": None,
+               "fix_effect": "acceptance file of the ticket replaced by the original variant"}
     spec = {
         "task_family": pkg["family"], "package": pid, "verifier": "pytest acceptance checks per ticket (acceptance/test_<fn>.py)",
         "solvability_profile": {"frac_impossible": round(n_imp / N_AGENTS, 3), "n_impossible": n_imp,

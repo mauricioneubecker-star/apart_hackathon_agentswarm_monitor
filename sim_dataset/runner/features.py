@@ -1,7 +1,11 @@
 """Graph snapshots with feature catalog v1 (2026-11-07, see FEATURES.md).
 
 One snapshot per round t = 1..R. Window W(t) = rounds [t-w+1, t] (w = labels_config.window_w = 3).
-An edge i->j exists in snapshot t if i addressed j in W(t) (labels.message_edges: DM, @mention, reply).
+An edge i->j exists in snapshot t if j read a message of i in W(t) (labels.message_edges_typed, v1.3):
+  direct    i addressed j and j received it (DM recipient, @mention, reply target)
+  broadcast j read i's channel post without being addressed (every other member of #sprint / the team channel)
+Content features aggregate over both kinds; direct_volume / bcast_volume tell them apart. Reply-based features
+(responsiveness, reciprocity, unanswered_share, NLI premise) use direct edges only.
 
 Inputs : messages.jsonl, jury_merged.jsonl (LLM features), scenario (roles, public ticket deps),
          events.jsonl ONLY for the two tool-activity ablation features (tier "tool", never in S0-S3).
@@ -24,9 +28,9 @@ from collections import defaultdict
 from pathlib import Path
 
 from jury import FEATURES as JURY_FEATURES, INTERPRETIVE, RUBRIC_VERSION
-from labels import message_edges, read_jsonl
+from labels import message_edges_typed, read_jsonl
 
-CATALOG_VERSION = "v1-2026-11-07"
+CATALOG_VERSION = "v1.1-2026-11-07"   # v1.1: broadcast edges, phantom mention edges removed
 EMA_ALPHA = 0.5
 NLI_MODEL = os.environ.get("SWARM_NLI_MODEL", "cross-encoder/nli-deberta-v3-xsmall")
 NAN = float("nan")
@@ -59,6 +63,8 @@ EDGE_CATALOG = [
     (19, "escalation_lex", ["escalation_lex"], 1, "none", ["protective"], "max over W of escalation/rule-lexicon hits (0-3)"),
     (20, "jury_disagreement", ["jury_disagreement"], 3, "llm_jury", [],
      "mean over W of mean |judge1-judge2| over the interpretive dimensions"),
+    (21, "direct_volume", ["direct_volume"], 0, "none", [], "log1p(#direct messages i->j in W) (v1.1)"),
+    (22, "bcast_volume", ["bcast_volume"], 0, "none", [], "log1p(#channel posts of i read by j without addressing in W) (v1.1)"),
 ]
 NODE_CATALOG = [
     (1, "bcast_mech_ref", ["bcast_mech_ref"], 1, "none", ["rule_near"], "max mech_ref of own unaddressed posts in W"),
@@ -197,7 +203,8 @@ def build_features(sc: dict, run_dir: Path, nli: NLI | None = None) -> dict:
             d[k] = j["mean"][k] if j else NAN
         d["disagree"] = _mean([j["absdiff"].get(k) for k in INTERPRETIVE]) if j else NAN
         mf[m["id"]] = d
-    edges_of = {m["id"]: message_edges(m) for m in msgs}
+    typed_of = {m["id"]: message_edges_typed(m) for m in msgs}
+    edges_of = {mid: [(s, d) for s, d, k in te if k == "direct"] for mid, te in typed_of.items()}   # direct only
 
     # NLI premises: replied-to message, else last earlier message from d to s
     last_to = {}   # (s, d) -> latest message id d->s seen so far (strictly earlier rounds)
@@ -220,17 +227,19 @@ def build_features(sc: dict, run_dir: Path, nli: NLI | None = None) -> dict:
     contra = dict(zip(keys, (nli or NLI(False)).contradiction(pairs)))
 
     # index: messages per directed edge and round; unaddressed posts per sender
-    on_edge = defaultdict(list)   # (s, d) -> [(round, mid)]
-    first_pair = {}
-    bcast = defaultdict(list)     # sender -> [(round, mid)]
+    on_edge = defaultdict(list)   # (s, d) -> [(round, mid)], all reading edges (direct + broadcast)
+    on_direct = defaultdict(list)  # (s, d) -> [(round, mid)], direct edges only (reply-based features)
+    first_pair = {}               # first DIRECT contact of a pair (new_contact)
+    bcast = defaultdict(list)     # sender -> [(round, mid)]: own channel posts that address nobody directly
     for m in msgs:
-        es = edges_of[m["id"]]
-        if not es:
+        if not edges_of[m["id"]]:
             bcast[m["sender"]].append((m["round"], m["id"]))
-        for s, d in es:
+        for s, d, kind in typed_of[m["id"]]:
             on_edge[(s, d)].append((m["round"], m["id"]))
-            key = tuple(sorted((s, d)))
-            first_pair[key] = min(first_pair.get(key, 99), m["round"])
+            if kind == "direct":
+                on_direct[(s, d)].append((m["round"], m["id"]))
+                key = tuple(sorted((s, d)))
+                first_pair[key] = min(first_pair.get(key, 99), m["round"])
 
     def in_win(lst, lo, hi):
         return [mid for r, mid in lst if lo <= r <= hi]
@@ -248,8 +257,9 @@ def build_features(sc: dict, run_dir: Path, nli: NLI | None = None) -> dict:
             mids = in_win(lst, lo, t)
             if not mids:
                 continue
-            back = on_edge.get((d, s), [])
-            earlier = [(r, mid) for r, mid in lst if lo <= r <= t - 1]
+            dmids = in_win(on_direct.get((s, d), []), lo, t)
+            back = on_direct.get((d, s), [])
+            earlier = [(r, mid) for r, mid in on_direct.get((s, d), []) if lo <= r <= t - 1]
             answered = [any(r < rb <= t for rb, _ in back) for r, _ in earlier]
             n_back = len(in_win(back, lo, t))
             prev_l = win_max((s, d), "rule_legitimization", t - w) if t - w >= 1 else 0.0
@@ -267,15 +277,17 @@ def build_features(sc: dict, run_dir: Path, nli: NLI | None = None) -> dict:
                 "goal_shift": _max([mf[x]["goal_shift"] for x in mids]),
                 "unverified_authority": _max([mf[x]["unverified_authority"] for x in mids]),
                 "responsiveness": _r(sum(answered) / len(answered)) if answered else NAN,
-                "reciprocity": _r(n_back / (n_back + len(mids))),
+                "reciprocity": _r(n_back / (n_back + len(dmids))) if (n_back + len(dmids)) else NAN,
                 "legitimization_trend": _r(cur_l - prev_l) if not math.isnan(cur_l) else NAN,
-                "new_contact": int(first_pair[tuple(sorted((s, d)))] >= lo),
+                "new_contact": int(first_pair.get(tuple(sorted((s, d))), 99) >= lo) if dmids else 0,
                 "mech_ref_ema": _r(ema[(s, d)]),
                 "pressure_lex": _max([mf[x]["pressure_lex"] for x in mids]),
                 "secrecy": _max([mf[x]["secrecy"] for x in mids]),
                 "frustration": _r(_mean([mf[x]["frustration"] for x in mids])),
                 "escalation_lex": _max([mf[x]["escalation_lex"] for x in mids]),
                 "jury_disagreement": _r(_mean([mf[x]["disagree"] for x in mids])),
+                "direct_volume": _r(math.log1p(len(dmids))),
+                "bcast_volume": _r(math.log1p(len(mids) - len(dmids))),
             })
 
     # nodes: all agents + external senders that appear
@@ -309,7 +321,7 @@ def build_features(sc: dict, run_dir: Path, nli: NLI | None = None) -> dict:
             risky = {s for (s, d), lst in on_edge.items() if d == n
                      for x in in_win(lst, t - 2 * w + 1, t) if mf[x]["mech_ref"] > 0}
             mine = [(r, mid) for r, mid in own[n] if lo <= r <= t - 1 and edges_of[mid]]
-            unans = [not any(any(r < rb <= t for rb, _ in on_edge.get((d, n), [])) for _, d in edges_of[mid])
+            unans = [not any(any(r < rb <= t for rb, _ in on_direct.get((d, n), [])) for _, d in edges_of[mid])
                      for r, mid in mine]
             s_now, s_prev = stance(n, lo, t), (stance(n, t - 2 * w + 1, t - w) if t - w >= 1 else NAN)
             node_rows.append({
