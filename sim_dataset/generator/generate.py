@@ -735,6 +735,9 @@ def build_index():
     import pandas as pd
     rows = []
     for f in sorted(OUT.glob("*/*.json")):
+        if " " in f.name:   # v1.6c: skip sync-conflict copies ("<id> 2.json" from iCloud/Finder), they duplicate ids
+            print(f"note: skipped {f.relative_to(OUT)} (sync-conflict copy?)")
+            continue
         sc = json.loads(f.read_text())
         rows.append(index_row(sc, str(f.relative_to(ROOT / "dataset"))))
     df = pd.DataFrame(rows)
