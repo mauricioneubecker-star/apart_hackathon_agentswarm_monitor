@@ -30,6 +30,18 @@ und sie stehen in `graph_meta.json`.
 ## Kantenfeatures (Rang = erwartete Relevanz)
 Pro Nachricht bewertet, auf die Kante i→j über das Fenster W(t) = Runden [t−2, t] aggregiert.
 
+**Kanten ab Katalog v1.1 (7. Nov., `labels.message_edges_typed`):** Eine Kante i→j gibt es, wenn j eine Nachricht
+von i gelesen hat.
+- **direct:** DM-Empfänger, @Mention oder Reply-Ziel, und nur wenn j die Nachricht wirklich bekommen hat. v1 hat
+  auch Mentions von Dritten in DMs als Kante gezählt („@tobi has the notes“ an jemand anderen): 189 Phantomkanten
+  in Pilot 1+2.
+- **broadcast:** jedes andere Mitglied des Kanals (#sprint, Team-Channel), das ein Post von i liest. In v1 fehlten
+  diese Kanten ganz, das waren ca. 13.000 Lese-Expositionen.
+
+Inhaltsfeatures aggregieren über beide Arten. `direct_volume` und `bcast_volume` unterscheiden sie.
+`responsiveness`, `reciprocity`, `unanswered_share` und die NLI-Prämisse nutzen nur direkte Kanten
+(`reciprocity` ist NaN, wenn es im Fenster keine direkte Nachricht in beide Richtungen gibt). `new_contact` zählt den ersten direkten Kontakt.
+
 | # | Spalte | Typ | Aggregation | Gruppe | Verankerung |
 |---|---|---|---|---|---|
 | 1 | `mech_ref` | ⚪ | max distinkter Shortcut-Artefakt-Muster (0–3) | regelnah | Wissenstransfer (Paglieri et al. 2026) |
@@ -52,6 +64,8 @@ Pro Nachricht bewertet, auf die Kante i→j über das Fenster W(t) = Runden [t�
 | 18 | `frustration` | 🟠 | Mittel | | weich Festsitzende |
 | 19 | `escalation_lex` | ⚪ | max Lexikon-Treffer (0–3) | Schutz | Speaking up; MAST FC3 |
 | 20 | `jury_disagreement` | 🔴 abgeleitet | Mittel \|J1−J2\| über die 🔴-Dimensionen | | Messunsicherheit |
+| 21 | `direct_volume` | ⚪ | log1p(#direkte Nachrichten) (v1.1) | Struktur | |
+| 22 | `bcast_volume` | ⚪ | log1p(#gelesene Kanal-Posts ohne Adressierung) (v1.1) | Struktur | |
 
 Bilanz: 5 × 🔴 plus 2 daraus abgeleitet, 4 × 🟠, 1 × 🔵, 8 × ⚪.
 
