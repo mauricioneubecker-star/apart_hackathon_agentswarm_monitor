@@ -89,9 +89,21 @@ class RateLimiter:
         self.blocked_until = max(self.blocked_until, time.monotonic() + seconds)
 
 
+class ApiUnavailable(RuntimeError):
+    """A call still failed after all retries for a transient reason (network down, 5xx, 429). The orchestrator
+    aborts the episode instead of continuing with lost agent turns; run.py re-queues it once the API is back."""
+
+
+def is_transient_failure(out: dict) -> bool:
+    st = out.get("status")
+    return st is None or st == 429 or st >= 500
+
+
 class AdaptionClient:
-    def __init__(self, key: str, idx: int, per_minute: int = 95, max_retries: int = 6, timeout: float = 180):
+    def __init__(self, key: str, idx: int, per_minute: int = 95, max_retries: int = 6, timeout: float = 180,
+                 net_patience: float = 600):
         self.key, self.idx, self.timeout, self.max_retries = key, idx, timeout, max_retries
+        self.net_patience = net_patience  # seconds of network errors (DNS, connect, timeout) tolerated per call
         self.limiter = RateLimiter(per_minute)
         self.server_limit = None
         self.stats = {"calls": 0, "errors": 0, "retries": 0, "input_tokens": 0, "output_tokens": 0}
@@ -111,11 +123,24 @@ class AdaptionClient:
         body = {"model": model, "messages": messages, **params}
         headers = {"Authorization": f"Bearer {self.key}", "Content-Type": "application/json"}
         t0, attempt, st, js, hdr = time.time(), 0, None, {}, {}
-        for attempt in range(1, self.max_retries + 1):
+        tries, net_since = 0, None
+        while True:
+            attempt += 1
             await self.limiter.acquire()
             st, js, hdr = await asyncio.to_thread(_post, f"{ADAPTION_BASE}/chat/completions", headers, body, self.timeout)
             self._adapt_rate(hdr)
             if st == 200:
+                break
+            if st is None:  # network error: keep waiting up to net_patience (short outages stay invisible)
+                net_since = net_since or time.time()
+                if time.time() - net_since > self.net_patience:
+                    break
+                self.stats["retries"] += 1
+                await asyncio.sleep(min(2 ** min(attempt, 5), 30))
+                continue
+            net_since = None
+            tries += 1
+            if tries >= self.max_retries:
                 break
             if st == 429:
                 reset = hdr.get("retry-after") or hdr.get("x-ratelimit-reset")

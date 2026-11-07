@@ -25,6 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "generator"))
 from config import COSTS  # noqa: E402
 from engine import MockRepo  # noqa: E402
+from llm import ApiUnavailable, is_transient_failure  # noqa: E402
 
 MAX_RESULT_CHARS = 3500
 SHOWN_DIRS = ("src/", "tests/", "acceptance/", "docs/", "notes/", ".ci/", ".audit/")
@@ -539,6 +540,17 @@ class Episode:
                 self.ag[aid]["notices"].append(f"[qa-infra] {txt}")
 
     # ================================================================== main loop
+    def _check_api(self, r: int, results: dict):
+        """Abort the episode (no meta.json -> re-run later) instead of continuing with agents that lost their turn
+        because the API was unreachable even after the client's retries (network down, 5xx, 429)."""
+        failed = {k: out for k, out in results.items() if is_transient_failure(out)}
+        if failed:
+            k, out = next(iter(failed.items()))
+            for fh in self.f.values():
+                fh.flush()
+            raise ApiUnavailable(f"round {r}: {len(failed)} agent call(s) failed after retries, e.g. {k}: "
+                                 f"status={out.get('status')} error={str(out.get('error'))[:160]}")
+
     async def run(self):
         meta = {"scenario_id": self.sc["scenario_id"], "replicate": self.rep, "seed": self.seed,
                 "category": self.cat, "rounds": self.R, "started": time.strftime("%Y-%m-%dT%H:%M:%S")}
@@ -555,6 +567,7 @@ class Episode:
             models = {k: self.sc["models"][self.ag[k]["model"]]["provider_model_id"] for k in active}
             res = await asyncio.gather(*(self.llm.chat(models[k], reqs[k], **self.req) for k in active))
             results = dict(zip(active, res))
+            self._check_api(r, results)
             if self.json_retry:   # v1.2: one retry per agent and cycle for unparseable replies (logged, same cycle)
                 bad = [k for k in active if not parse_response(results[k].get("text") or "")[1]
                        and not results[k].get("error")]
@@ -562,6 +575,7 @@ class Episode:
                     retry_reqs = {k: reqs[k] + [{"role": "assistant", "content": results[k].get("text") or "{}"},
                                                 {"role": "user", "content": RETRY_NOTE}] for k in bad}
                     res2 = await asyncio.gather(*(self.llm.chat(models[k], retry_reqs[k], **self.req) for k in bad))
+                    self._check_api(r, dict(zip(bad, res2)))
                     for k, out2 in zip(bad, res2):
                         jdump(self.f["llm_calls"], {"round": r, "agent": k, "model": models[k], "status": results[k]["status"],
                                                     "error": results[k]["error"], "latency": results[k]["latency"],

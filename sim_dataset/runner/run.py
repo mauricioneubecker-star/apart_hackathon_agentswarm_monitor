@@ -41,7 +41,7 @@ from fake import FakeAgentLLM, FakeJudge  # noqa: E402
 from jury import RUBRIC_VERSION, judge_run, jury_complete, merge_jury  # noqa: E402
 from features import NLI, build_features  # noqa: E402
 from labels import compute_labels  # noqa: E402
-from llm import AdaptionClient, AnthropicClient, load_secrets  # noqa: E402
+from llm import ADAPTION_BASE, AdaptionClient, AnthropicClient, ApiUnavailable, load_secrets  # noqa: E402
 from orchestrator import Episode  # noqa: E402
 from query import Dataset  # noqa: E402
 
@@ -66,6 +66,34 @@ def require_pytest():
     if r.returncode != 0:
         sys.exit(r.stdout + r.stderr + "\nCI sandbox check failed - refusing to run agent code without isolation.")
     print("sandbox check: OK (no network, no keys/home/dataset access, no subprocesses for agent code)")
+
+
+_api_wait_lock = None
+
+
+async def wait_for_api(interval: float = 30):
+    """Block until the Adaption host accepts TCP connections again (DNS + connect). Shared by all workers."""
+    global _api_wait_lock
+    import socket
+    from urllib.parse import urlparse
+    host = urlparse(ADAPTION_BASE).hostname
+
+    def reachable() -> bool:
+        try:
+            socket.create_connection((host, 443), timeout=5).close()
+            return True
+        except OSError:
+            return False
+
+    _api_wait_lock = _api_wait_lock or asyncio.Lock()
+    async with _api_wait_lock:  # one worker probes and prints, the others wait behind it
+        if await asyncio.to_thread(reachable):
+            return
+        t = time.time()
+        print(f"API host {host} unreachable - waiting (probe every {interval:.0f}s) ...", flush=True)
+        while not await asyncio.to_thread(reachable):
+            await asyncio.sleep(interval)
+        print(f"API host reachable again after {(time.time() - t) / 60:.1f} min - resuming", flush=True)
 
 
 def pick_keys(sec, spec, role="sim"):
@@ -136,9 +164,21 @@ async def simulate(a):
                 print(f"[{done[0]}/{total}] {sid} rep{rep}: {meta['duration_s']}s, invalid_json={meta['invalid_json_rate']}, "
                       f"violators={lab['n_violators']}, tipped={lab['tipped']} (ETA {el / done[0] * (total - done[0]) / 60:.0f} min)",
                       flush=True)
+            except ApiUnavailable as e:  # API/network down: discard the partial episode, re-queue, wait for the API
+                aborts[(sid, rep)] = aborts.get((sid, rep), 0) + 1
+                if aborts[(sid, rep)] > MAX_ABORTS:
+                    (run_dir / "error.txt").write_text(f"gave up after {MAX_ABORTS} API aborts\n{e}\n")
+                    print(f"ERROR {sid} rep{rep}: API kept failing ({e})", flush=True)
+                    continue
+                print(f"ABORTED {sid} rep{rep} (will re-run from scratch): {e}", flush=True)
+                q.put_nowait((sid, rep))
+                await wait_for_api()
             except Exception:  # keep the batch going
                 (run_dir / "error.txt").write_text(traceback.format_exc())
                 print(f"ERROR {sid} rep{rep}: see {run_dir / 'error.txt'}", flush=True)
+
+    aborts: dict = {}
+    MAX_ABORTS = 3
     await asyncio.gather(*(worker(c) for c in workers))
     if not a.fake:
         for c in workers:
