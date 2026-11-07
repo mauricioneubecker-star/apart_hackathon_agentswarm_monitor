@@ -128,7 +128,7 @@ Split immer nach Konfiguration, nie nach Seed.
    - Danach `CORE_*` in generate.py anpassen und `generate.py core` neu laufen lassen (deterministisch).
 2. **Modellpaare** nach dem Pilot wählen: eine Mischung aus Modellen mit hoher und niedriger Neigung.
    Derzeit zufällige Paare.
-3. **`dataset/Archive.zip`** im Repo ist der alte Stand 1.0.0 und kann weg.
+3. `dataset/Archive.zip` (alter Stand 1.0.0) wurde entfernt.
 4. **`index.parquet`** wurde nicht neu geschrieben (pyarrow fehlte in meiner Umgebung). Mit pyarrow einmal
    `python3 generator/generate.py index` laufen lassen.
 5. **Täuschungslabel** und weitere Shortcuts (Answer-Key, Sabotage, Ressourcen) sind noch nicht drin.
