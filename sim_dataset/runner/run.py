@@ -13,6 +13,8 @@ Commands
                                               score messages of finished episodes (resumable; can run in
                                               parallel to `simulate`, ideally on a different key)
   labels                                     (re)compute labels.json for all finished episodes
+  features [--no-nli]                        graph_edges.csv / graph_nodes.csv / graph_meta.json per episode
+                                              (feature catalog v1, FEATURES.md; run after `jury`)
   status                                     progress overview
 
 Examples
@@ -36,7 +38,8 @@ ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(ROOT / "generator"))
 from fake import FakeAgentLLM, FakeJudge  # noqa: E402
-from jury import judge_run, merge_jury  # noqa: E402
+from jury import RUBRIC_VERSION, judge_run, merge_jury  # noqa: E402
+from features import NLI, build_features  # noqa: E402
 from labels import compute_labels  # noqa: E402
 from llm import AdaptionClient, AnthropicClient, load_secrets  # noqa: E402
 from orchestrator import Episode  # noqa: E402
@@ -56,6 +59,14 @@ def pick_keys(sec, spec, role="sim"):
         sim = [i for i in range(len(keys)) if i not in jury] or list(range(len(keys)))
         idx = sorted(jury) if (role == "jury" and jury) else sim
     return [(i, keys[i]) for i in idx if i < len(keys)]
+
+
+def jury_current(run_dir: Path) -> bool:
+    p = run_dir / "jury_merged.jsonl"
+    if not p.exists():
+        return False
+    first = p.open().readline()
+    return bool(first.strip()) and json.loads(first).get("rubric") == RUBRIC_VERSION
 
 
 def finished_runs(out: Path):
@@ -131,7 +142,7 @@ async def jury(a):
     asyncio.get_running_loop().set_default_executor(ThreadPoolExecutor(max_workers=64))
     seen = set()
     while True:
-        runs = [r for r in finished_runs(out) if r not in seen and not (r / "jury_merged.jsonl").exists()]
+        runs = [r for r in finished_runs(out) if r not in seen and not jury_current(r)]
         for i, rd in enumerate(runs):
             tasks = []
             for j in judges:
@@ -176,18 +187,30 @@ def labels_cmd(a):
         print(rd.parent.name, rd.name, "violators", lab["n_violators"], "tipped", lab["tipped"])
 
 
+def features_cmd(a):
+    ds = Dataset(DATASET)
+    nli = NLI(enabled=not a.no_nli)
+    if not a.no_nli and not nli.ok:
+        print(f"NLI model not available ({getattr(nli, 'err', '')}); 'contradiction' will be NaN. "
+              "Install transformers + torch or pass --no-nli.")
+    for rd in finished_runs(Path(a.out)):
+        meta = build_features(ds.load(rd.parent.name), rd, nli)
+        print(f"{rd.parent.name} {rd.name}: edges={meta['n_edges']} jury_coverage={meta['jury_coverage']} "
+              f"nli={meta['nli']['available']}")
+
+
 def status_cmd(a):
     out = Path(a.out)
     runs = finished_runs(out)
     errs = list(out.glob("*/rep*/error.txt"))
     tipped = sum(json.loads((r / "labels.json").read_text())["tipped"] for r in runs if (r / "labels.json").exists())
-    jur = sum((r / "jury_merged.jsonl").exists() for r in runs)
+    jur = sum(jury_current(r) for r in runs)
     print(f"finished episodes: {len(runs)}  errors: {len(errs)}  tipped: {tipped}  jury done: {jur}")
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("cmd", choices=["selftest", "simulate", "jury", "labels", "status"])
+    ap.add_argument("cmd", choices=["selftest", "simulate", "jury", "labels", "features", "status"])
     ap.add_argument("--where", default=None)
     ap.add_argument("--replicates", type=int, default=1)
     ap.add_argument("--limit", type=int, default=0)
@@ -200,6 +223,7 @@ def main():
     ap.add_argument("--group-deepseek", type=int, default=8, help="messages per DeepSeek call (same round)")
     ap.add_argument("--anthropic-concurrency", type=int, default=8)
     ap.add_argument("--watch", action="store_true")
+    ap.add_argument("--no-nli", action="store_true", help="features: skip the NLI contradiction feature (NaN)")
     a = ap.parse_args()
     if a.cmd == "simulate":
         asyncio.run(simulate(a))
@@ -209,6 +233,8 @@ def main():
         asyncio.run(selftest(a))
     elif a.cmd == "labels":
         labels_cmd(a)
+    elif a.cmd == "features":
+        features_cmd(a)
     else:
         status_cmd(a)
 

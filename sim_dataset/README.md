@@ -2,6 +2,8 @@
 
 Stand: 7. Nov. 2026 · Schema 1.1.0 · 1.725 Szenario-Spezifikationen (inkl. Core-Batch mit 560 geplanten Episoden), alle validiert
 
+**Neu (7. Nov., nachmittags):** Feature-Katalog v1 mit 20 Kanten- und 10 Knotenfeatures, neue Jury-Rubrik (9 Dimensionen) und `run.py features` → [FEATURES.md](FEATURES.md).
+
 **Neu in 1.1:** Bug-Fixes, neue Labels (Risiko = Anzahl aller Agenten mit Verstoß), Paraphrasen und Decoys gegen Leakage, Batch `core` für die ~500 Episoden. Begründung und alle Entscheidungen: [DECISIONS.md](DECISIONS.md).
 
 Jedes Szenario ist eine vollständige, deterministische Spezifikation einer Episode: N = 24 Agenten,
@@ -224,6 +226,7 @@ Das prüft die ganze Pipeline mit einem Fake-LLM:
 ```bash
 python3 runner/run.py simulate --fake --where "batch=='pilot'" --limit 4 --out runs_dry
 python3 runner/run.py jury --fake --out runs_dry
+python3 runner/run.py features --no-nli --out runs_dry
 ```
 
 ### Pilot in Schritten
@@ -254,8 +257,10 @@ Gate: Bleibt die Adoption nahe null, kommen `phase=='gate_reserve_pioneer'` bzw.
 | Datei | Inhalt | GNN-Input? |
 |---|---|---|
 | `messages.jsonl` | alle Nachrichten: Sender, Kanal, Empfänger, Mentions, Reply, Text | ja (Kanten + Metadaten-Features) |
-| `jury_merged.jsonl` | Mittelwert beider Judges + \|Differenz\| pro Nachricht und Feature | ja |
-| `rounds.jsonl` | pro Runde: aktive Agenten, Credits, Ticket-Status | nur Credits (Knotenfeature) |
+| `jury_merged.jsonl` | Mittelwert beider Judges + \|Differenz\| pro Nachricht, 9 Dimensionen (Rubrik `catalog-v1-2026-11-07`) | ja (über graph_*) |
+| `graph_edges.csv`, `graph_nodes.csv` | ein Snapshot pro Runde: 20 Kanten- und 10 Knotenfeatures (FEATURES.md) | ja; Tool-Features nur als Ablation |
+| `graph_meta.json` | Katalogversion, Spalten je Stufe S0–S3, NaN-Anteile, NLI-Status | – |
+| `rounds.jsonl` | pro Runde: aktive Agenten, Credits, Ticket-Status | nein (Credits höchstens als Ablation) |
 | `events.jsonl` | Tool-Events, **Verstöße**, Sanktionen, Eskalationen | **nein**, nur Label-Quelle |
 | `llm_calls.jsonl` | Rohantworten, private `thought`, Tokens, Latenz | **nein** |
 | `labels.json` | `risk_count_t`, `risk_frac_t`, `risk_count_uninstructed_t`, `tip_within_delta`, `aux_malicious_present_t`, Verstöße nach Regel, Expositionsanteil | Zielwerte |
@@ -270,6 +275,7 @@ erzeugen keine Kante. Die Funktion dafür ist `labels.message_edges`.
 |---|---|
 | `llm.py` | Adaption-Client (OpenAI-kompatibel, Rate-Limiter pro Key, Retries) und Anthropic-Client |
 | `orchestrator.py` | Rundenschleife, Beobachtungen, alle Tools, Kanäle, Timeline, Sanktionen, Eskalation, Logs |
-| `labels.py`, `jury.py` | Labels; Jury mit Rubrik, Datamarking, Gruppierung pro Runde für DeepSeek |
+| `labels.py`, `jury.py` | Labels; Jury mit Rubrik (9 Dimensionen, Katalog v1), Datamarking, Gruppierung pro Runde für DeepSeek |
+| `features.py` | Feature-Katalog v1: Graph-Snapshots pro Runde, `select_columns(scope, stage, drop_groups, include_tool)` |
 | `fake.py` | Fake-Agenten und Fake-Judges für Trockenläufe; kein Verhaltensmodell echter LLMs |
 | `run.py` | CLI |
