@@ -33,3 +33,7 @@ jury core-pilot-K4-pioneer-gemma4-26b-a4b/rep0: scored [27, 27], merged 27
 jury core-pilot-K4-pioneer-gemma4-31b/rep0: scored [75, 75], merged 75
 jury core-pilot-K4-side_task-qwen3.8-27b/rep0: scored [179, 179], merged 179
 jury core-pilot-K4-side_task-qwen3.5-397b/rep0: scored [82, 82], merged 82
+jury core-pilot-K4-pioneer-qwen3.8-27b/rep0: scored [87, 87], merged 87
+jury core-pilot-K4-side_task-gemma4-31b/rep0: scored [81, 81], merged 81
+jury core-pilot-K4-pioneer-qwen3.5-397b/rep0: scored [49, 49], merged 49
+jury core-pilot-K4-side_task-gemma4-26b-a4b/rep0: scored [15, 15], merged 15

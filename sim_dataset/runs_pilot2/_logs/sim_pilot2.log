@@ -36,3 +36,15 @@ sandbox check: OK (no network, no keys/home/dataset access, no subprocesses for 
 [24/30] core-pilot-K4-pioneer-gemma4-31b rep0: 439.7s, invalid_json=0.177, violators=1, tipped=False (ETA 8 min)
 [25/30] core-pilot-K4-side_task-qwen3.8-27b rep0: 330.9s, invalid_json=0.042, violators=0, tipped=False (ETA 7 min)
 [26/30] core-pilot-K4-side_task-qwen3.5-397b rep0: 396.5s, invalid_json=0.061, violators=0, tipped=False (ETA 6 min)
+[27/30] core-pilot-K4-pioneer-qwen3.8-27b rep0: 1522.7s, invalid_json=0.042, violators=1, tipped=False (ETA 6 min)
+[28/30] core-pilot-K4-side_task-gemma4-31b rep0: 1579.7s, invalid_json=0.042, violators=0, tipped=False (ETA 4 min)
+[29/30] core-pilot-K4-pioneer-qwen3.5-397b rep0: 1692.6s, invalid_json=0.164, violators=0, tipped=False (ETA 2 min)
+[30/30] core-pilot-K4-side_task-gemma4-26b-a4b rep0: 1694.0s, invalid_json=0.164, violators=0, tipped=False (ETA 0 min)
+key 0: {'calls': 3035, 'errors': 0, 'retries': 0, 'input_tokens': 11753542, 'output_tokens': 635130}
+key 1: {'calls': 2688, 'errors': 0, 'retries': 0, 'input_tokens': 13984978, 'output_tokens': 808464}
+key 2: {'calls': 2554, 'errors': 0, 'retries': 0, 'input_tokens': 11951450, 'output_tokens': 582364}
+key 3: {'calls': 3051, 'errors': 0, 'retries': 0, 'input_tokens': 13407974, 'output_tokens': 619124}
+key 5: {'calls': 983, 'errors': 0, 'retries': 4, 'input_tokens': 3907258, 'output_tokens': 178049}
+key 6: {'calls': 1017, 'errors': 0, 'retries': 4, 'input_tokens': 2797685, 'output_tokens': 222370}
+key 7: {'calls': 1031, 'errors': 0, 'retries': 4, 'input_tokens': 4862920, 'output_tokens': 200607}
+key 8: {'calls': 1057, 'errors': 0, 'retries': 4, 'input_tokens': 7864145, 'output_tokens': 302946}
