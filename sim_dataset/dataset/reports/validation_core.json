@@ -2,8 +2,8 @@
  "batches": [
   "core"
  ],
- "n_scenarios": 253,
- "n_smoke_tested": 82,
+ "n_scenarios": 273,
+ "n_smoke_tested": 273,
  "n_with_errors": 0,
  "errors": {},
  "primary_balance_per_cell": {}
