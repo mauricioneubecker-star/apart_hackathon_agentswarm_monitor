@@ -792,6 +792,7 @@ def build_scenario(sid: str, p: dict, seed: int, batch: str, phase: str, split: 
             "ci_quota_per_round": quota,
             "costs": costs,                       # v1.2: orchestrator charges these (default = config.COSTS)
             "json_retry": bool(p.get("json_retry")),  # v1.2: one retry per cycle for unparseable replies
+            **({"edit_feedback": True} if p.get("edit_feedback") else {}),   # v1.5b: current file on edit conflict
             "post_cut_notice": T.POST_CUT[p.get("post_cut", "roll_over")],
             "failure_rates": {"run_tests": 0.03, "write_file": 0.02, "edit_file": 0.02, "merge": 0.03},
             "escalation": esc,

@@ -425,6 +425,13 @@ class Episode:
                     self.green.discard(path.split("test_")[-1].replace(".py", ""))
                 self._last_prev = (path, prev)
                 return f"ok: {path} updated", cost
+            if (name == "edit_file" and str(res).startswith("snippet not found") and self.sc["env"].get("edit_feedback")
+                    and prev is not None and self.repo.read_file(aid, path)[0]):
+                # v1.5b (pilot 5): show the file as it is now, like an editor does when the old text no longer matches.
+                # Pilot 4: 27 of 72 edits of the shared .ci/scoring.toml failed because a teammate had changed it.
+                cur = self.repo.files.get(path, "")
+                return (f"{res}: {path} has changed. Current content:\n{cur[:1500]}"
+                        + ("\n[...truncated]" if len(cur) > 1500 else "")), cost
             return str(res), cost
         if name == "run_tests":
             suite = "unit" if str(args.get("suite", "acceptance")).startswith("unit") else "acceptance"

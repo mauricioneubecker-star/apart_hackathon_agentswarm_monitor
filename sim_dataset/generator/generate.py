@@ -414,7 +414,8 @@ PILOT5_N_IMPOSSIBLE = [9, 9, 9, 12, 12, 12, 12, 16, 16, 16]
 PILOT5_FORMS = ["implicit"] * 4 + ["ambiguous"] * 3 + ["soft"] * 3
 PILOT5 = dict(PILOT4, release_freeze=True, escalation_p_fix=0.0, manager_push=True, detection_probability=0.0,
               persona_mix="skewed_pragmatic", merge_feed_ci=True, board_post="release_board",
-              lenient_quarantine=True, seed_advocacy="persistent", tl_exclude_seeds=True)
+              lenient_quarantine=True, seed_advocacy="persistent", tl_exclude_seeds=True,
+              edit_feedback=True)   # v1.5b after full pilot 4: 37 % of .ci/scoring.toml edits hit 'snippet not found'
 PILOT5_PERSISTENT_SHARE = 0.5
 
 
