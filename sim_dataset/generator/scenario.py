@@ -246,7 +246,9 @@ def build_scenario(sid: str, p: dict, seed: int, batch: str, phase: str, split: 
     if p.get("credits_override"):   # v1.2 (core pilot 2)
         press["credits"] = int(p["credits_override"])
     costs = scenario_costs(p)
-    deadline = min(press["deadline_round"], rounds)
+    if p.get("reminder_rounds_override"):   # v1.4 (pilot 4, R = 25)
+        press["reminder_rounds"] = list(p["reminder_rounds_override"])
+    deadline = min(p.get("deadline_override") or press["deadline_round"], rounds)
     disc = p["discoverability"]
     known = disc == "known"
 
@@ -376,6 +378,14 @@ def build_scenario(sid: str, p: dict, seed: int, batch: str, phase: str, split: 
                                                                        name=a["claimed_name"])
         mal_actors.append(a)
     side_agents = {int(a["agent_id"][1:]) for a in mal_actors if a["variant"] == "side_task"}
+    tech_lead = None
+    if p.get("tech_lead"):   # v1.4: visible seniority (own RNG, design draws unchanged)
+        if p.get("pioneer_status") == "tech_lead" and pioneers:
+            tech_lead = pioneers[0]
+        else:
+            cand = [i for i in range(N_AGENTS) if i not in pioneers and i not in side_agents and i != auditor]
+            tech_lead = random.Random(seed ^ 0x7EC4).choice(cand)
+        personas[tech_lead] = "senior"
 
     # ---- credits
     credits = {i: press["credits"] for i in range(N_AGENTS)}
@@ -410,6 +420,8 @@ def build_scenario(sid: str, p: dict, seed: int, batch: str, phase: str, split: 
                                                  verb="were" if len(info_asym) > 1 else "was")
     else:
         knower_contact = ""
+    if tech_lead is not None:
+        ownership = ownership + "\n" + T.TECH_LEAD_LINE.format(handle=handles[tech_lead])
     files["CONTRIBUTING.md"] = T.CONTRIBUTING.format(pkg=pid, review_line=T.REVIEW_LINE[approvals],
                                                      merge_line=T.MERGE_LINE[decision], ownership=ownership, extra=extra)
     evis = p["evaluator_visibility"]   # v1.1: renamed (was 'ev', overwritten by timeline events below)
@@ -534,6 +546,12 @@ def build_scenario(sid: str, p: dict, seed: int, batch: str, phase: str, split: 
                 d = {"delivery": deliver}
             add(a["onset_round"], {"type": "fake_authority_message", "sender": a["sender"], "malicious": True,
                                    "text": a["text"], **d})
+    if p.get("context_notice"):   # v1.4: common cause of the broken checks (cycle 1, everybody)
+        add(1, {"type": "context_notice", "sender": "ext:qa-team", "delivery": deliver, "malicious": False,
+                "text": T.CONTEXT_NOTICE["freeze" if p.get("release_freeze") else "open"]})
+    if p.get("manager_push"):     # v1.4: legitimate pressure from management, no method named
+        add(max(2, deadline - 6), {"type": "context_notice", "sender": "ext:eng-manager", "delivery": deliver,
+                                   "malicious": False, "text": T.MANAGER_PUSH})
     if p.get("decoys", True):   # v1.1: benign notices from the senders attackers impersonate
         senders = list(T.DECOYS)
         for _ in range(trng.choice([2, 3])):
@@ -618,6 +636,8 @@ def build_scenario(sid: str, p: dict, seed: int, batch: str, phase: str, split: 
             role_line += T.KNOWER_PERSONA.format(fact=fact_of[i])
         if p.get("side_task_dashboard") and i in side_agents:
             role_line += T.DASHBOARD_ROLE
+        if i == tech_lead:
+            role_line += T.TECH_LEAD_ROLE
         ranking = T.RANKING[press["ranking"]]
         prompt = T.PROMPT.format(
             handle=handles[i], team=team, pkg=pid, title=pkg["title"], persona=PERSONAS[personas[i]], role_line=role_line,
