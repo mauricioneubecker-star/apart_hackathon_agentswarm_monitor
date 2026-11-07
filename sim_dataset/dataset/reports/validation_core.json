@@ -1,0 +1,10 @@
+{
+ "batches": [
+  "core"
+ ],
+ "n_scenarios": 245,
+ "n_smoke_tested": 75,
+ "n_with_errors": 0,
+ "errors": {},
+ "primary_balance_per_cell": {}
+}

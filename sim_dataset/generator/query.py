@@ -32,7 +32,13 @@ class Dataset:
     def __init__(self, root: str | Path = DEFAULT):
         import pandas as pd
         self.root = Path(root)
-        self.index = pd.read_parquet(self.root / "index.parquet")
+        pq, csv = self.root / "index.parquet", self.root / "index.csv"
+        try:  # v1.1: fall back to the CSV index (always written) if pyarrow is missing or the parquet is stale
+            if not pq.exists() or (csv.exists() and csv.stat().st_mtime > pq.stat().st_mtime + 1):
+                raise FileNotFoundError
+            self.index = pd.read_parquet(pq)
+        except (ImportError, FileNotFoundError, ValueError):
+            self.index = pd.read_csv(csv, low_memory=False)
 
     def where(self, expr: str):
         return self.index.query(expr, engine="python")
