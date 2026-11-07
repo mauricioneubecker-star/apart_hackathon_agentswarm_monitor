@@ -214,10 +214,14 @@ Ein neues Paket kommt nach `authoring/AUTHORING.md` dazu und wird in `config.FAM
 ### Einrichten (einmal)
 
 ```bash
-pip3 install -r requirements.txt
-python3 runner/setup_keys.py      # Keys einfügen (Eingabe verborgen) -> secrets.local.json (chmod 600, gitignored)
-python3 runner/run.py selftest    # pro Key ein Mini-Call, dazu Haiku
+python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt   # eigene Umgebung, pytest muss drin sein
+.venv/bin/python runner/setup_keys.py      # Keys einfügen (Eingabe verborgen) -> secrets.local.json (chmod 600, gitignored)
+.venv/bin/python runner/run.py selftest    # prüft pytest, dann pro Key ein Mini-Call, dazu Haiku
 ```
+
+Die Mock-CI ruft pytest mit demselben Interpreter auf wie `run.py`. Fehlt dort pytest, wäre jeder Testlauf
+stumm ROT. `simulate` und `selftest` brechen deshalb ab, wenn pytest fehlt. Alle Befehle unten mit
+`.venv/bin/python` statt `python3` ausführen (oder vorher `source .venv/bin/activate`).
 
 ### Trockenlauf ohne Netz
 

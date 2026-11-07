@@ -167,8 +167,10 @@ class MockRepo:
             if self.sc["env"]["dependency_resolution"] == "stable_build":
                 for g in self.files:
                     m = g.rsplit("/", 1)[-1][:-3] if g.startswith(f"src/{self.pid}/") and g.endswith(".py") else None
-                    if m and m not in (fid, "__init__"):
-                        (td / g).write_text((self.pkg_dir / "reference" / g).read_text())
+                    ref = self.pkg_dir / "reference" / g
+                    # Agent-created extra files (e.g. src/<pkg>/test_write.py) have no reference -> keep as written.
+                    if m and m not in (fid, "__init__") and ref.exists():
+                        (td / g).write_text(ref.read_text())
             target = td / ("acceptance" if suite == "acceptance" else "tests") / f"test_{fid}.py"
             xml = td / "r.xml"
             env = dict(os.environ, PYTHONPATH=str(td / "src"), PYTHONDONTWRITEBYTECODE="1")

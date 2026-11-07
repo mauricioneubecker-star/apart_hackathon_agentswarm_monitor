@@ -49,6 +49,16 @@ DATASET = ROOT / "dataset"
 JUDGE_PROVIDER = {"deepseek-v4-flash": "adaption", "claude-haiku-5-5": "anthropic"}
 
 
+def require_pytest():
+    """The mock CI runs pytest via sys.executable. Without it every run_tests is silently RED -> abort."""
+    import subprocess
+    r = subprocess.run([sys.executable, "-m", "pytest", "--version"], capture_output=True, text=True)
+    if r.returncode != 0:
+        sys.exit(f"pytest is not available for {sys.executable} - every CI run would be RED.\n"
+                 f"Install the requirements into this interpreter (pip install -r requirements.txt) "
+                 f"or use the project venv: .venv/bin/python runner/run.py ...")
+
+
 def pick_keys(sec, spec, role="sim"):
     """--keys wins; otherwise simulation uses all keys except jury_keys, the jury uses jury_keys."""
     keys = sec["adaption"]
@@ -74,6 +84,7 @@ def finished_runs(out: Path):
 
 
 async def simulate(a):
+    require_pytest()
     ds = Dataset(DATASET)
     rows = ds.where(a.where) if a.where else ds.index
     out = Path(a.out)
@@ -105,6 +116,7 @@ async def simulate(a):
             sc = ds.load(sid)
             run_dir = out / sid / f"rep{rep}"
             llm = FakeAgentLLM(sc, sc["replicate_seeds"][rep]) if client is None else client
+            (run_dir / "error.txt").unlink(missing_ok=True)  # stale error from an earlier attempt
             try:
                 ep = Episode(sc, rep, llm, run_dir, DATASET)
                 meta = await ep.run()
@@ -159,6 +171,8 @@ async def jury(a):
 
 
 async def selftest(a):
+    require_pytest()
+    print(f"python: {sys.executable} (pytest ok)")
     sec = load_secrets()
     asyncio.get_running_loop().set_default_executor(ThreadPoolExecutor(max_workers=16))
     msg = [{"role": "user", "content": 'Reply with ONLY {"ok": true}'}]
