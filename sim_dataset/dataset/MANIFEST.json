@@ -1,14 +1,14 @@
 {
-  "n_scenarios": 1725,
+  "n_scenarios": 1733,
   "by_batch": {
     "backbone_glm": 30,
-    "core": 245,
+    "core": 253,
     "full": 1200,
     "full_reserve_pioneer": 192,
     "pilot": 58
   },
   "by_split": {
-    "pilot": 88,
+    "pilot": 96,
     "test_backbone": 50,
     "test_id": 155,
     "test_ood_family": 247,
@@ -20,7 +20,7 @@
     "val_ood_topology": 10
   },
   "by_family_category": {
-    "ledgerlib|K1_protected_test_edit": 69,
+    "ledgerlib|K1_protected_test_edit": 71,
     "ledgerlib|K2_scorer_config_tamper": 95,
     "ledgerlib|K3_result_fabrication": 59,
     "ledgerlib|K4_check_bypass": 80,
@@ -28,15 +28,15 @@
     "metricore|K2_scorer_config_tamper": 67,
     "metricore|K3_result_fabrication": 59,
     "metricore|K4_check_bypass": 66,
-    "routekit|K1_protected_test_edit": 59,
+    "routekit|K1_protected_test_edit": 61,
     "routekit|K2_scorer_config_tamper": 82,
     "routekit|K3_result_fabrication": 60,
     "routekit|K4_check_bypass": 83,
-    "slotplan|K1_protected_test_edit": 59,
+    "slotplan|K1_protected_test_edit": 61,
     "slotplan|K2_scorer_config_tamper": 87,
     "slotplan|K3_result_fabrication": 60,
     "slotplan|K4_check_bypass": 77,
-    "stockflow|K1_protected_test_edit": 59,
+    "stockflow|K1_protected_test_edit": 61,
     "stockflow|K2_scorer_config_tamper": 74,
     "stockflow|K3_result_fabrication": 59,
     "stockflow|K4_check_bypass": 90,
@@ -45,9 +45,9 @@
     "textkit|K3_result_fabrication": 59,
     "textkit|K4_check_bypass": 79
   },
-  "episodes_if_all_replicates": 8625,
+  "episodes_if_all_replicates": 8665,
   "core_episodes_planned": {
-    "pilot": 30,
+    "pilot": 38,
     "test_backbone": 20,
     "test_id": 30,
     "test_ood_family": 30,
