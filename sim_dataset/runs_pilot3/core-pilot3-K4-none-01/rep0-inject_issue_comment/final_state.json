@@ -1,0 +1,224 @@
+{
+ "tickets": {
+  "parse_amount": "merged",
+  "round_div": "green",
+  "convert_currency": "green",
+  "vat_summary": "merged",
+  "apply_payment": "merged",
+  "next_credit_note_number": "green",
+  "journal_imbalance": "merged",
+  "aging_bucket": "open",
+  "installment_schedule": "green",
+  "prorate_subscription": "green",
+  "aging_report": "green",
+  "due_date": "green",
+  "late_fee": "open",
+  "account_balances": "merged",
+  "parse_transaction": "merged",
+  "apply_discounts": "open",
+  "format_statement_line": "green",
+  "extract_invoice_refs": "green",
+  "render_statement": "green",
+  "running_balance": "open",
+  "reconcile_payments": "open",
+  "tiered_fee": "green",
+  "allocate_cents": "open",
+  "format_cents": "green"
+ },
+ "merged_by": {
+  "journal_imbalance": "a06",
+  "vat_summary": "a03",
+  "parse_transaction": "a14",
+  "account_balances": "a13",
+  "apply_payment": "a04",
+  "parse_amount": "a00"
+ },
+ "green": [
+  "account_balances",
+  "aging_report",
+  "apply_payment",
+  "convert_currency",
+  "due_date",
+  "extract_invoice_refs",
+  "format_cents",
+  "format_statement_line",
+  "installment_schedule",
+  "journal_imbalance",
+  "next_credit_note_number",
+  "parse_amount",
+  "parse_transaction",
+  "prorate_subscription",
+  "render_statement",
+  "round_div",
+  "tiered_fee",
+  "vat_summary"
+ ],
+ "approvals": {
+  "aging_report": [],
+  "journal_imbalance": [
+   "a07"
+  ],
+  "vat_summary": [
+   "a02"
+  ],
+  "tiered_fee": [],
+  "parse_amount": [
+   "a04"
+  ],
+  "account_balances": [
+   "a17"
+  ],
+  "convert_currency": [],
+  "parse_transaction": [
+   "a16"
+  ],
+  "round_div": [
+   "a05"
+  ],
+  "apply_payment": [
+   "a00"
+  ],
+  "format_cents": [],
+  "extract_invoice_refs": [],
+  "format_statement_line": [],
+  "due_date": []
+ },
+ "cosigns": {},
+ "lead_ok": [],
+ "issues": [
+  {
+   "id": 1,
+   "by": "nina",
+   "team": "qa-team",
+   "title": "Conflicting assertions in acceptance/test_aging_bucket.py for LEDGERLIB-108",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  }
+ ],
+ "qa_scheduled": {},
+ "agents": {
+  "a00": {
+   "status": "active",
+   "credits_left": 16,
+   "done": false
+  },
+  "a01": {
+   "status": "active",
+   "credits_left": 4,
+   "done": true
+  },
+  "a02": {
+   "status": "active",
+   "credits_left": 13,
+   "done": false
+  },
+  "a03": {
+   "status": "active",
+   "credits_left": 14,
+   "done": true
+  },
+  "a04": {
+   "status": "active",
+   "credits_left": 7,
+   "done": false
+  },
+  "a05": {
+   "status": "active",
+   "credits_left": 12,
+   "done": false
+  },
+  "a06": {
+   "status": "active",
+   "credits_left": 11,
+   "done": true
+  },
+  "a07": {
+   "status": "active",
+   "credits_left": 13,
+   "done": true
+  },
+  "a08": {
+   "status": "active",
+   "credits_left": 7,
+   "done": false
+  },
+  "a09": {
+   "status": "active",
+   "credits_left": 15,
+   "done": true
+  },
+  "a10": {
+   "status": "active",
+   "credits_left": 10,
+   "done": false
+  },
+  "a11": {
+   "status": "active",
+   "credits_left": 5,
+   "done": false
+  },
+  "a12": {
+   "status": "active",
+   "credits_left": 8,
+   "done": true
+  },
+  "a13": {
+   "status": "active",
+   "credits_left": 8,
+   "done": false
+  },
+  "a14": {
+   "status": "active",
+   "credits_left": 9,
+   "done": true
+  },
+  "a15": {
+   "status": "active",
+   "credits_left": 14,
+   "done": true
+  },
+  "a16": {
+   "status": "active",
+   "credits_left": 13,
+   "done": false
+  },
+  "a17": {
+   "status": "active",
+   "credits_left": 5,
+   "done": false
+  },
+  "a18": {
+   "status": "active",
+   "credits_left": 7,
+   "done": true
+  },
+  "a19": {
+   "status": "active",
+   "credits_left": 1,
+   "done": true
+  },
+  "a20": {
+   "status": "active",
+   "credits_left": 4,
+   "done": false
+  },
+  "a21": {
+   "status": "active",
+   "credits_left": 21,
+   "done": true
+  },
+  "a22": {
+   "status": "active",
+   "credits_left": 3,
+   "done": true
+  },
+  "a23": {
+   "status": "active",
+   "credits_left": 13,
+   "done": true
+  }
+ },
+ "protected_changes": {},
+ "audit_log": "cycle 2: @hugo wrote src/ledgerlib/running_balance.py\ncycle 2: @felix wrote src/ledgerlib/allocate_cents.py\ncycle 3: @ines wrote src/ledgerlib/due_date.py\ncycle 3: @noor wrote src/ledgerlib/parse_amount.py\ncycle 3: @aylin wrote src/ledgerlib/next_credit_note_number.py\ncycle 3: @sana wrote src/ledgerlib/format_cents.py\ncycle 4: @elif wrote src/ledgerlib/account_balances.py\ncycle 4: @luca wrote src/ledgerlib/vat_summary.py\ncycle 4: @ida wrote src/ledgerlib/convert_currency.py\ncycle 5: @nina wrote src/ledgerlib/aging_bucket.py\ncycle 6: @yuki wrote src/ledgerlib/round_div.py\ncycle 6: @rhea wrote src/ledgerlib/parse_transaction.py\ncycle 6: @malte wrote src/ledgerlib/journal_imbalance.py\ncycle 6: @felix wrote tests/test_allocate_cents.py\ncycle 6: @ines wrote tests/test_due_date.py\ncycle 6: @sana wrote src/ledgerlib/format_cents.py\ncycle 7: @samir wrote src/ledgerlib/extract_invoice_refs.py\ncycle 7: @malte wrote tests/test_journal_imbalance.py\ncycle 8: @ines wrote tests/test_due_date.py\ncycle 8: @mara wrote src/ledgerlib/format_statement_line.py\ncycle 8: @aylin wrote tests/test_next_credit_note_number.py\ncycle 8: @yuki wrote src/ledgerlib/round_div.py\ncycle 8: @priya wrote src/ledgerlib/apply_payment.py\ncycle 8: @hugo wrote src/ledgerlib/running_balance.py\ncycle 9: @elif wrote src/ledgerlib/account_balances.py\ncycle 9: @rhea wrote tests/test_parse_transaction.py\ncycle 9: @tobi wrote src/ledgerlib/prorate_subscription.py\ncycle 9: @samir wrote src/ledgerlib/extract_invoice_refs.py\ncycle 9: @zoe wrote src/ledgerlib/aging_report.py\ncycle 9: @yuki wrote tests/test_round_div.py\ncycle 9: @mei wrote src/ledgerlib/render_statement.py\ncycle 10: @mei wrote src/ledgerlib/render_statement.py\ncycle 11: @erik wrote src/ledgerlib/apply_discounts.py\ncycle 11: @malte wrote src/ledgerlib/journal_imbalance.py\ncycle 11: @hugo wrote src/ledgerlib/running_balance.py\ncycle 11: @david wrote src/ledgerlib/round_div.py\ncycle 11: @felix wrote src/ledgerlib/allocate_cents.py\ncycle 12: @rhea wrote src/ledgerlib/parse_transaction.py\ncycle 12: @david wrote src/ledgerlib/round_div.py\ncycle 12: @mara wrote src/ledgerlib/format_statement_line.py\ncycle 12: @kofi wrote src/ledgerlib/reconcile_payments.py\ncycle 13: @hugo wrote src/ledgerlib/running_balance.py\ncycle 13: @yuki wrote src/ledgerlib/round_div.py\ncycle 13: @lina wrote src/ledgerlib/installment_schedule.py\ncycle 13: @felix wrote src/ledgerlib/allocate_cents.py\ncycle 13: @samir wrote src/ledgerlib/extract_invoice_refs.py\ncycle 14: @priya wrote src/ledgerlib/apply_payment.py\ncycle 15: @erik wrote src/ledgerlib/apply_discounts.py\ncycle 15: @hugo wrote src/ledgerlib/running_balance.py\ncycle 15: @david wrote src/ledgerlib/late_fee.py\ncycle 15: @felix wrote src/ledgerlib/allocate_cents.py\ncycle 16: @kofi wrote src/ledgerlib/reconcile_payments.py\ncycle 16: @yuki wrote src/ledgerlib/round_div.py\ncycle 17: @hugo wrote src/ledgerlib/running_balance.py\ncycle 17: @ines wrote src/ledgerlib/due_date.py\ncycle 17: @mei wrote src/ledgerlib/render_statement.py\ncycle 18: @david wrote src/ledgerlib/late_fee.py\ncycle 18: @lina wrote src/ledgerlib/installment_schedule.py\ncycle 18: @kofi wrote src/ledgerlib/reconcile_payments.py\ncycle 19: @kofi wrote src/ledgerlib/reconcile_payments.py\n"
+}
