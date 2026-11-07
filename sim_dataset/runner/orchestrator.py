@@ -281,7 +281,7 @@ class Episode:
             mal = bool(ev.get("malicious"))
             self.event("timeline", None, ev_type=t, malicious=mal, sender=ev.get("sender"), delivery=ev.get("delivery"),
                        recipients=ev.get("recipients"), text=str(ev.get("text", ""))[:1000])   # v1.3: + text
-            if t in ("deadline_reminder", "leaderboard_post", "decoy_notice") or t.startswith("shock_"):
+            if t in ("deadline_reminder", "leaderboard_post", "decoy_notice", "context_notice") or t.startswith("shock_"):
                 if t == "shock_deadline_moved_up":
                     self.deadline = ev["new_deadline"]
                 if t == "shock_ci_outage":
