@@ -180,7 +180,20 @@ def _r(x):
 
 
 # ------------------------------------------------------------------------------------------------------------ main
-def build_features(sc: dict, run_dir: Path, nli: NLI | None = None) -> dict:
+def _jury_rows(run_dir: Path, jury: str | None) -> dict:
+    """jury_merged.jsonl (default) or one judge's jury_<judge>.jsonl (judge-swap ablation; no disagreement)."""
+    if not jury:
+        return {r["message_id"]: r for r in read_jsonl(run_dir / "jury_merged.jsonl") if r.get("rubric") == RUBRIC_VERSION}
+    out = {}
+    for r in read_jsonl(run_dir / f"jury_{jury}.jsonl"):
+        if r.get("rubric") == RUBRIC_VERSION and r.get("ok") and r.get("scores"):
+            out[r["message_id"]] = {"message_id": r["message_id"], "mean": r["scores"],
+                                    "absdiff": {k: None for k in r["scores"]}}
+    return out
+
+
+def build_features(sc: dict, run_dir: Path, nli: NLI | None = None, jury: str | None = None) -> dict:
+    """jury=None: merged jury (main). jury='<judge>': single judge, outputs graph_*_<judge>.csv (ablation 3)."""
     import pandas as pd
 
     R = sc["rounds"]
@@ -188,8 +201,7 @@ def build_features(sc: dict, run_dir: Path, nli: NLI | None = None) -> dict:
     pop = {a["agent_id"]: a for a in sc["population"]}
     msgs = [m for m in read_jsonl(run_dir / "messages.jsonl") if m.get("kind") in ("agent", "review")
             and str(m.get("text", "")).strip()]
-    jury_rows = {r["message_id"]: r for r in read_jsonl(run_dir / "jury_merged.jsonl")
-                 if r.get("rubric") == RUBRIC_VERSION}
+    jury_rows = _jury_rows(run_dir, jury)
     events = read_jsonl(run_dir / "events.jsonl")
     by_id = {m["id"]: m for m in msgs}
 
@@ -342,13 +354,15 @@ def build_features(sc: dict, run_dir: Path, nli: NLI | None = None) -> dict:
             })
 
     E, V = pd.DataFrame(edge_rows), pd.DataFrame(node_rows)
-    E.to_csv(run_dir / "graph_edges.csv", index=False)
-    V.to_csv(run_dir / "graph_nodes.csv", index=False)
+    sfx = f"_{jury}" if jury else ""
+    E.to_csv(run_dir / f"graph_edges{sfx}.csv", index=False)
+    V.to_csv(run_dir / f"graph_nodes{sfx}.csv", index=False)
     meta = {"catalog": CATALOG_VERSION, "rubric": RUBRIC_VERSION, "scenario_id": sc["scenario_id"], "window_w": w,
             "n_edges": len(E), "n_node_rows": len(V), "jury_coverage": round(len(jury_rows) / max(len(msgs), 1), 3),
             "nli": {"model": NLI_MODEL, "available": bool(nli and nli.ok), "error": getattr(nli, "err", None)},
             "nan_share": {c: round(float(df[c].isna().mean()), 3) for df in (E, V) for c in df.columns
                           if c not in ("round", "src", "dst", "node")},
             "stages": {f"S{k}": {"edge": select_columns("edge", k), "node": select_columns("node", k)} for k in range(4)}}
-    (run_dir / "graph_meta.json").write_text(json.dumps(meta, indent=1))
+    meta["jury"] = jury or "merged"
+    (run_dir / f"graph_meta{sfx}.json").write_text(json.dumps(meta, indent=1))
     return meta

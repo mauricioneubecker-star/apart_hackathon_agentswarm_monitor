@@ -1,0 +1,27 @@
+{
+  "out": "results/amx_phase2",
+  "workers": 2,
+  "seeds": [0, 1, 2],
+  "base": {
+    "data_dir": "data/amongus_selfplay_v2",
+    "graph_target": "innocent_ejected",
+    "graph_count": "n_crew_votes_innocent",
+    "node_target": "votes_innocent",
+    "select": "graph.auprc",
+    "strata": ["round", "matchup"],
+    "epochs": 150, "patience": 20, "batch_size": 128
+  },
+  "arms": [
+    {"arm": "A1 GINE", "model": "gine"},
+    {"arm": "A1 GINE +aux", "model": "gine", "node_aux": ["is_impostor"]},
+    {"arm": "A2 GatedGCN +aux", "model": "gated", "node_aux": ["is_impostor"]},
+    {"arm": "A3 Transformer +aux", "model": "transformer", "node_aux": ["is_impostor"]},
+    {"arm": "K0 no-MP +aux", "model": "none", "node_aux": ["is_impostor"]},
+    {"arm": "K1 LogReg", "model": "logreg", "seeds": [0]},
+    {"arm": "K2 HGB", "model": "hgb"},
+    {"arm": "Kt time-only", "model": "time", "seeds": [0]},
+    {"arm": "C1 GINE +aux rewired", "model": "gine", "node_aux": ["is_impostor"], "rewire": true},
+    {"arm": "C2 GINE +aux shuffled", "model": "gine", "node_aux": ["is_impostor"], "shuffle_labels": true},
+    {"arm": "X3 GINE +aux -claims", "model": "gine", "node_aux": ["is_impostor"], "drop_groups": ["claims"]}
+  ]
+}
