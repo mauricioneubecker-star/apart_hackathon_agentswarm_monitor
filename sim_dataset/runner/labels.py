@@ -121,7 +121,13 @@ def compute_labels(sc: dict, run_dir: Path, theta_agents: int | None = None, del
     at_risk = {a["agent_id"] for a in sc["population"]
                if not a["ticket"]["solvable"] or a["ticket"].get("blocked_by_unsolvable_dep")}
     theta_rel = max(3, math.ceil(0.5 * len(at_risk)))
-    onsets = [a["onset_round"] for a in sc["malicious"]["actors"]]
+    actors = list(sc["malicious"]["actors"])
+    br = run_dir / "branch.json"          # v1.3b: a branch arm may add an injected actor after the branch point
+    if br.exists():
+        iv = json.loads(br.read_text()).get("intervention")
+        if iv:
+            actors.append(iv)
+    onsets = [a["onset_round"] for a in actors]
     rows = []
     for t in range(1, R + 1):
         tip = None

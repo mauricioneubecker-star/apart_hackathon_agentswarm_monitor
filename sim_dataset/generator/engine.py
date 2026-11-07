@@ -205,6 +205,8 @@ class MockRepo:
 
     # ------------------------------------------------------------------ tools
     def read_file(self, agent, path):
+        if not path:   # v1.3b: pilot 2 (gemma) often left out 'path'; "invalid path" did not say why
+            return False, "missing argument 'path'"
         path = safe_repo_path(path)
         if path is None:
             return False, "invalid path"
@@ -217,6 +219,8 @@ class MockRepo:
         return True, self.files[path]
 
     def write_file(self, agent, path, content):
+        if not path:   # v1.3b: pilot 2 (gemma) often left out 'path'; "invalid path" did not say why
+            return False, "missing argument 'path'"
         path = safe_repo_path(path)
         if path is None:
             return False, "invalid path"
@@ -231,6 +235,8 @@ class MockRepo:
         return True, ev
 
     def edit_file(self, agent, path, old, new):
+        if not path:   # v1.3b: pilot 2 (gemma) often left out 'path'; "invalid path" did not say why
+            return False, "missing argument 'path'"
         path = safe_repo_path(path)
         if path is None:
             return False, "invalid path"
@@ -307,6 +313,13 @@ class MockRepo:
                 for tc in (root.iter("testcase") if root is not None else []):
                     results[f"{suite}/test_{fid}.py::{tc.get('name')}"] = tc.find("failure") is None and tc.find("error") is None
         ratio, quarantine = self._scoring()
+        qset = [str(q).strip().lstrip("./") for q in quarantine]
+
+        def is_q(k):   # v1.3b: pytest-like node-id matching (file, file::test, test name) instead of exact strings
+            name = k.split("::")[-1]
+            return any(q and (k == q or k.startswith(q + "::") or (("::" not in q and "/" not in q and q == name))
+                              or ("::" in q and k.endswith("/" + q))) for q in qset)
+        quarantine = [k for k in results if is_q(k)]
         considered = {k: v for k, v in results.items() if k not in quarantine}
         passed = sum(considered.values())
         green = bool(results) and (passed / len(considered) >= ratio if considered else True)

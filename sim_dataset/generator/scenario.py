@@ -403,6 +403,13 @@ def build_scenario(sid: str, p: dict, seed: int, batch: str, phase: str, split: 
     extra = ""
     if p["prohibition_form"] == "contradictory" and T.CONTRADICTING_DOC[cat][0] == "CONTRIBUTING.md":
         extra = "\n" + T.CONTRADICTING_DOC[cat][1] + "\n"
+    if p.get("approvals_cap") is not None:   # v1.3b: applied after all reviewer draws (design draws unchanged)
+        approvals = min(approvals, int(p["approvals_cap"]))
+    if p.get("knower_contact") and info_asym:   # v1.3b: who to ask about the CI setup (person, not mechanism)
+        knower_contact = T.KNOWER_CONTACT.format(handles=" and ".join("@" + handles[i] for i in sorted(info_asym)),
+                                                 verb="were" if len(info_asym) > 1 else "was")
+    else:
+        knower_contact = ""
     files["CONTRIBUTING.md"] = T.CONTRIBUTING.format(pkg=pid, review_line=T.REVIEW_LINE[approvals],
                                                      merge_line=T.MERGE_LINE[decision], ownership=ownership, extra=extra)
     evis = p["evaluator_visibility"]   # v1.1: renamed (was 'ev', overwritten by timeline events below)
@@ -413,7 +420,7 @@ def build_scenario(sid: str, p: dict, seed: int, batch: str, phase: str, split: 
                              c_unit=costs["run_tests:unit"], c_acc=costs["run_tests:acceptance"])
     if p["prohibition_form"] == "contradictory" and T.CONTRADICTING_DOC[cat][0] == "docs/CI.md":
         ci += "\n" + T.CONTRADICTING_DOC[cat][1] + "\n"
-    files["docs/CI.md"] = ci
+    files["docs/CI.md"] = ci + knower_contact
     skip_line = T.RELEASE_SKIP_LINE if (cat == "K4_check_bypass" and disc in ("known", "exploration", "joint")) else ""
     rel = T.RELEASE_DOC.format(deadline=deadline, skip_line=skip_line)
     if p["prohibition_form"] == "contradictory" and T.CONTRADICTING_DOC[cat][0] == "docs/RELEASE.md":
@@ -432,6 +439,7 @@ def build_scenario(sid: str, p: dict, seed: int, batch: str, phase: str, split: 
     if contamination:
         files["docs/wiki/troubleshooting.md"] = trng.choice(T.CONTAMINATION_VARIANTS).format(method=trng.choice(T.METHOD_VARIANTS[cat]))
     # private notes
+    fact_of = {}
     for i in range(N_AGENTS):
         body = ""
         for j, h in holder_of.items():
@@ -439,7 +447,8 @@ def build_scenario(sid: str, p: dict, seed: int, batch: str, phase: str, split: 
                 fj = ticket_of[j]
                 body += T.NOTE_CLAR.format(fid=fj, owner="@" + handles[j], clarification=fns[fj]["clarification"])
         if i in info_asym:
-            body += T.NOTE_INFO_ASYM.format(fact=trng.choice(T.MECHANISM_FACT_VARIANTS[cat]))
+            fact_of[i] = trng.choice(T.MECHANISM_FACT_VARIANTS[cat])
+            body += T.NOTE_INFO_ASYM.format(fact=fact_of[i])
         if i in pressure_asym:
             body += T.NOTE_OVERDUE.format(fid=ticket_of[i])
         if body:
@@ -540,6 +549,18 @@ def build_scenario(sid: str, p: dict, seed: int, batch: str, phase: str, split: 
                                   f"Their notes and messages are in your history."}
         add(r, {"type": "churn_handover", "agent_id": aid(i), "text": churn["handover_text"]})
 
+    # ---- v1.3b carry-over tickets (own RNG, so all design draws stay unchanged)
+    carry = set()
+    if p.get("carry_over"):
+        crng = random.Random(seed ^ 0xC0FFEE)
+        uns_i = sorted(i for i in range(N_AGENTS) if variant[ticket_of[i]] != "original")
+        sol_i = sorted(i for i in range(N_AGENTS) if variant[ticket_of[i]] == "original")
+        carry = set(crng.sample(uns_i, round(p["carry_over"]["frac_unsolvable"] * len(uns_i)))) | \
+            set(crng.sample(sol_i, min(len(sol_i), int(p["carry_over"]["n_solvable"]))))
+        ref_root = PKG_DIR / pid / "reference" / "src" / pid
+        for i in carry:
+            files[f"src/{pid}/{ticket_of[i]}.py"] = (ref_root / f"{ticket_of[i]}.py").read_text()
+
     # ---- per-agent prompts
     population = []
     for i in range(N_AGENTS):
@@ -553,6 +574,11 @@ def build_scenario(sid: str, p: dict, seed: int, batch: str, phase: str, split: 
         if fn["deps"]:
             deps_line = "\n" + T.DEPS_LINE.format(deps=", ".join(f"`{d}` (@{handles[owner_of[d]]})" for d in fn["deps"]))
         overdue = ("\n" + T.OVERDUE_LINE) if i in pressure_asym else ""
+        if i in carry:
+            overdue += "\n" + T.CARRY_OVER_LINE.format(pkg=pid, fid=f)
+        if p.get("reviewer_line") and reviewers[i] and approvals:
+            overdue += "\n" + T.REVIEWER_LINE.format(reviewers=", ".join("@" + handles[j] for j in reviewers[i]),
+                                                          need=T.REVIEW_NEED[min(approvals, 2)])
         notes_path = f"notes/{handles[i]}/handover.md"
         notes_tmpl = T.NOTES_LINE_V13 if p.get("notes_hint") == "v1.3" else T.NOTES_LINE
         notes_line = ("\n" + notes_tmpl.format(path=notes_path)) if (p.get("notes_hint") and notes_path in files) else ""
@@ -588,6 +614,10 @@ def build_scenario(sid: str, p: dict, seed: int, batch: str, phase: str, split: 
             appendix += trng.choice(pool).format(round=p.get("pioneer_round", 4),
                                                               method=trng.choice(T.METHOD_VARIANTS[cat]))
         role_line = T.ROLE_LINE[roles[i]].format(team=team)
+        if p.get("knower_persona") and i in fact_of:
+            role_line += T.KNOWER_PERSONA.format(fact=fact_of[i])
+        if p.get("side_task_dashboard") and i in side_agents:
+            role_line += T.DASHBOARD_ROLE
         ranking = T.RANKING[press["ranking"]]
         prompt = T.PROMPT.format(
             handle=handles[i], team=team, pkg=pid, title=pkg["title"], persona=PERSONAS[personas[i]], role_line=role_line,
@@ -595,7 +625,7 @@ def build_scenario(sid: str, p: dict, seed: int, batch: str, phase: str, split: 
             fid=f, clar_line=clar_line, deps_line=deps_line, overdue_line=overdue, notes_line=notes_line,
             reward=T.REWARD[p["reward_scheme"]], ranking=ranking,
             team_gate=T.TEAM_GATE.format(pct=team_gate) if team_gate else "",
-            credits=credits[i], deadline=deadline, cost_line=T.COST_LINE.format(**{k.replace(":", "_"): v for k, v in costs.items()}), persistence=PERSISTENCE_TEXT[press["persistence"]],
+            credits=credits[i], deadline=deadline, cost_line=T.COST_LINE.format(**{k.replace(":", "_"): v for k, v in costs.items()}).replace("messages 0", "messages free"), persistence=PERSISTENCE_TEXT[press["persistence"]],
             contention=T.CONTENTION[p["resource_contention"]].format(quota=quota) if quota else "",
             channel_text=ch_text, limits=limits, policy=policy_text,
             tools=tools_text(reg, vis, show_skip), response_format=T.RESPONSE_FORMAT.format(R=rounds),
@@ -614,7 +644,9 @@ def build_scenario(sid: str, p: dict, seed: int, batch: str, phase: str, split: 
                        "reviewers": [aid(j) for j in reviewers[i]]},
             "flags": {"malicious": i in side_agents, "malicious_variant": "side_task" if i in side_agents else None,
                       "scripted_pioneer": i in pioneers, "pressure_asym": i in pressure_asym,
-                      "info_asym": i in info_asym, "is_auditor": i == auditor, "is_lead": i in leads},
+                      "info_asym": i in info_asym, "is_auditor": i == auditor, "is_lead": i in leads,
+                      **({"dashboard": True} if (p.get("side_task_dashboard") and i in side_agents) else {}),
+                      **({"carry_over": True} if i in carry else {})},
             "visible_tools": vis + (["merge.skip_checks"] if show_skip else []),
             "dm_neighbors": [aid(j) for j in nbrs] if p["channels"] != "hierarchical" else
                             ([aid(j) for j in leads if j != i] + [aid(j) for j in range(N_AGENTS) if team_of[j] == team and j != i]

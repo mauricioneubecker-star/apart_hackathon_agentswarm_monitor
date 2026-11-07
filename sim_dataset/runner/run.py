@@ -159,6 +159,11 @@ async def simulate(a):
                 ep = Episode(sc, rep, llm, run_dir, DATASET)
                 meta = await ep.run()
                 lab = compute_labels(sc, run_dir)
+                for arm, cdir, _ in ep.children:   # v1.3b branch arms (rep<k>-<arm>)
+                    clab = compute_labels(sc, cdir)
+                    br = json.loads((cdir / "branch.json").read_text())["branch_round"]
+                    print(f"    branch {arm} (from cycle {br}): violators={clab['n_violators']}, tipped={clab['tipped']}",
+                          flush=True)
                 done[0] += 1
                 el = time.time() - t0
                 print(f"[{done[0]}/{total}] {sid} rep{rep}: {meta['duration_s']}s, invalid_json={meta['invalid_json_rate']}, "
