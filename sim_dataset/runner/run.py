@@ -183,8 +183,17 @@ async def simulate(a):
     done = [0]
     print(f"{total} episodes, {len(workers)} worker(s){' (fake LLM)' if a.fake else ''}")
 
+    def past_stop() -> bool:   # v1.6: --stop-at HHMM (evening counts as before, so overnight runs work)
+        if not a.stop_at:
+            return False
+        now = int(time.strftime("%H%M"))
+        return int(a.stop_at) <= now <= 1800
+
     async def worker(client):
         while not q.empty():
+            if past_stop():
+                print(f"stop-at {a.stop_at} reached: worker takes no new episode", flush=True)
+                return
             sid, rep = q.get_nowait()
             sc = ds.load(sid)
             if a.persistent_model:
@@ -195,32 +204,48 @@ async def simulate(a):
             try:
                 ep = Episode(sc, rep, llm, run_dir, DATASET)
                 meta = await ep.run()
+            except ApiUnavailable as e:  # API/network down: discard the partial episode, re-queue, wait for the API
+                aborts[(sid, rep)] = aborts.get((sid, rep), 0) + 1
+                if aborts[(sid, rep)] > a.max_aborts:
+                    (run_dir / "error.txt").write_text(f"gave up after {a.max_aborts} API aborts\n{e}\n")
+                    print(f"ERROR {sid} rep{rep}: API kept failing ({e})", flush=True)
+                    continue
+                print(f"ABORTED {sid} rep{rep} (will re-run from scratch): {e}", flush=True)
+                q.put_nowait((sid, rep))
+                await wait_for_api()
+                continue
+            except Exception:  # keep the batch going; v1.6: retry the episode from scratch up to --episode-retries
+                (run_dir / "error.txt").write_text(traceback.format_exc())
+                fails[(sid, rep)] = fails.get((sid, rep), 0) + 1
+                if fails[(sid, rep)] <= a.episode_retries:
+                    print(f"ERROR {sid} rep{rep} (attempt {fails[(sid, rep)]}, will retry): see {run_dir / 'error.txt'}",
+                          flush=True)
+                    q.put_nowait((sid, rep))
+                    await asyncio.sleep(30)
+                else:
+                    print(f"ERROR {sid} rep{rep}: gave up after {fails[(sid, rep)]} attempts, see {run_dir / 'error.txt'}",
+                          flush=True)
+                continue
+            # v1.6: the episode is complete (meta.json written); a failure in the labels below must not re-run it
+            lab = {"n_violators": "?", "tipped": "?"}
+            try:
                 lab = compute_labels(sc, run_dir)
                 for arm, cdir, _ in ep.children:   # v1.3b branch arms (rep<k>-<arm>)
                     clab = compute_labels(sc, cdir)
                     br = json.loads((cdir / "branch.json").read_text())["branch_round"]
                     print(f"    branch {arm} (from cycle {br}): violators={clab['n_violators']}, tipped={clab['tipped']}",
                           flush=True)
-                done[0] += 1
-                el = time.time() - t0
-                print(f"[{done[0]}/{total}] {sid} rep{rep}: {meta['duration_s']}s, invalid_json={meta['invalid_json_rate']}, "
-                      f"violators={lab['n_violators']}, tipped={lab['tipped']} (ETA {el / done[0] * (total - done[0]) / 60:.0f} min)",
+            except Exception:
+                print(f"WARNING {sid} rep{rep}: labels failed (re-run `labels` later):\n{traceback.format_exc()[-600:]}",
                       flush=True)
-            except ApiUnavailable as e:  # API/network down: discard the partial episode, re-queue, wait for the API
-                aborts[(sid, rep)] = aborts.get((sid, rep), 0) + 1
-                if aborts[(sid, rep)] > MAX_ABORTS:
-                    (run_dir / "error.txt").write_text(f"gave up after {MAX_ABORTS} API aborts\n{e}\n")
-                    print(f"ERROR {sid} rep{rep}: API kept failing ({e})", flush=True)
-                    continue
-                print(f"ABORTED {sid} rep{rep} (will re-run from scratch): {e}", flush=True)
-                q.put_nowait((sid, rep))
-                await wait_for_api()
-            except Exception:  # keep the batch going
-                (run_dir / "error.txt").write_text(traceback.format_exc())
-                print(f"ERROR {sid} rep{rep}: see {run_dir / 'error.txt'}", flush=True)
+            done[0] += 1
+            el = time.time() - t0
+            print(f"[{done[0]}/{total}] {sid} rep{rep}: {meta['duration_s']}s, invalid_json={meta['invalid_json_rate']}, "
+                  f"violators={lab['n_violators']}, tipped={lab['tipped']} (ETA {el / done[0] * (total - done[0]) / 60:.0f} min)",
+                  flush=True)
 
     aborts: dict = {}
-    MAX_ABORTS = 3
+    fails: dict = {}
     await asyncio.gather(*(worker(c) for c in workers))
     if not a.fake:
         for c in workers:
@@ -318,6 +343,9 @@ def features_cmd(a):
         print(f"NLI model not available ({getattr(nli, 'err', '')}); 'contradiction' will be NaN. "
               "Install transformers + torch or pass --no-nli.")
     for rd in finished_runs(Path(a.out)):
+        gm, jm = rd / "graph_meta.json", rd / "jury_merged.jsonl"
+        if a.missing_only and gm.exists() and (not jm.exists() or gm.stat().st_mtime >= jm.stat().st_mtime):
+            continue   # v1.6: incremental (overnight post-processing)
         meta = build_features(ds.load(rd.parent.name), rd, nli, jury=a.jury)
         print(f"{rd.parent.name} {rd.name}: edges={meta['n_edges']} jury_coverage={meta['jury_coverage']} "
               f"nli={meta['nli']['available']}")
@@ -338,6 +366,13 @@ def main():
     ap.add_argument("--where", default=None)
     ap.add_argument("--replicates", type=int, default=1)
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--episode-retries", type=int, default=0,
+                    help="simulate: re-run an episode that raised an error up to N more times (fresh run dir)")
+    ap.add_argument("--max-aborts", type=int, default=3,
+                    help="simulate: re-queues per episode after API outages before giving up")
+    ap.add_argument("--stop-at", default=None, help="simulate: HHMM after which no new episode is started")
+    ap.add_argument("--missing-only", action="store_true",
+                    help="features: skip episodes whose features are newer than their jury scores")
     ap.add_argument("--order", choices=["config", "replicate"], default="config",
                     help="simulate: 'replicate' runs rep0 of every config first (overnight batches)")
     ap.add_argument("--persistent-model", default=None,

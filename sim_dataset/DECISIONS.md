@@ -537,3 +537,23 @@ danach finale Jury, Labels, Features, Report), `tools/night_report.py` (Kipprate
 Geprüft im Container: alle 1.773 älteren Szenarien byte-identisch; statische Checks + Engine-Smoke (unsandboxed) für alle
 112 Nacht- und 20 Pilot-5-Konfigs 0 Fehler; Fake-Lauf der ersten 6 Jobs (Branch-Konfigs, 18 Läufe) inkl. Jury, Labels,
 Features, Report; Fine-Tune-Override getestet.
+
+### 15b. Robustheit für den Nachtlauf
+| Risiko | Schutz |
+|---|---|
+| Episode wirft Fehler | `simulate --episode-retries 2`: Neustart von vorn (frisches Run-Verzeichnis); danach nächster Pass |
+| Labels scheitern nach fertiger Episode | nur Warnung, Episode zählt als fertig (keine Neusimulation) |
+| API/Netz weg | Client wartet 10 min pro Call, dann Re-Queue + Warten auf die API (`--max-aborts 50`) |
+| Prozess hängt | Watchdog: 30 min ohne neue Episoden-Logs → simulate wird beendet, nächster Pass startet nach 60 s |
+| Prozess stirbt | Pass-Schleife: solange Episoden fehlen; Abbruch nur nach 3 sauberen Pässen ohne Fortschritt |
+| Jury stirbt | eigene Neustart-Schleife; am Ende finaler Jury-Pass (3 Versuche) |
+| Morgens noch nicht fertig | stündlich Labels, inkrementelle Features (`--missing-only`) und `report.md` |
+| Mac schläft | `caffeinate -dimsu` (nur mit Netzteil und offenem Deckel) |
+| Terminal zu | `nohup`; Stop über `kill $(cat runs_night/_logs/night.pid)`, Neustart setzt fort |
+| Zeit übrig | Stufe 2: Replikat 3 aller Nicht-Branch-Konfigs bis `STOP_AT` (07:30), keine neue Episode danach |
+
+Preflight scheitert hart bei: Python < 3.11 oder fehlenden Paketen, Validierungsfehlern in der Sandbox, irgendeinem
+Key/Modell/Judge ≠ 200 (alle 4 Agentenmodelle, DeepSeek, Haiku), Fehlern im Fake-Durchlauf, Canary mit
+invalid_json ≥ 15 % oder < 20 Nachrichten. Getestet im Container: Retry mit injizierten Fehlern (einmal → Erfolg,
+immer → nach 3 Versuchen aufgegeben, Rest läuft weiter), Watchdog-Kill + Neustart, Signal-Stopp ohne Restprozesse,
+kompletter Fake-Nachtlauf inkl. Stufe 2, Report.
