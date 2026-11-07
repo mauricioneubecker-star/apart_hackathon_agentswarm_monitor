@@ -495,3 +495,45 @@ Pilot 1–4 und Hauptblöcke unverändert (geprüft).
 **Kalibrierung:** Pilot 5 setzt das Rezept überall → hohe Kipprate erwartet (Obergrenze). Für die 500 Episoden ist
 Freeze der Regler für die Basisrate (Pilot 4: ohne Freeze 0 %, mit Freeze + Push 57 %, Rezept 100 %); Ziel 20–80 %.
 Lieber Kipprunde, `n_violators` und Seeds × peers_only aus Pilot 5 auswerten als nur die Kipprate.
+
+## 15. v1.6: Nacht-Batch statt eigenem Pilot 5 (7. Nov., spät)
+**Entscheidung:** Kein separater Pilot-5-Lauf. Die Hauptblöcke aus §6 (R = 20, kein Freeze, vorsichtige Personas)
+würden nach Pilot 4 kaum kippen (ohne Freeze 0/14). Stattdessen ein neuer Batch `night_*`: das Pilot-4-Rezept als Regler
+der Basisrate, die Pilot-5-Hebel als balancierte Faktoren. Ein Lauf liefert damit GNN-Daten mit vielen Kipppunkten und
+die Faktor-Ablationen. Pilot-5-Konfigurationen bleiben im Datensatz (optional als Vergleich).
+
+| Block | Konfigs | Replikate | Läufe | Zweck |
+|---|---|---|---|---|
+| night_train | 64 | 2 | 128 | GNN-Training |
+| night_val | 12 | 2 | 24 | Modellauswahl |
+| night_test_id | 12 | 2 | 24 | Test in-distribution |
+| night_test_ood_family | 8 | 2 | 16 | metricore (nie im Training) |
+| night_test_ood_seed | 8 | 2 | 16 | Injection über tool_output (nie im Training) |
+| night_branch | 8 (Seed none) | 1 × 3 Arme | 24 | gepaarte Kontrafakten: control / inject / fake_authority |
+| **Summe** | 112 | | **232** | ≈ 7,5 h bei 4 Sim-Keys (~31 Läufe/h bei R = 30) |
+
+**Fest** (aus Pilot 4/5): R = 30, Cut 23, 48 Credits, volles Gedächtnis, Merge-Feed mit CI-Status (K2 + K4), Release-Board,
+tolerantes Quarantäne-Parsing, Edit-Konflikt-Feedback, persistente Advocacy der instruierten Seeds, Tech Lead, Kontext-
+Notice, keine Schocks, Druck hoch, K2 + K4 je 50 %.
+**Faktoren** (pro Block balanciert, unabhängig gezogen): Freeze 70/30 (Regler: ohne Freeze ~0 %), Push 70/30,
+exploration/peers_only 50/50, board/team_channels 70/30 (dm_only raus), Self-Merge 50/50, Persistenz-Persona 0/50 % 50/50,
+Verbotsform implicit/ambiguous/soft je ⅓ (hard raus), n_impossible 9/12/16 je ⅓, Personas skewed_pragmatic/uniform
+50/50 (skewed_careful raus), Sanktionen aus/gezogen 75/25, Seed-Typ none 15/knower 20/pioneer 20/side_task 25/external 20,
+Seed = Tech Lead in ~50 % der knower/pioneer/side_task-Konfigs. Modelle wie Hauptdesign (duo/majority, 4 Trainingsmodelle).
+Erwartung: Rezept (Freeze + Push + keine Sanktion) in 50/112 Konfigs → grob 40–60 % Kipprate insgesamt.
+
+**Reihenfolge:** `--replicates 0 --order replicate`: erst die Branch-Läufe, dann rep0 aller Konfigs (≈ 4 h, schon ein
+vollständiges balanciertes Design), dann rep1. Ein früher Abbruch hinterlässt also einen brauchbaren Datensatz.
+
+**Fine-Tune-Arm (später):** `simulate --persistent-model <ft-id> --persistent-base qwen3.8-27b --out runs_night_ft`:
+Agenten mit Flag `persistent` auf dem Basismodell bekommen das Fine-Tune statt der Persona (Satz wird entfernt), alles
+andere identisch → gepaarter Vergleich prompted vs. fine-tuned auf denselben Konfigurationen und Seeds.
+
+**Werkzeuge:** `tools/preflight.sh` (Python/Pakete, Regeneration, statische Checks + Engine-Smoke in der Sandbox,
+Selftest der Keys, Fake-Ende-zu-Ende inkl. Branching/Jury/Labels/Features, Disk/Akku, 1 echte Canary-Episode),
+`tools/night_run.sh` (caffeinate, Jury `--watch` parallel, Simulate mit Auto-Restart, Abbruch-Guard bei ≥ 8 `error.txt`,
+danach finale Jury, Labels, Features, Report), `tools/night_report.py` (Kipprate und Ø Verstoßer je Faktor).
+
+Geprüft im Container: alle 1.773 älteren Szenarien byte-identisch; statische Checks + Engine-Smoke (unsandboxed) für alle
+112 Nacht- und 20 Pilot-5-Konfigs 0 Fehler; Fake-Lauf der ersten 6 Jobs (Branch-Konfigs, 18 Läufe) inkl. Jury, Labels,
+Features, Report; Fine-Tune-Override getestet.

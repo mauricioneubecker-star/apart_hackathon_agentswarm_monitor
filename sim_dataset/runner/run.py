@@ -121,21 +121,53 @@ def finished_runs(out: Path):
     return sorted(p.parent for p in out.glob("*/rep*/meta.json"))
 
 
+def with_persistent_model(sc: dict, provider_model_id: str, base: str | None = None) -> dict:
+    """v1.6: fine-tuned arm. Agents flagged `persistent` (prompted persistence persona in the generated scenario) get
+    the fine-tuned model instead and lose the persona sentence, so the same config runs once with prompted and once
+    with fine-tuned persistence (use a separate --out). All other agents and the seeds stay unchanged. With `base`
+    (--persistent-base, e.g. the fine-tune's base model) only flagged agents on that model are swapped, so the
+    comparison is not confounded by a change of model family."""
+    import copy
+    from config import PERSONAS
+    sc = copy.deepcopy(sc)
+    flagged = [a for a in sc["population"] if a["flags"].get("persistent") and (base is None or a["model"] == base)]
+    if not flagged:
+        return sc
+    for a in flagged:
+        base = sc["models"][a["model"]]
+        key = f"ft-persistent:{a['model']}"
+        sc["models"].setdefault(key, dict(base, provider_model_id=provider_model_id, split_role="finetuned",
+                                          base_model=a["model"]))
+        a["model"] = key
+        a["system_prompt"] = a["system_prompt"].replace(" " + PERSONAS["persistent"], "").replace(PERSONAS["persistent"], "")
+    sc["persistent_model"] = provider_model_id
+    return sc
+
+
 async def simulate(a):
     require_pytest()
     ds = Dataset(DATASET)
     rows = ds.where(a.where) if a.where else ds.index
     out = Path(a.out)
-    jobs = [(sid, r) for sid in rows.scenario_id for r in range(a.replicates)
+    # v1.6: --replicates 0 = replicates_planned from the index (night batch: blocks differ)
+    reps = {sid: (int(rp) if a.replicates == 0 and rp == rp else max(1, a.replicates))
+            for sid, rp in zip(rows.scenario_id, rows.get("replicates_planned", [1] * len(rows)))}
+    jobs = [(sid, r) for sid in rows.scenario_id for r in range(reps[sid])
             if not (out / sid / f"rep{r}" / "meta.json").exists()]
-    if a.limit:
-        jobs = jobs[: a.limit]
     if not jobs:
         print("nothing to do")
         return
     # longest jobs first: branched episodes run 3 arms on one key and would otherwise form a long tail at the end
     # (outcomes are unaffected - every episode has its own seed)
-    jobs.sort(key=lambda j: 0 if ds.load(j[0]).get("branching") else 1)
+    branched = {sid for sid, _ in jobs if ds.load(sid).get("branching")}
+    if a.order == "replicate":   # v1.6: all rep0 first, so a run stopped early still covers every config once
+        jobs.sort(key=lambda j: (j[1], 0 if j[0] in branched else 1))
+    else:
+        jobs.sort(key=lambda j: 0 if j[0] in branched else 1)
+    if a.limit:
+        jobs = jobs[: a.limit]
+    if a.persistent_model:
+        print(f"persistent agents -> model {a.persistent_model!r} (persona sentence removed)")
     if a.fake:
         workers = [None] * max(1, a.workers)
     else:
@@ -155,6 +187,8 @@ async def simulate(a):
         while not q.empty():
             sid, rep = q.get_nowait()
             sc = ds.load(sid)
+            if a.persistent_model:
+                sc = with_persistent_model(sc, a.persistent_model, a.persistent_base)
             run_dir = out / sid / f"rep{rep}"
             llm = FakeAgentLLM(sc, sc["replicate_seeds"][rep]) if client is None else client
             (run_dir / "error.txt").unlink(missing_ok=True)  # stale error from an earlier attempt
@@ -304,6 +338,12 @@ def main():
     ap.add_argument("--where", default=None)
     ap.add_argument("--replicates", type=int, default=1)
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--order", choices=["config", "replicate"], default="config",
+                    help="simulate: 'replicate' runs rep0 of every config first (overnight batches)")
+    ap.add_argument("--persistent-model", default=None,
+                    help="simulate: provider model id of the persistence fine-tune for agents flagged 'persistent'")
+    ap.add_argument("--persistent-base", default=None,
+                    help="simulate: only swap persistent agents on this model key (the fine-tune's base, e.g. qwen3.8-27b)")
     ap.add_argument("--keys", default=None, help="comma-separated key indices from secrets.local.json")
     ap.add_argument("--rpm", type=int, default=95, help="requests per minute per key (endpoint limit: 100)")
     ap.add_argument("--fake", action="store_true", help="fake LLMs, no network")
