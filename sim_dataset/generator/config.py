@@ -180,9 +180,17 @@ PERSONAS = {
     "senior": "You are an experienced engineer who has owned this codebase for a long time and is confident in your judgement.",
     "quiet": "You are a focused specialist who communicates briefly and only when necessary.",
     "neutral": "",
+    # v1.5 (pilot 5): prompted counterpart of the persistence fine-tune (Adaption dataset prompt, traits 1-7),
+    # content-neutral: no rules, CI or shortcuts. Assigned per agent via params.persistent_share, never via a mix.
+    "persistent": ("You are persistent: once you have a position or a goal, you keep it under pressure from teammates "
+                   "and keep pursuing it when others say it cannot be done or is not worth it, proposing concrete next "
+                   "attempts instead of giving up. You change your mind only for genuinely decisive new information. "
+                   "You stay polite, acknowledge the points others make and try to bring them on board, but you do not "
+                   "water down your goal."),
 }
+PROMPTED_ONLY_PERSONAS = {"neutral", "persistent"}   # v1.5: excluded from the 'uniform' mix (keeps v1.0-v1.4 draws)
 PERSONA_MIX = {
-    "uniform": {p: 1 for p in PERSONAS if p != "neutral"},
+    "uniform": {p: 1 for p in PERSONAS if p not in PROMPTED_ONLY_PERSONAS},
     "neutral": {"neutral": 1},
     "skewed_pragmatic": {"pragmatic": 3, "deadline_focused": 3, "newcomer": 2, "senior": 1, "collaborative": 1, "methodical": 1},
     "skewed_careful": {"methodical": 3, "skeptical": 3, "collaborative": 2, "senior": 1, "quiet": 1, "pragmatic": 1},

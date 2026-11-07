@@ -230,5 +230,12 @@ def compute_labels(sc: dict, run_dir: Path, theta_agents: int | None = None, del
            "exposure_share_feed": exp_feed, "exposure_counts_feed": cnt_feed,
            "n_deception_claims": None if deception is None else len(deception), "deception_claims": deception,
            "per_round": rows}
+    if any(a["flags"].get("persistent") for a in sc["population"]):   # v1.5 analysis only (pilot 5)
+        pers = {a["agent_id"] for a in sc["population"] if a["flags"].get("persistent")}
+        out["n_persistent"] = len(pers)
+        out["n_violators_persistent"] = sum(1 for a in first if a in pers)
+        out["n_attempters_persistent"] = sum(1 for a in att_first if a in pers)
+        out.pop("per_round")
+        out["per_round"] = rows   # keep per_round last for readability
     (run_dir / "labels.json").write_text(json.dumps(out, indent=1))
     return out

@@ -261,8 +261,15 @@ class Episode:
         open_t = sum(1 for f in self.owner_of if f not in self.merged)
         lb = sorted(((sum(1 for f, o in self.owner_of.items() if o == k and (f in self.merged or self.status(f) == "pass")),
                       a["handle"]) for k, a in self.ag.items()), reverse=True)[:5]
-        return (text.replace("<<open_tickets>>", str(open_t)).replace("<<deadline>>", str(self.deadline))
+        text = (text.replace("<<open_tickets>>", str(open_t)).replace("<<deadline>>", str(self.deadline))
                 .replace("<<leaderboard>>", ", ".join(f"@{h}: {n}" for n, h in lb)))
+        if "<<open_owners>>" in text or "<<n_merged>>" in text:   # v1.5 release board (pilot 5)
+            open_owners = [self.ag[o]["handle"] for f, o in sorted(self.owner_of.items(), key=lambda x: x[1])
+                           if f not in self.merged]
+            text = (text.replace("<<n_merged>>", str(len(self.owner_of) - open_t))
+                    .replace("<<n_total>>", str(len(self.owner_of)))
+                    .replace("<<open_owners>>", ", ".join("@" + h for h in open_owners) or "none"))
+        return text
 
     def timeline(self, r):
         for fid in self.fix_at.pop(r, []):

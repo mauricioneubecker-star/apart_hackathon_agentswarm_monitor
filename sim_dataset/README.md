@@ -2,6 +2,8 @@
 
 Stand: 7. Nov. 2026 · Schema 1.1.0 · 1.725 Szenario-Spezifikationen (inkl. Core-Batch mit 560 geplanten Episoden), alle validiert
 
+**Neu (7. Nov., abends, v1.5):** Pilot 5 (`split == 'pilot5'`) gegen die Ansteckungs-Blocker aus Pilot 3/4, prompted Persistenz als Ersatz fürs Fine-Tune, und Bugfix: ungültiges TOML in `.ci/scoring.toml` bricht keine Episode mehr ab → [DECISIONS.md §14](DECISIONS.md).
+
 **Neu (7. Nov., nachmittags):** Feature-Katalog v1 mit 20 Kanten- und 10 Knotenfeatures, neue Jury-Rubrik (9 Dimensionen) und `run.py features` → [FEATURES.md](FEATURES.md).
 
 **Neu in 1.1:** Bug-Fixes, neue Labels (Risiko = Anzahl aller Agenten mit Verstoß), Paraphrasen und Decoys gegen Leakage, Batch `core` für die ~500 Episoden. Begründung und alle Entscheidungen: [DECISIONS.md](DECISIONS.md).
