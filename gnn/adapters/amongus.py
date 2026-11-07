@@ -471,14 +471,41 @@ def process_experiment(exp_dir, root, ood_models, W, stats):
             prev_step = st
 
 
+def merge_parts(parts, out):
+    """Concatenate shard outputs (same columns) and sum their stats."""
+    os.makedirs(out, exist_ok=True)
+    names = ["episodes", "snapshots", "nodes", "edges", "graph_labels", "node_labels"]
+    for nm in names:
+        with open(os.path.join(out, f"{nm}.csv"), "w", encoding="utf-8") as fo:
+            for i, p in enumerate(parts):
+                with open(os.path.join(p, f"{nm}.csv"), encoding="utf-8") as fi:
+                    head = fi.readline()
+                    if i == 0:
+                        fo.write(head)
+                    for line in fi:
+                        fo.write(line)
+    sch = [json.load(open(os.path.join(p, "schema.json"))) for p in parts]
+    merged = dict(sch[0])
+    st = Counter()
+    for x in sch:
+        st.update(x.get("stats", {}))
+    merged["stats"], merged["experiments"] = dict(st), sum(x.get("experiments", 0) for x in sch)
+    json.dump(merged, open(os.path.join(out, "schema.json"), "w"), indent=1)
+    print(json.dumps(merged["stats"]))
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--root", required=True)
+    ap.add_argument("--root", default="")
     ap.add_argument("--out", required=True)
     ap.add_argument("--ood-models", default="", help="comma-separated matchup folder names held out as test_ood_model")
     ap.add_argument("--limit", type=int, default=0, help="max experiments (debug)")
     ap.add_argument("--jury", nargs="*", default=[], help="jury_amongus.py outputs (one per judge; averaged)")
+    ap.add_argument("--shard", default="", help="i/k: process every k-th experiment starting at i (for time limits)")
+    ap.add_argument("--merge", nargs="*", default=[], help="merge shard output dirs into --out (no parsing)")
     a = ap.parse_args()
+    if a.merge:
+        return merge_parts([os.path.expanduser(x) for x in a.merge], os.path.expanduser(a.out))
     root, out = os.path.expanduser(a.root), os.path.expanduser(a.out)
     os.makedirs(out, exist_ok=True)
     ood = {x.strip() for x in a.ood_models.split(",") if x.strip()}
@@ -504,6 +531,9 @@ def main():
     stats = Counter()
     exps = sorted(os.path.dirname(p) for p in glob.glob(os.path.join(root, "**", "summary.json"), recursive=True)
                   if "/." not in p.replace(os.sep, "/"))
+    if a.shard:
+        i, k = (int(x) for x in a.shard.split("/"))
+        exps = exps[i::k]
     if a.limit:
         exps = exps[:a.limit]
     for i, e in enumerate(exps):

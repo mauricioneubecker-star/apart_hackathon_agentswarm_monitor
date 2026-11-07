@@ -1,0 +1,139 @@
+{
+ "out": "results/amx_all",
+ "workers": 2,
+ "seeds": [
+  0
+ ],
+ "base": {
+  "data_dir": "data/amongus_all_v2",
+  "strata": [
+   "round",
+   "num_players"
+  ],
+  "epochs": 80,
+  "patience": 12,
+  "batch_size": 128
+ },
+ "arms": [
+  {
+   "arm": "ALL IMP GatedGCN",
+   "model": "gated",
+   "node_target": "is_impostor",
+   "select": "node.auprc",
+   "seeds": [
+    0,
+    1,
+    2
+   ]
+  },
+  {
+   "arm": "ALL IMP GINE rewired",
+   "model": "gine",
+   "rewire": true,
+   "node_target": "is_impostor",
+   "select": "node.auprc"
+  },
+  {
+   "arm": "ALL IMP K0",
+   "model": "none",
+   "node_target": "is_impostor",
+   "select": "node.auprc"
+  },
+  {
+   "arm": "ALL IMP HGB",
+   "model": "hgb",
+   "node_target": "is_impostor",
+   "select": "node.auprc",
+   "seeds": [
+    0,
+    1
+   ]
+  },
+  {
+   "arm": "ALL IMP LogReg",
+   "model": "logreg",
+   "node_target": "is_impostor",
+   "select": "node.auprc"
+  },
+  {
+   "arm": "ALL GRP GatedGCN+aux",
+   "model": "gated",
+   "graph_target": "innocent_ejected",
+   "node_target": "votes_innocent",
+   "node_aux": [
+    "is_impostor"
+   ],
+   "select": "graph.auprc",
+   "seeds": [
+    0,
+    1,
+    2
+   ]
+  },
+  {
+   "arm": "ALL GRP K0+aux",
+   "model": "none",
+   "graph_target": "innocent_ejected",
+   "node_target": "votes_innocent",
+   "node_aux": [
+    "is_impostor"
+   ],
+   "select": "graph.auprc"
+  },
+  {
+   "arm": "ALL GRP HGB",
+   "model": "hgb",
+   "graph_target": "innocent_ejected",
+   "node_target": "votes_innocent",
+   "select": "graph.auprc",
+   "seeds": [
+    0,
+    1
+   ]
+  },
+  {
+   "arm": "ALL GRP time",
+   "model": "time",
+   "graph_target": "innocent_ejected",
+   "node_target": "votes_innocent",
+   "select": "graph.auprc"
+  },
+  {
+   "arm": "X-OOD IMP GatedGCN (train selfplay, test crossplay)",
+   "model": "gated",
+   "node_target": "is_impostor",
+   "select": "node.auprc",
+   "holdout": {
+    "models": [
+     "re:\\+"
+    ]
+   }
+  },
+  {
+   "arm": "X-OOD IMP HGB (train selfplay, test crossplay)",
+   "model": "hgb",
+   "node_target": "is_impostor",
+   "select": "node.auprc",
+   "holdout": {
+    "models": [
+     "re:\\+"
+    ]
+   }
+  },
+  {
+   "arm": "ALL GRP GatedGCN+aux rewired",
+   "model": "gated",
+   "rewire": true,
+   "graph_target": "innocent_ejected",
+   "node_target": "votes_innocent",
+   "node_aux": [
+    "is_impostor"
+   ],
+   "select": "graph.auprc",
+   "seeds": [
+    0,
+    1
+   ]
+  }
+ ]
+}

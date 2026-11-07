@@ -72,8 +72,12 @@ def load(cfg: DataConfig, verbose: bool = True) -> Bundle:
 
     # splits (+ holdout)
     ep["split"] = ep["split"].astype(str)
-    for col, vals in (cfg.holdout or {}).items():
-        ep.loc[ep[col].astype(str).isin([str(v) for v in vals]), "split"] = "test_ood"
+    for col, vals in (cfg.holdout or {}).items():   # exact values, or "re:<regex>"
+        m = pd.Series(False, index=ep.index)
+        for v in vals:
+            v = str(v)
+            m |= ep[col].astype(str).str.contains(v[3:], regex=True) if v.startswith("re:") else ep[col].astype(str) == v
+        ep.loc[m, "split"] = "test_ood"
     if cfg.train_frac < 1.0:
         groups = np.array(sorted(ep.loc[ep.split == "train", "group_id"].unique()))
         keep = set(np.random.default_rng(12345).permutation(groups)[: int(round(len(groups) * cfg.train_frac))])

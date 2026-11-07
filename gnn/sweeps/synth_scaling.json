@@ -2,8 +2,7 @@
  "out": "results/synth_scaling",
  "workers": 2,
  "seeds": [
-  0,
-  1
+  0
  ],
  "base": {
   "graph_target": "tip",
@@ -14,196 +13,118 @@
    "seed_mode",
    "round"
   ],
-  "epochs": 100,
-  "patience": 15,
+  "epochs": 25,
+  "patience": 6,
   "batch_size": 32
  },
  "arms": [
   {
-   "data_dir": "data/synth_n24",
+   "data_dir": "data/synth_n024",
    "arm": "N24 A1 GINE",
    "model": "gine"
   },
   {
-   "data_dir": "data/synth_n24",
-   "arm": "N24 A2 GatedGCN",
-   "model": "gated",
-   "seeds": [
-    0
-   ]
-  },
-  {
-   "data_dir": "data/synth_n24",
+   "data_dir": "data/synth_n024",
    "arm": "N24 K0 no-MP",
-   "model": "none",
-   "seeds": [
-    0
-   ]
+   "model": "none"
   },
   {
-   "data_dir": "data/synth_n24",
+   "data_dir": "data/synth_n024",
    "arm": "N24 C1 GINE rewired",
    "model": "gine",
-   "rewire": true,
-   "seeds": [
-    0
-   ]
+   "rewire": true
   },
   {
-   "data_dir": "data/synth_n24",
+   "data_dir": "data/synth_n024",
    "arm": "N24 K2 HGB (global)",
-   "model": "hgb",
-   "seeds": [
-    0
-   ]
+   "model": "hgb"
   },
   {
-   "data_dir": "data/synth_n24",
+   "data_dir": "data/synth_n024",
    "arm": "N24 K2+ HGB (1-hop)",
-   "model": "hgb1",
-   "seeds": [
-    0
-   ]
+   "model": "hgb1"
   },
   {
-   "data_dir": "data/synth_n24",
+   "data_dir": "data/synth_n024",
    "arm": "N24 K1+ LogReg (1-hop)",
-   "model": "logreg1",
-   "seeds": [
-    0
-   ]
+   "model": "logreg1"
   },
   {
-   "data_dir": "data/synth_n24",
+   "data_dir": "data/synth_n024",
    "arm": "N24 Kt time-only",
-   "model": "time",
-   "seeds": [
-    0
-   ]
+   "model": "time"
   },
   {
-   "data_dir": "data/synth_n48",
+   "data_dir": "data/synth_n048",
    "arm": "N48 A1 GINE",
    "model": "gine"
   },
   {
-   "data_dir": "data/synth_n48",
-   "arm": "N48 A2 GatedGCN",
-   "model": "gated",
-   "seeds": [
-    0
-   ]
-  },
-  {
-   "data_dir": "data/synth_n48",
+   "data_dir": "data/synth_n048",
    "arm": "N48 K0 no-MP",
-   "model": "none",
-   "seeds": [
-    0
-   ]
+   "model": "none"
   },
   {
-   "data_dir": "data/synth_n48",
+   "data_dir": "data/synth_n048",
    "arm": "N48 C1 GINE rewired",
    "model": "gine",
-   "rewire": true,
-   "seeds": [
-    0
-   ]
+   "rewire": true
   },
   {
-   "data_dir": "data/synth_n48",
+   "data_dir": "data/synth_n048",
    "arm": "N48 K2 HGB (global)",
-   "model": "hgb",
-   "seeds": [
-    0
-   ]
+   "model": "hgb"
   },
   {
-   "data_dir": "data/synth_n48",
+   "data_dir": "data/synth_n048",
    "arm": "N48 K2+ HGB (1-hop)",
-   "model": "hgb1",
-   "seeds": [
-    0
-   ]
+   "model": "hgb1"
   },
   {
-   "data_dir": "data/synth_n48",
+   "data_dir": "data/synth_n048",
    "arm": "N48 K1+ LogReg (1-hop)",
-   "model": "logreg1",
-   "seeds": [
-    0
-   ]
+   "model": "logreg1"
   },
   {
-   "data_dir": "data/synth_n48",
+   "data_dir": "data/synth_n048",
    "arm": "N48 Kt time-only",
-   "model": "time",
-   "seeds": [
-    0
-   ]
+   "model": "time"
   },
   {
-   "data_dir": "data/synth_n96",
+   "data_dir": "data/synth_n096",
    "arm": "N96 A1 GINE",
    "model": "gine"
   },
   {
-   "data_dir": "data/synth_n96",
-   "arm": "N96 A2 GatedGCN",
-   "model": "gated",
-   "seeds": [
-    0
-   ]
-  },
-  {
-   "data_dir": "data/synth_n96",
+   "data_dir": "data/synth_n096",
    "arm": "N96 K0 no-MP",
-   "model": "none",
-   "seeds": [
-    0
-   ]
+   "model": "none"
   },
   {
-   "data_dir": "data/synth_n96",
+   "data_dir": "data/synth_n096",
    "arm": "N96 C1 GINE rewired",
    "model": "gine",
-   "rewire": true,
-   "seeds": [
-    0
-   ]
+   "rewire": true
   },
   {
-   "data_dir": "data/synth_n96",
+   "data_dir": "data/synth_n096",
    "arm": "N96 K2 HGB (global)",
-   "model": "hgb",
-   "seeds": [
-    0
-   ]
+   "model": "hgb"
   },
   {
-   "data_dir": "data/synth_n96",
+   "data_dir": "data/synth_n096",
    "arm": "N96 K2+ HGB (1-hop)",
-   "model": "hgb1",
-   "seeds": [
-    0
-   ]
+   "model": "hgb1"
   },
   {
-   "data_dir": "data/synth_n96",
+   "data_dir": "data/synth_n096",
    "arm": "N96 K1+ LogReg (1-hop)",
-   "model": "logreg1",
-   "seeds": [
-    0
-   ]
+   "model": "logreg1"
   },
   {
-   "data_dir": "data/synth_n96",
+   "data_dir": "data/synth_n096",
    "arm": "N96 Kt time-only",
-   "model": "time",
-   "seeds": [
-    0
-   ]
+   "model": "time"
   },
   {
    "data_dir": "data/synth_n192",
@@ -212,60 +133,34 @@
   },
   {
    "data_dir": "data/synth_n192",
-   "arm": "N192 A2 GatedGCN",
-   "model": "gated",
-   "seeds": [
-    0
-   ]
-  },
-  {
-   "data_dir": "data/synth_n192",
    "arm": "N192 K0 no-MP",
-   "model": "none",
-   "seeds": [
-    0
-   ]
+   "model": "none"
   },
   {
    "data_dir": "data/synth_n192",
    "arm": "N192 C1 GINE rewired",
    "model": "gine",
-   "rewire": true,
-   "seeds": [
-    0
-   ]
+   "rewire": true
   },
   {
    "data_dir": "data/synth_n192",
    "arm": "N192 K2 HGB (global)",
-   "model": "hgb",
-   "seeds": [
-    0
-   ]
+   "model": "hgb"
   },
   {
    "data_dir": "data/synth_n192",
    "arm": "N192 K2+ HGB (1-hop)",
-   "model": "hgb1",
-   "seeds": [
-    0
-   ]
+   "model": "hgb1"
   },
   {
    "data_dir": "data/synth_n192",
    "arm": "N192 K1+ LogReg (1-hop)",
-   "model": "logreg1",
-   "seeds": [
-    0
-   ]
+   "model": "logreg1"
   },
   {
    "data_dir": "data/synth_n192",
    "arm": "N192 Kt time-only",
-   "model": "time",
-   "seeds": [
-    0
-   ]
+   "model": "time"
   }
  ]
 }
