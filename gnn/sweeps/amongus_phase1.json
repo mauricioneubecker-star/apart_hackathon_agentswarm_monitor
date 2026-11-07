@@ -1,0 +1,95 @@
+{
+ "out": "results/amx_phase1",
+ "workers": 2,
+ "seeds": [
+  0,
+  1,
+  2
+ ],
+ "base": {
+  "data_dir": "data/amongus_selfplay",
+  "graph_target": "innocent_ejected",
+  "graph_count": "n_crew_votes_innocent",
+  "node_target": "votes_innocent",
+  "select": "graph.auprc",
+  "strata": [
+   "round",
+   "matchup"
+  ],
+  "epochs": 150,
+  "patience": 20,
+  "batch_size": 128
+ },
+ "arms": [
+  {
+   "arm": "A1 GINE",
+   "model": "gine"
+  },
+  {
+   "arm": "A2 GatedGCN",
+   "model": "gated"
+  },
+  {
+   "arm": "A3 Transformer",
+   "model": "transformer"
+  },
+  {
+   "arm": "A4 GATv2",
+   "model": "gatv2"
+  },
+  {
+   "arm": "K0 no-MP",
+   "model": "none"
+  },
+  {
+   "arm": "K1 LogReg",
+   "model": "logreg",
+   "seeds": [
+    0
+   ]
+  },
+  {
+   "arm": "K2 HGB",
+   "model": "hgb",
+   "seeds": [
+    0,
+    1,
+    2
+   ]
+  },
+  {
+   "arm": "Kt time-only",
+   "model": "time",
+   "seeds": [
+    0
+   ]
+  },
+  {
+   "arm": "C1 GINE rewired",
+   "model": "gine",
+   "rewire": true
+  },
+  {
+   "arm": "C2 GINE shuffled labels",
+   "model": "gine",
+   "shuffle_labels": true,
+   "seeds": [
+    0,
+    1,
+    2
+   ]
+  },
+  {
+   "arm": "X1 GINE +privileged (coloc)",
+   "model": "gine",
+   "include_groups": [
+    "privileged"
+   ]
+  },
+  {
+   "arm": "X2 GINE S0 (no lexicon)",
+   "model": "gine",
+   "stage": 0
+  }
+ ]
+}

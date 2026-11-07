@@ -1,0 +1,14 @@
+{
+  "out": "results/amx_impostor",
+  "workers": 2,
+  "seeds": [0, 1],
+  "base": {"data_dir": "data/amongus_selfplay", "node_target": "is_impostor", "select": "node.auprc",
+           "strata": ["round"], "epochs": 150, "patience": 20, "batch_size": 128},
+  "arms": [
+    {"arm": "A1 GINE", "model": "gine"},
+    {"arm": "K0 no-MP", "model": "none"},
+    {"arm": "K1 LogReg", "model": "logreg", "seeds": [0]},
+    {"arm": "K2 HGB", "model": "hgb", "seeds": [0]},
+    {"arm": "C1 GINE rewired", "model": "gine", "rewire": true}
+  ]
+}
