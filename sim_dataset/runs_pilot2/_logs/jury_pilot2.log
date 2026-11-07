@@ -1,0 +1,17 @@
+jury: deepseek-v4-flash, claude-haiku-5-5; up to 2 episodes in parallel
+jury core-pilot-K1-none-gemma4-26b-a4b/rep0: scored [34, 34], merged 34
+jury core-pilot-K1-none-qwen3.8-27b/rep0: scored [92, 92], merged 92
+jury core-pilot-K1-none-qwen3.5-397b/rep0: scored [53, 53], merged 53
+jury core-pilot-K1-none-gemma4-31b/rep0: scored [39, 39], merged 39
+jury core-pilot-K2-knower-qwen3.8-27b+gemma4-26b-a4b/rep0: scored [54, 54], merged 54
+jury core-pilot-K2-knower-qwen3.8-27b+qwen3.5-397b/rep0: scored [105, 105], merged 105
+jury core-pilot-K2-knower-qwen3.5-397b+gemma4-26b-a4b/rep0: scored [66, 66], merged 66
+jury core-pilot-K2-none-gemma4-26b-a4b/rep0: scored [40, 40], merged 40
+jury core-pilot-K1-side_task-gemma4-26b-a4b/rep0: scored [36, 36], merged 36
+jury core-pilot-K1-side_task-qwen3.8-27b/rep0: scored [133, 133], merged 133
+jury core-pilot-K1-side_task-qwen3.5-397b/rep0: scored [101, 101], merged 101
+jury core-pilot-K1-side_task-gemma4-31b/rep0: scored [81, 81], merged 81
+jury core-pilot-K2-pioneer-qwen3.5-397b/rep0: scored [89, 89], merged 89
+jury core-pilot-K2-pioneer-qwen3.8-27b/rep0: scored [107, 107], merged 107
+jury core-pilot-K2-side_task-gemma4-26b-a4b/rep0: scored [25, 25], merged 25
+jury core-pilot-K2-pioneer-gemma4-31b/rep0: scored [28, 28], merged 28
