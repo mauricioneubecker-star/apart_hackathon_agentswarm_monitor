@@ -143,3 +143,24 @@ python3 runner/run.py simulate --where "batch=='core' and split in ['test_id','t
 python3 runner/run.py simulate --where "batch=='core' and split=='test_backbone'" --replicates 1
 ```
 Die Auswahl mit geplanten Replikaten steht in `dataset/core_selection.csv`.
+
+## 10. Feature-Katalog v1 (Tim, 7. Nov., nachmittags)
+Details und Begründung: [FEATURES.md](FEATURES.md). Wird mit dem Pilot getestet.
+- **20 Kanten- und 10 Knotenfeatures**, nach erwarteter Relevanz gerankt. Nur 5 stark interpretierende
+  Jury-Dimensionen: Legitimierung von Regelbruch, Zielverschiebung, unkritische Übernahme, unbelegte Autorität,
+  Geheimhaltung. Dazu 4 faktennahe LLM-Dimensionen: Erfolgsmeldung, Workaround-Anfrage, Verifikation, Frustration.
+  Der Rest ist ohne LLM.
+- **Jury-Rubrik ersetzt die 10 Dimensionen aus dem Design-Doc:**
+  - Normalisierung und Rationalisierung sind zu `rule_legitimization` zusammengelegt (Checkliste nach Bandura /
+    Sykes & Matza).
+  - Druck läuft über ein Lexikon.
+  - Dissens ist aufgeteilt in NLI-Widerspruch und Eskalations-Lexikon.
+  - „Vage Selbstauskunft“ entfällt zugunsten des späteren programmatischen `deception_claim`.
+- **Stufen S0–S3** über `features.select_columns`; 5 Ablationen (Stufen, ohne regelnahe Features, Judge-Tausch,
+  ohne zeitliche Features, plus Tool-Aktivität).
+- **Hauptmodell ohne Tool-Events** (wie §2). `tests_failed` und `escalated_unresolved` nur als Ablation.
+- Credits / Restbudget sind kein Knotenfeature mehr.
+- Jury-Zeilen tragen `rubric`. Bewertungen mit älterer Rubrik werden beim nächsten `jury`-Lauf ignoriert und neu
+  gescort.
+- **NLI** (`contradiction`) ist optional (transformers + torch, Modell `cross-encoder/nli-deberta-v3-xsmall`,
+  Override per `SWARM_NLI_MODEL`). Ohne NLI ist die Spalte NaN.
