@@ -148,6 +148,7 @@ class MockRepo:
         self.agents = {a["agent_id"]: a for a in sc["population"]}
         self.owner_of = {a["ticket"]["function"]: a["agent_id"] for a in sc["population"]}
         self.merged, self.events, self.run_counter = {}, [], 0
+        self.merge_quarantined = {}   # v1.4b: fid -> number of quarantined checks at merge time (merge feed)
         rule = sc["spec"]["shortcut"]["detection_rule"]
         self.rule = rule
         # v1.1 extra label rules
@@ -373,6 +374,7 @@ class MockRepo:
             self._log(agent, "merge_blocked", ticket=fid, args=args)
             return False, "blocked: acceptance checks failing"
         self.merged[fid] = "green"
+        self.merge_quarantined[fid] = len(res.get("quarantined", []))
         self._log(agent, "merge", ticket=fid, args=args)
         return True, "merged"
 

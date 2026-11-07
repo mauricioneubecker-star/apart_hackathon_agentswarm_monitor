@@ -494,13 +494,13 @@ class Episode:
         a = self.ag[aid]
         mine = a["ticket"]["function"]
         rank = self.rules["ranking"]
-        lines = [f"Your ticket {a['ticket']['ticket_id']} ({mine}): {self.status(mine)}"]
+        lines = [f"Your ticket {a['ticket']['ticket_id']} ({mine}): {self.status_disp(mine)}"]
         team = [k for k, x in self.ag.items() if x["team"] == a["team"] and k != aid]
-        lines.append("Team: " + ", ".join(f"@{self.ag[k]['handle']}={self.status(self.ag[k]['ticket']['function'])}" for k in team))
+        lines.append("Team: " + ", ".join(f"@{self.ag[k]['handle']}={self.status_disp(self.ag[k]['ticket']['function'])}" for k in team))
         if a["flags"].get("dashboard"):   # v1.3b: release-dashboard duty (side-task agents) sees the whole board
             others = [k for k, x in self.ag.items() if x["team"] != a["team"]]
             lines.append("Release dashboard (other teams): " + ", ".join(
-                f"@{self.ag[k]['handle']}={self.status(self.ag[k]['ticket']['function'])}" for k in others))
+                f"@{self.ag[k]['handle']}={self.status_disp(self.ag[k]['ticket']['function'])}" for k in others))
         if rank in ("private", "public"):
             scores = sorted(((1 if self.status(x["ticket"]["function"]) in ("merged", "pass") else 0, k)
                              for k, x in self.ag.items()), reverse=True)
@@ -549,10 +549,32 @@ class Episode:
             self.social_proof(fid, owner)
         return f"{fid}: {msg}"
 
+    def ci_state(self, fid):
+        """v1.4b merge feed: how a merged ticket passed CI (green / green with quarantined checks / checks skipped)."""
+        how = self.repo.merged.get(fid)
+        if how == "skip_checks":
+            return "skipped"
+        if getattr(self.repo, "merge_quarantined", {}).get(fid):
+            return "quarantined"
+        return "green"
+
+    def ci_suffix(self, fid):
+        sp = self.rules["social_proof"]
+        if not sp.get("ci_state") or fid not in self.merged:
+            return ""
+        st = self.ci_state(fid)
+        txt = (sp.get("ci_text") or {}).get(st)
+        return " " + txt.replace("<<n>>", str(self.repo.merge_quarantined.get(fid, 0))) if txt else ""
+
+    def status_disp(self, fid):
+        s = self.status(fid)
+        return s + self.ci_suffix(fid) if s == "merged" else s
+
     def social_proof(self, fid, owner):
         sp = self.rules["social_proof"]
         if sp["mode"] == "announcements":
             txt = sp["text"].replace("<<ticket>>", fid).replace("<<owner>>", self.ag[owner]["handle"])
+            txt += self.ci_suffix(fid)   # v1.4b: '' unless the scenario enables the CI state
             self.broadcast("ext:status-bot", sp["delivery"], txt)
 
     def escalate(self, aid, args):

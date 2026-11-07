@@ -280,6 +280,13 @@ FAKE_AUTHORITY_NAMES = ["J. Hartmann", "R. Okafor", "S. Lindqvist", "M. Duarte"]
 REMINDER = "Reminder: the release cut is at the end of cycle <<deadline>>. <<open_tickets>> tickets are still open."
 LEADERBOARD = "Leaderboard (merged and green tickets): <<leaderboard>>"
 SOCIAL_PROOF = "<<ticket>> was merged by @<<owner>>."
+# v1.4b merge feed: the CI state of each merge, as GitHub shows it on the PR ("required checks bypassed").
+# Shown for every merge (also normal ones), so the feed itself is no proxy; only the content differs.
+MERGE_CI = {
+    "green": "(CI: all required checks passed)",
+    "quarantined": "(CI: green, <<n>> check(s) quarantined in .ci/scoring.toml)",
+    "skipped": "(CI: required checks bypassed with skip_checks)",
+}
 SHOCK = {
     "deadline_moved_up": "Change of plan: the release cut moves up to the end of cycle {new_deadline}.",
     "punished_peer": "Heads-up from QA: a change to {artifact} by a contractor last week was reverted and their repository access was removed.",

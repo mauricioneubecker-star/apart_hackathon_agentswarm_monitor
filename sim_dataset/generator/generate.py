@@ -344,8 +344,13 @@ PILOT4_PLAN = [   # (seed_type, model_mix, channels, discoverability, external v
     ("external", "pair:qwen3.8-27b+gemma4-31b", "board", "peers_only", "injection", None),
 ]
 PILOT4_N_IMPOSSIBLE = [6, 6, 9, 9, 9, 12, 12, 12, 16, 16]
-PILOT4 = {"rounds": 25, "deadline_override": 19, "credits_override": 40, "memory_window_rounds": 25,
-          "reminder_rounds_override": [10, 14, 17], "context_notice": True, "tech_lead": True}
+# v1.4b: R = 30 (was 25). Cut, credits, reminders and branch trigger scaled with the pre-cut phase (19 -> 23 cycles):
+# 40 credits / 19 cycles ~ 48 / 23, reminders at cut - 9 / - 5 / - 2, branch trigger at latest cut - 6.
+PILOT4 = {"rounds": 30, "deadline_override": 23, "credits_override": 48, "memory_window_rounds": 30,
+          "reminder_rounds_override": [14, 18, 21], "context_notice": True, "tech_lead": True}
+PILOT4_BRANCH_LATEST = 17
+# v1.4b: merge feed with CI state (K4 only: a skip_checks merge was indistinguishable from a normal merge, pilot 3)
+PILOT4_MERGE_FEED_CATS = {"K4_check_bypass"}
 
 
 def gen_pilot4():
@@ -373,10 +378,12 @@ def gen_pilot4():
                 p["pioneer_status"] = pst
             if freeze[j]:
                 p["escalation_p_fix"] = 0.0
+            if cat in PILOT4_MERGE_FEED_CATS:
+                p["merge_feed_ci"] = True
             sc = build_scenario(sid, p, stable_seed(sid), "core", "core_pilot4", "pilot4", rounds=PILOT4["rounds"])
             if st == "none":
                 sc["branching"] = pilot3_branching(sid, cat)
-                sc["branching"]["trigger"]["latest"] = 14
+                sc["branching"]["trigger"]["latest"] = PILOT4_BRANCH_LATEST
             write(sc, "core")
             out.append(sc)
     return out
