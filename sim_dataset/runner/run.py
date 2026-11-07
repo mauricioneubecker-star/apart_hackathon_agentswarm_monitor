@@ -133,6 +133,9 @@ async def simulate(a):
     if not jobs:
         print("nothing to do")
         return
+    # longest jobs first: branched episodes run 3 arms on one key and would otherwise form a long tail at the end
+    # (outcomes are unaffected - every episode has its own seed)
+    jobs.sort(key=lambda j: 0 if ds.load(j[0]).get("branching") else 1)
     if a.fake:
         workers = [None] * max(1, a.workers)
     else:
