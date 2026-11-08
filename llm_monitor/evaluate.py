@@ -154,6 +154,7 @@ class Data:
             T = refbase.build_table(self.base, self.runs)
             os.makedirs(os.path.dirname(ref_path), exist_ok=True)
             T.to_csv(ref_path, index=False, float_format="%.6g")
+            T = pd.read_csv(ref_path)          # same (rounded) values whether the cache was just built or reused
         T = T.set_index(["episode_id", "t"]).reindex(self.key).reset_index()
         T["risk_count"] = self.base.risk_count.values
         self.ref = T

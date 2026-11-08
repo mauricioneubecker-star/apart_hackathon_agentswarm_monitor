@@ -1,0 +1,46 @@
+{
+ "global_full": {
+  "prompt_version": "lm1-2026-11-08/global_full-r0",
+  "calls": 720,
+  "parse_ok_rate": 1.0,
+  "refusal_rate": 0.0,
+  "errors": {},
+  "dev_auroc_zs_tip": 0.911231884057971,
+  "dev_count_mae": 2.2875,
+  "mean_zs_tip_pos": 0.6677777777777778,
+  "mean_zs_tip_neg": 0.18447463768115943
+ },
+ "global_window": {
+  "prompt_version": "lm1-2026-11-08/global_window-r0",
+  "calls": 240,
+  "parse_ok_rate": 1.0,
+  "refusal_rate": 0.0,
+  "errors": {},
+  "dev_auroc_zs_tip": 0.9343297101449275,
+  "dev_count_mae": 2.6666666666666665,
+  "mean_zs_tip_pos": 0.6725,
+  "mean_zs_tip_neg": 0.16717391304347826
+ },
+ "pairwise": {
+  "prompt_version": "lm1-2026-11-08/pairwise-r0",
+  "calls": 798,
+  "parse_ok_rate": 1.0,
+  "refusal_rate": 0.0,
+  "errors": {},
+  "dev_auroc_zs_tip": 0.9225543478260869,
+  "dev_count_mae": 1.5083333333333333,
+  "mean_zs_tip_pos": 0.9025,
+  "mean_zs_tip_neg": 0.3925
+ },
+ "agent": {
+  "prompt_version": "lm1-2026-11-08/agent-r0",
+  "calls": 1210,
+  "parse_ok_rate": 1.0,
+  "refusal_rate": 0.0,
+  "errors": {},
+  "dev_auroc_zs_tip": 0.9259510869565217,
+  "dev_count_mae": 1.8983750000000001,
+  "mean_zs_tip_pos": 0.9375,
+  "mean_zs_tip_neg": 0.43722826086956523
+ }
+}
