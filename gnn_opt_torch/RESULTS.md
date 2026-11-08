@@ -245,9 +245,24 @@ because it also works on single held-out files.
 (`tmem=gru, gtemp=none`, rgine, edge readout on, 30 epochs) with judge-swap augmentation (`judge_aug=0.5`: a batch
 uses DeepSeek-only or Haiku-only jury features with p = 0.5), **5 seeds** x snapshot ensemble of the last 8 epochs,
 trained on all 128 night_train runs (`final.py`, `models/cloud_final_gnn.pt`); hybrid = logit blend 0.5 with
-hgb_bag+graph+mem (refit on night_train). Chosen on CV only. CV proxy (the 5-seed CV was not run, time): the 4-run
-node-GRU ensemble `e_ngru_4runs` = select 0.871 alone, 0.884 blended (step 4 note); these files back the 5 %-FPR
-thresholds (`preds/cv/cloud_final*.csv`).
+hgb_bag+graph+mem (refit on night_train). Chosen on CV only (before any held-out look, the 4-run node-GRU ensemble
+`e_ngru_4runs` served as CV proxy: select 0.871 alone, 0.884 blended; `preds/cv/cloud_final*.csv` = these proxy files,
+they set the 5 %-FPR thresholds used in the val / test looks below).
+
+**Exact 18-fold CV of the final config** (5 seeds x judge-aug per fold, run after the test look, changes nothing;
+`preds/cv/cloud_final_gnn_cv5.csv`, `cloud_final_cv5.csv`, table `preds/cv_table_cloud_final.csv`):
+
+| model | select | ID AUROC | ID AUPRC | LODO mean | LODO worst | tAUROC | R@5%FPR | risk 3-7 | 15 mixed cfgs | MAE count |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **hybrid (GNN 5 seeds + hgb_bag+graph+mem)** | **0.880** | **0.895** | 0.278 | **0.898** | **0.849** | **0.842** | **0.548** | **0.766** | **0.893** | 0.68 |
+| GNN, node-GRU + judge-aug, 5 seeds | 0.863 | 0.885 | **0.287** | 0.881 | 0.822 | 0.836 | 0.511 | 0.746 | 0.889 | 0.68 |
+| hgb_bag+graph+mem | 0.848 | 0.867 | 0.234 | 0.864 | 0.814 | 0.806 | 0.400 | 0.727 | 0.839 | - |
+| edge_monitor_top3 | 0.836 | 0.870 | 0.216 | 0.858 | 0.779 | 0.798 | 0.444 | 0.736 | 0.823 | - |
+
+Bootstrap over configs (ID pooled AUROC): hybrid - hgb_bag+graph+mem **+0.022 [+0.004, +0.043]** (99.3 % > 0);
+hybrid - GNN +0.011 [-0.006, +0.033]; risk 3-7: hybrid - GBM +0.038 [-0.012, +0.095]; mixed configs +0.056
+[-0.012, +0.140]. **The GNN alone (0.863) beats the best headline GBM (0.848)** on the selection score, every
+LODO-summary and tAUROC; the hybrid beats both.
 
 Why node-level memory (18-fold CV, single seeds; `preds/cv_log.jsonl`): graph-level GRU models score 0.80-0.82
 (`b_gine_ggru` 0.804, `b_tf_ggru` 0.800, `b_rgine_ggru` 0.823) and all fail on hold_K4 (0.70-0.76): on hold_K4 the
