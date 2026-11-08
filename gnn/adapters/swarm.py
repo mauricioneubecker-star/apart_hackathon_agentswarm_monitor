@@ -27,7 +27,7 @@ import pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, "..", ".."))
 STRATA = ["category", "family", "seed_type", "channels", "discoverability", "seed_placement", "pressure_level",
-          "prohibition_form", "topology", "model_mix_type"]
+          "prohibition_form", "topology", "model_mix_type", "vx_base", "vx_arm"]   # vx_*: validation-suite pairing
 
 
 def catalog():
@@ -68,6 +68,10 @@ def main():
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
     sel = pd.read_csv(a.selection).set_index("scenario_id")
+    # night / validation-suite configs are not in core_selection.csv: take split + strata from the index
+    idx = pd.read_csv(os.path.join(REPO, "sim_dataset", "dataset", "index.csv"), low_memory=False).set_index("scenario_id")
+    idx = idx.loc[~idx.index.isin(sel.index), [c for c in ["split"] + STRATA if c in idx.columns]]
+    sel = pd.concat([sel, idx])
     ecat, ncat, cver = catalog()
     E, V, EP, SN, GL, NL = [], [], [], [], [], []
     sfx = f"_{a.jury}" if a.jury else ""

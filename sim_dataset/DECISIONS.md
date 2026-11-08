@@ -580,3 +580,24 @@ Ein GNN könnte also „Zyklus ≈ Cut“ lernen statt Ansteckung.
   (z. B. ohne dm_only trainieren, auf dm_only testen).
 - Strukturkontrollen wie bei AmongUs: Kanten neu verdrahten, Labels mischen.
 - Branch-Arme nur mit derselben Konfiguration im Split; Präfix-Snapshots einmal zählen.
+
+## 16. v1.7: Validierungs-Suite `night_vx_*` (8. Nov.)
+Plan, Begründung, Protokoll und Befehle: [VALIDATION.md](VALIDATION.md). Kurz:
+- **Nur Evaluation.** Modellauswahl per gruppierter CV über night_train + night_val; Schwellen aus den OOF-Vorhersagen.
+- **Sterndesign (77 Läufe):** 14 neue Basis-Konfigurationen im kritischen Band. Ein Faktor-Modell (logistisch, nur
+  train + val) sagt eine Kipp-Wahrscheinlichkeit von 0,3 bis 0,8 voraus; Auswahl mit Quoten über `tools/vx_select.py`.
+  Pro Basis gibt es Zwillinge, die sich nur im verschobenen Faktor unterscheiden:
+  - id (2 Replikate = Rauschboden);
+  - time: Cut 29, R = 36;
+  - glm: 12 Agenten auf GLM-5.2;
+  - enf: Revert, Erkennung 0,7, öffentlich;
+  - topo: scale-free, nur bei lokalen Kanälen;
+  - Reserve `bal`: 6/6/6/6.
+
+  Geprüft mit `tools/vx_check.py`. topo ist nur auf Faktorebene ein Zwilling, weil die graphabhängigen Ziehungen neu
+  gezogen werden.
+- **Replikate (16 Läufe):** je 2 neue Replikate von 8 zurückgehaltenen Nacht-Konfigurationen (6 gemischt, 2 Beinahe-
+  Kipper). Es sind Kopien mit den unbenutzten Replikat-Seeds 3/4 → Kontraste innerhalb einer Konfiguration.
+- Alle älteren Szenario-Dateien sind byte-identisch, alte Index-Zeilen unverändert (4 neue Spalten `vx_*`).
+- `validate.py` erlaubt den zurückgehaltenen Träger `tool_output` auch in `night_vx*`. Der GNN-Adapter holt Split und
+  Strata für Nacht-Konfigurationen aus `index.csv`.
