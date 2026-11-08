@@ -75,7 +75,8 @@ class MPLayer(nn.Module):
         N = h.shape[0]
         if self.conv in ("gine", "rgine"):
             r = rel if self.conv == "rgine" else torch.zeros_like(rel)
-            hs = torch.einsum("ed,edk->ek", h[src], self.Wr[r]) + self.br[r]
+            Hall = torch.einsum("nd,rdk->nrk", h, self.Wr) + self.br          # [N, R, d] (cheap: N << E)
+            hs = Hall[src, r]
             m = F.gelu(hs + self.We(e))
             parts = []
             for a in self.aggr:

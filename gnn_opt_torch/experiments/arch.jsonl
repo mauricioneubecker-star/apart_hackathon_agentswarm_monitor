@@ -1,0 +1,12 @@
+{"name": "a_rgine_ggru", "cfg": {"epochs": 30}}
+{"name": "a_gine_ggru", "cfg": {"epochs": 30, "conv": "gine"}}
+{"name": "a_gatv2_ggru", "cfg": {"epochs": 30, "conv": "gatv2"}}
+{"name": "a_tf_ggru", "cfg": {"epochs": 30, "conv": "transformer"}}
+{"name": "a_rgine_notemp", "cfg": {"epochs": 30, "gtemp": "none"}}
+{"name": "a_rgine_gconv3", "cfg": {"epochs": 30, "gtemp": "conv3"}}
+{"name": "a_rgine_ngru", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none"}}
+{"name": "a_rgine_ngru_ggru", "cfg": {"epochs": 30, "tmem": "gru"}}
+{"name": "a_rgine_nconv5_gconv5", "cfg": {"epochs": 30, "tmem": "conv5", "gtemp": "conv5"}}
+{"name": "a_rgine_novn_norev", "cfg": {"epochs": 30, "vn": false, "reverse": false}}
+{"name": "a_rgine_noedgero", "cfg": {"epochs": 30, "edge_readout": false, "edge_update": false}}
+{"name": "a_rgine_small", "cfg": {"epochs": 30, "hid": 32, "layers": 2}}

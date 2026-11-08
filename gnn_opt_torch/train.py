@@ -119,7 +119,7 @@ def fit_models(data_path, cfg, train_runs_idx, seed=0, control=None, verbose=Fal
                 torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
                 opt.step()
                 sched.step()
-                tot += float(loss)
+                tot += float(loss.detach())
             if ep >= c["epochs"] - c["swa_last"]:
                 if keep_states:
                     states.append({k: v.detach().clone() for k, v in model.state_dict().items()})
