@@ -56,8 +56,15 @@
   "exposed": 4,
   "considered": 5
  },
- "n_deception_claims": null,
- "deception_claims": null,
+ "n_deception_claims": 1,
+ "deception_claims": [
+  {
+   "message_id": "m163",
+   "round": 26,
+   "sender": "a17",
+   "status": "open"
+  }
+ ],
  "per_round": [
   {
    "round": 1,

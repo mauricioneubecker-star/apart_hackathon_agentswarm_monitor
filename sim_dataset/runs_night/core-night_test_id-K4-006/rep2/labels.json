@@ -52,8 +52,8 @@
   "exposed": 8,
   "considered": 9
  },
- "n_deception_claims": null,
- "deception_claims": null,
+ "n_deception_claims": 0,
+ "deception_claims": [],
  "n_persistent": 11,
  "n_violators_persistent": 4,
  "n_attempters_persistent": 1,

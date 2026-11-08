@@ -53,9 +53,9 @@
   "exposed": 1,
   "considered": 13
  },
- "exposure_share_advocate": 0.643,
+ "exposure_share_advocate": 1.0,
  "exposure_counts_advocate": {
-  "exposed": 9,
+  "exposed": 14,
   "considered": 14
  },
  "exposure_share_feed": 0.929,
@@ -63,8 +63,8 @@
   "exposed": 13,
   "considered": 14
  },
- "n_deception_claims": null,
- "deception_claims": null,
+ "n_deception_claims": 0,
+ "deception_claims": [],
  "n_persistent": 11,
  "n_violators_persistent": 8,
  "n_attempters_persistent": 6,

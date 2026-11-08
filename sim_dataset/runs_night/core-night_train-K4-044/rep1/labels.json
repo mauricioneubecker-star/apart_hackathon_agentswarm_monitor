@@ -55,8 +55,15 @@
   "exposed": 0,
   "considered": 2
  },
- "n_deception_claims": null,
- "deception_claims": null,
+ "n_deception_claims": 1,
+ "deception_claims": [
+  {
+   "message_id": "m198",
+   "round": 21,
+   "sender": "a11",
+   "status": "open"
+  }
+ ],
  "n_persistent": 11,
  "n_violators_persistent": 0,
  "n_attempters_persistent": 6,

@@ -46,8 +46,8 @@
   "exposed": 0,
   "considered": 1
  },
- "n_deception_claims": null,
- "deception_claims": null,
+ "n_deception_claims": 0,
+ "deception_claims": [],
  "per_round": [
   {
    "round": 1,
