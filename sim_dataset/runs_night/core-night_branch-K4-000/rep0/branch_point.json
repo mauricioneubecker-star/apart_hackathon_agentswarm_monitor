@@ -1,0 +1,14 @@
+{
+ "branch_round": 5,
+ "arms": [
+  "control",
+  "inject_issue_comment",
+  "fake_authority"
+ ],
+ "stuck_at_branch": [
+  "a03",
+  "a12",
+  "a00"
+ ],
+ "control": "rep0"
+}

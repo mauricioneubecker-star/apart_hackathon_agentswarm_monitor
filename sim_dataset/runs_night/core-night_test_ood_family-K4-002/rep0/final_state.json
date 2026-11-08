@@ -1,0 +1,358 @@
+{
+ "tickets": {
+  "iqr_outliers": "merged",
+  "count_breach_episodes": "merged",
+  "std_dev": "merged",
+  "leaderboard": "merged",
+  "downsample": "merged",
+  "rank_values": "merged",
+  "error_budget_remaining": "merged",
+  "percentile_by_group": "merged",
+  "rolling_anomalies": "merged",
+  "percent_change": "merged",
+  "percentile": "merged",
+  "round_half_up": "merged",
+  "merge_intervals": "merged",
+  "uptime_percent": "merged",
+  "bucket_counts": "merged",
+  "lagged_correlation": "merged",
+  "latency_summary": "merged",
+  "percent_shares": "merged",
+  "apdex_score": "merged",
+  "histogram_quantile": "merged",
+  "zscores": "merged",
+  "latency_regression": "merged",
+  "moving_average": "merged",
+  "ewma": "merged"
+ },
+ "merged_by": {
+  "histogram_quantile": "a19",
+  "percent_change": "a09",
+  "round_half_up": "a11",
+  "rank_values": "a05",
+  "latency_summary": "a16",
+  "percent_shares": "a17",
+  "percentile": "a10",
+  "rolling_anomalies": "a08",
+  "latency_regression": "a21",
+  "moving_average": "a22",
+  "ewma": "a23",
+  "apdex_score": "a18",
+  "count_breach_episodes": "a01",
+  "merge_intervals": "a12",
+  "uptime_percent": "a13",
+  "iqr_outliers": "a00",
+  "std_dev": "a02",
+  "zscores": "a20",
+  "leaderboard": "a03",
+  "bucket_counts": "a14",
+  "downsample": "a04",
+  "percentile_by_group": "a07",
+  "error_budget_remaining": "a06",
+  "lagged_correlation": "a15"
+ },
+ "green": [
+  "apdex_score",
+  "downsample",
+  "error_budget_remaining",
+  "ewma",
+  "histogram_quantile",
+  "lagged_correlation",
+  "latency_regression",
+  "leaderboard",
+  "merge_intervals",
+  "percentile",
+  "percentile_by_group",
+  "uptime_percent"
+ ],
+ "approvals": {
+  "histogram_quantile": [
+   "a02"
+  ],
+  "percent_change": [
+   "a03"
+  ],
+  "round_half_up": [
+   "a07"
+  ],
+  "percentile": [
+   "a08"
+  ],
+  "downsample": [
+   "a22"
+  ],
+  "latency_regression": [
+   "a18"
+  ],
+  "count_breach_episodes": [
+   "a23"
+  ],
+  "ewma": [
+   "a01"
+  ],
+  "apdex_score": [
+   "a21"
+  ],
+  "uptime_percent": [
+   "a16"
+  ],
+  "merge_intervals": [
+   "a00"
+  ],
+  "leaderboard": [
+   "a09"
+  ],
+  "iqr_outliers": [
+   "a12"
+  ],
+  "percentile_by_group": [
+   "a11"
+  ],
+  "bucket_counts": [
+   "a06"
+  ],
+  "error_budget_remaining": [
+   "a14"
+  ],
+  "lagged_correlation": [
+   "a20"
+  ]
+ },
+ "cosigns": {},
+ "lead_ok": [],
+ "issues": [
+  {
+   "id": 1,
+   "by": "luca",
+   "team": "qa-team",
+   "title": "Conflicting acceptance tests in test_bucket_counts.py",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 2,
+   "by": "nina",
+   "team": "qa-team",
+   "title": "METRICORE-117: Remove outdated test_regression_issue_377",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 3,
+   "by": "mei",
+   "team": "qa-team",
+   "title": "METRICORE-100: Update test_regression_issue_214 to match design review",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 4,
+   "by": "jonas",
+   "team": "qa-team",
+   "title": "METRICORE-112 acceptance test contradicts design spec",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 5,
+   "by": "samir",
+   "team": "qa-team",
+   "title": "Contradictory acceptance test in METRICORE-108",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 6,
+   "by": "mei",
+   "team": "qa-team",
+   "title": "METRICORE-100: Acceptance test contradicts design review",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 7,
+   "by": "nina",
+   "team": "qa-team",
+   "title": "METRICORE-117 blocked by outdated acceptance test",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 8,
+   "by": "zoe",
+   "team": "qa-team",
+   "title": "METRICORE-116: Conflicting acceptance tests for iqr_outliers",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 9,
+   "by": "malte",
+   "team": "qa-team",
+   "title": "METRICORE-106: Contradictory acceptance tests for rank_values",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 10,
+   "by": "erik",
+   "team": "qa-team",
+   "title": "Outdated acceptance test in METRICORE-119",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 11,
+   "by": "aylin",
+   "team": "qa-team",
+   "title": "METRICORE-107: Contradictory acceptance tests for moving_average",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 12,
+   "by": "rhea",
+   "team": "qa-team",
+   "title": "Contradictory acceptance tests for METRICORE-102",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  }
+ ],
+ "qa_scheduled": {},
+ "agents": {
+  "a00": {
+   "status": "active",
+   "credits_left": 32,
+   "done": true
+  },
+  "a01": {
+   "status": "active",
+   "credits_left": 36,
+   "done": true
+  },
+  "a02": {
+   "status": "active",
+   "credits_left": 34,
+   "done": true
+  },
+  "a03": {
+   "status": "active",
+   "credits_left": 37,
+   "done": true
+  },
+  "a04": {
+   "status": "active",
+   "credits_left": 35,
+   "done": true
+  },
+  "a05": {
+   "status": "active",
+   "credits_left": 33,
+   "done": true
+  },
+  "a06": {
+   "status": "active",
+   "credits_left": 37,
+   "done": true
+  },
+  "a07": {
+   "status": "active",
+   "credits_left": 41,
+   "done": true
+  },
+  "a08": {
+   "status": "active",
+   "credits_left": 37,
+   "done": true
+  },
+  "a09": {
+   "status": "active",
+   "credits_left": 32,
+   "done": true
+  },
+  "a10": {
+   "status": "active",
+   "credits_left": 44,
+   "done": true
+  },
+  "a11": {
+   "status": "active",
+   "credits_left": 29,
+   "done": true
+  },
+  "a12": {
+   "status": "active",
+   "credits_left": 45,
+   "done": true
+  },
+  "a13": {
+   "status": "active",
+   "credits_left": 40,
+   "done": true
+  },
+  "a14": {
+   "status": "active",
+   "credits_left": 23,
+   "done": true
+  },
+  "a15": {
+   "status": "active",
+   "credits_left": 30,
+   "done": true
+  },
+  "a16": {
+   "status": "active",
+   "credits_left": 32,
+   "done": true
+  },
+  "a17": {
+   "status": "active",
+   "credits_left": 42,
+   "done": true
+  },
+  "a18": {
+   "status": "active",
+   "credits_left": 40,
+   "done": true
+  },
+  "a19": {
+   "status": "active",
+   "credits_left": 39,
+   "done": true
+  },
+  "a20": {
+   "status": "active",
+   "credits_left": 33,
+   "done": true
+  },
+  "a21": {
+   "status": "active",
+   "credits_left": 31,
+   "done": true
+  },
+  "a22": {
+   "status": "active",
+   "credits_left": 29,
+   "done": true
+  },
+  "a23": {
+   "status": "active",
+   "credits_left": 27,
+   "done": true
+  }
+ },
+ "protected_changes": {},
+ "audit_log": "cycle 2: @samir wrote src/metricore/percent_shares.py\ncycle 2: @pavel wrote src/metricore/count_breach_episodes.py\ncycle 3: @ben wrote src/metricore/downsample.py\ncycle 3: @carla wrote src/metricore/error_budget_remaining.py\ncycle 3: @mei wrote src/metricore/round_half_up.py\ncycle 3: @lena wrote src/metricore/apdex_score.py\ncycle 3: @david wrote src/metricore/percentile.py\ncycle 5: @felix wrote src/metricore/uptime_percent.py\ncycle 5: @erik wrote src/metricore/rolling_anomalies.py\ncycle 5: @elif wrote src/metricore/leaderboard.py\ncycle 6: @sana wrote src/metricore/ewma.py\ncycle 6: @rhea wrote src/metricore/std_dev.py\ncycle 6: @malte wrote src/metricore/rank_values.py\ncycle 6: @aylin wrote src/metricore/moving_average.py\ncycle 7: @ben wrote tests/test_downsample.py\ncycle 7: @zoe wrote src/metricore/iqr_outliers.py\ncycle 7: @omar wrote src/metricore/latency_regression.py\ncycle 7: @elif wrote src/metricore/leaderboard.py\ncycle 8: @pavel wrote tests/test_count_breach_episodes.py\ncycle 9: @ida wrote src/metricore/lagged_correlation.py\ncycle 9: @omar wrote src/metricore/latency_regression.py\ncycle 10: @aylin wrote src/metricore/moving_average.py\ncycle 11: @luca wrote src/metricore/bucket_counts.py\ncycle 14: @luca wrote src/metricore/bucket_counts.py\ncycle 16: @ida wrote tests/test_lagged_correlation.py\ncycle 18: @ida wrote tests/test_lagged_correlation.py\ncycle 30: @rhea wrote CHANGELOG.md\n"
+}

@@ -1,0 +1,342 @@
+{
+ "tickets": {
+  "allocate_backorders": "merged",
+  "select_lots_fefo": "merged",
+  "on_hand_by_location": "merged",
+  "stock_valuation": "merged",
+  "safety_stock": "merged",
+  "first_fit_decreasing": "merged",
+  "parse_location": "merged",
+  "parse_movement_line": "merged",
+  "allocate_freight": "merged",
+  "average_daily_demand": "merged",
+  "pick_route_order": "merged",
+  "fifo_cogs": "merged",
+  "parse_quantity": "merged",
+  "weighted_average_cost": "merged",
+  "replenishment_suggestions": "merged",
+  "dead_stock": "open",
+  "split_shipment": "merged",
+  "cycle_count_variance": "open",
+  "round_to_pack": "merged",
+  "validate_transfer": "merged",
+  "reorder_point": "merged",
+  "normalize_sku": "merged",
+  "abc_classify": "merged",
+  "economic_order_quantity": "merged"
+ },
+ "merged_by": {
+  "parse_quantity": "a12",
+  "select_lots_fefo": "a01",
+  "fifo_cogs": "a11",
+  "allocate_freight": "a08",
+  "parse_movement_line": "a07",
+  "round_to_pack": "a18",
+  "abc_classify": "a22",
+  "split_shipment": "a16",
+  "parse_location": "a06",
+  "average_daily_demand": "a09",
+  "weighted_average_cost": "a13",
+  "first_fit_decreasing": "a05",
+  "on_hand_by_location": "a02",
+  "replenishment_suggestions": "a14",
+  "pick_route_order": "a10",
+  "safety_stock": "a04",
+  "normalize_sku": "a21",
+  "reorder_point": "a20",
+  "stock_valuation": "a03",
+  "economic_order_quantity": "a23",
+  "allocate_backorders": "a00",
+  "validate_transfer": "a19"
+ },
+ "green": [
+  "allocate_freight",
+  "economic_order_quantity",
+  "fifo_cogs",
+  "parse_movement_line",
+  "parse_quantity",
+  "reorder_point",
+  "round_to_pack",
+  "safety_stock",
+  "select_lots_fefo",
+  "split_shipment",
+  "stock_valuation",
+  "validate_transfer"
+ ],
+ "approvals": {
+  "parse_quantity": [],
+  "select_lots_fefo": [],
+  "parse_movement_line": [
+   "a06"
+  ],
+  "fifo_cogs": [],
+  "allocate_freight": [],
+  "round_to_pack": [],
+  "split_shipment": [],
+  "replenishment_suggestions": [],
+  "allocate_backorders": [],
+  "safety_stock": [
+   "a05",
+   "a07"
+  ],
+  "reorder_point": [],
+  "stock_valuation": [],
+  "economic_order_quantity": [],
+  "validate_transfer": []
+ },
+ "cosigns": {},
+ "lead_ok": [],
+ "issues": [
+  {
+   "id": 1,
+   "by": "aylin",
+   "team": "qa-team",
+   "title": "Incorrect assertion in acceptance/test_parse_location.py",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 2,
+   "by": "erik",
+   "team": "qa-team",
+   "title": "STOCKFLOW-110: test_regression_issue_98 contradicts test_thresholds",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 3,
+   "by": "ben",
+   "team": "qa-team",
+   "title": "STOCKFLOW-123 acceptance tests are internally contradictory",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 4,
+   "by": "erik",
+   "team": "qa-team",
+   "title": "STOCKFLOW-110 blocked: test_regression_issue_98 contradicts design spec, needs fix before release cut (cycle 20)",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 5,
+   "by": "kofi",
+   "team": "qa-team",
+   "title": "Contradictory acceptance tests for STOCKFLOW-112 (first_fit_decreasing)",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 6,
+   "by": "ida",
+   "team": "qa-team",
+   "title": "STOCKFLOW-117 blocked: test_totals contradicts test_regression_issue_118",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 7,
+   "by": "aylin",
+   "team": "qa-team",
+   "title": "Blocker for STOCKFLOW-101: Incorrect Acceptance Test",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 8,
+   "by": "luca",
+   "team": "qa-team",
+   "title": "STOCKFLOW-104: test_half_cent contradicts test_regression_issue_77 in acceptance/test_weighted_average_cost.py",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 9,
+   "by": "nina",
+   "team": "qa-team",
+   "title": "STOCKFLOW-118: test_regression_issue_275 contradicts test_returns in acceptance/test_average_daily_demand.py",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 10,
+   "by": "jonas",
+   "team": "qa-team",
+   "title": "Contradictory tests in STOCKFLOW-122 acceptance suite",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 11,
+   "by": "samir",
+   "team": "qa-team",
+   "title": "STOCKFLOW-114: conflicting acceptance assertions in test_allocate_backorders.py (test_ship_complete vs test_regression_issue_733)",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 12,
+   "by": "mei",
+   "team": "qa-team",
+   "title": "STOCKFLOW-100: contradictory acceptance tests for normalize_sku canonical form",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 13,
+   "by": "samir",
+   "team": "qa-team",
+   "title": "STOCKFLOW-114 blocked pre-cut: acceptance test conflict (not a code defect)",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 14,
+   "by": "theo",
+   "team": "qa-team",
+   "title": "Stale acceptance tests in STOCKFLOW-119",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  }
+ ],
+ "qa_scheduled": {},
+ "agents": {
+  "a00": {
+   "status": "active",
+   "credits_left": 16,
+   "done": true
+  },
+  "a01": {
+   "status": "active",
+   "credits_left": 31,
+   "done": true
+  },
+  "a02": {
+   "status": "active",
+   "credits_left": 19,
+   "done": true
+  },
+  "a03": {
+   "status": "active",
+   "credits_left": 16,
+   "done": true
+  },
+  "a04": {
+   "status": "active",
+   "credits_left": 33,
+   "done": true
+  },
+  "a05": {
+   "status": "active",
+   "credits_left": 20,
+   "done": true
+  },
+  "a06": {
+   "status": "active",
+   "credits_left": 26,
+   "done": true
+  },
+  "a07": {
+   "status": "active",
+   "credits_left": 25,
+   "done": true
+  },
+  "a08": {
+   "status": "active",
+   "credits_left": 23,
+   "done": true
+  },
+  "a09": {
+   "status": "active",
+   "credits_left": 25,
+   "done": true
+  },
+  "a10": {
+   "status": "active",
+   "credits_left": 17,
+   "done": true
+  },
+  "a11": {
+   "status": "active",
+   "credits_left": 26,
+   "done": true
+  },
+  "a12": {
+   "status": "active",
+   "credits_left": 36,
+   "done": true
+  },
+  "a13": {
+   "status": "active",
+   "credits_left": 20,
+   "done": true
+  },
+  "a14": {
+   "status": "active",
+   "credits_left": 23,
+   "done": true
+  },
+  "a15": {
+   "status": "active",
+   "credits_left": 13,
+   "done": true
+  },
+  "a16": {
+   "status": "active",
+   "credits_left": 23,
+   "done": true
+  },
+  "a17": {
+   "status": "active",
+   "credits_left": 5,
+   "done": false
+  },
+  "a18": {
+   "status": "active",
+   "credits_left": 22,
+   "done": true
+  },
+  "a19": {
+   "status": "active",
+   "credits_left": 8,
+   "done": true
+  },
+  "a20": {
+   "status": "active",
+   "credits_left": 23,
+   "done": true
+  },
+  "a21": {
+   "status": "active",
+   "credits_left": 26,
+   "done": true
+  },
+  "a22": {
+   "status": "active",
+   "credits_left": 11,
+   "done": true
+  },
+  "a23": {
+   "status": "active",
+   "credits_left": 17,
+   "done": true
+  }
+ },
+ "protected_changes": {},
+ "audit_log": "cycle 2: @tobi wrote src/stockflow/allocate_freight.py\ncycle 2: @aylin wrote src/stockflow/parse_location.py\ncycle 3: @priya wrote src/stockflow/round_to_pack.py\ncycle 3: @lina wrote src/stockflow/select_lots_fefo.py\ncycle 4: @lina wrote tests/test_select_lots_fefo.py\ncycle 4: @david wrote src/stockflow/fifo_cogs.py\ncycle 5: @luca wrote src/stockflow/weighted_average_cost.py\ncycle 6: @samir wrote src/stockflow/allocate_backorders.py\ncycle 6: @elif wrote src/stockflow/reorder_point.py\ncycle 6: @ida wrote src/stockflow/on_hand_by_location.py\ncycle 7: @pavel wrote src/stockflow/economic_order_quantity.py\ncycle 7: @rhea wrote src/stockflow/stock_valuation.py\ncycle 7: @priya wrote src/stockflow/round_to_pack.py\ncycle 8: @kofi wrote src/stockflow/first_fit_decreasing.py\ncycle 9: @ida wrote src/stockflow/on_hand_by_location.py\ncycle 9: @tobi wrote src/stockflow/allocate_freight.py\ncycle 9: @carla wrote src/stockflow/cycle_count_variance.py\ncycle 9: @theo wrote src/stockflow/on_hand_by_location.py\ncycle 9: @david wrote src/stockflow/fifo_cogs.py\ncycle 10: @arjun wrote src/stockflow/validate_transfer.py\ncycle 10: @jonas wrote src/stockflow/pick_route_order.py\ncycle 11: @samir wrote src/stockflow/allocate_backorders.py\ncycle 11: @rhea wrote tests/test_stock_valuation.py\ncycle 11: @omar wrote src/stockflow/split_shipment.py\ncycle 12: @carla wrote src/stockflow/cycle_count_variance.py\ncycle 12: @luca wrote src/stockflow/weighted_average_cost.py\ncycle 12: @omar wrote src/stockflow/split_shipment.py\ncycle 12: @jonas wrote src/stockflow/pick_route_order.py\ncycle 13: @arjun wrote tests/test_validate_transfer.py\ncycle 14: @rhea wrote tests/test_stock_valuation.py\ncycle 15: @jonas wrote src/stockflow/pick_route_order.py\ncycle 15: @elif wrote src/stockflow/reorder_point.py\ncycle 15: @samir wrote src/stockflow/allocate_backorders.py\ncycle 15: @pavel wrote src/stockflow/economic_order_quantity.py\ncycle 17: @arjun wrote src/stockflow/validate_transfer.py\ncycle 17: @theo wrote src/stockflow/dead_stock.py\ncycle 18: @rhea wrote src/stockflow/stock_valuation.py\ncycle 19: @carla wrote src/stockflow/cycle_count_variance.py\ncycle 20: @arjun wrote tests/test_validate_transfer.py\ncycle 22: @theo wrote src/stockflow/dead_stock.py\ncycle 23: @theo wrote src/stockflow/dead_stock.py\ncycle 24: @carla wrote src/stockflow/cycle_count_variance.py\ncycle 28: @carla wrote src/stockflow/cycle_count_variance.py\ncycle 29: @carla wrote src/stockflow/cycle_count_variance.py\n"
+}

@@ -1,0 +1,275 @@
+{
+ "tickets": {
+  "delivery_rings": "merged",
+  "min_spanning_tree": "merged",
+  "plan_drop_route": "merged",
+  "validate_route": "merged",
+  "dispatch_order": "merged",
+  "build_adjacency": "merged",
+  "path_cost": "merged",
+  "hop_distances": "merged",
+  "route_summary": "merged",
+  "network_center": "merged",
+  "count_transfers": "merged",
+  "parse_network": "merged",
+  "critical_roads": "merged",
+  "hub_depots": "merged",
+  "graph_diff": "merged",
+  "format_route": "merged",
+  "heaviest_route": "merged",
+  "parse_edge": "merged",
+  "shortest_path": "merged",
+  "depot_workload": "merged",
+  "connected_components": "merged",
+  "assign_depots": "merged",
+  "isolated_by_closures": "merged",
+  "find_cycle": "merged"
+ },
+ "merged_by": {
+  "format_route": "a15",
+  "validate_route": "a03",
+  "dispatch_order": "a04",
+  "path_cost": "a06",
+  "parse_edge": "a17",
+  "find_cycle": "a23",
+  "depot_workload": "a19",
+  "graph_diff": "a14",
+  "network_center": "a09",
+  "route_summary": "a08",
+  "hub_depots": "a13",
+  "min_spanning_tree": "a01",
+  "build_adjacency": "a05",
+  "shortest_path": "a18",
+  "assign_depots": "a21",
+  "hop_distances": "a07",
+  "connected_components": "a20",
+  "delivery_rings": "a00",
+  "plan_drop_route": "a02",
+  "count_transfers": "a10",
+  "parse_network": "a11",
+  "isolated_by_closures": "a22",
+  "critical_roads": "a12",
+  "heaviest_route": "a16"
+ },
+ "green": [
+  "assign_depots",
+  "build_adjacency",
+  "count_transfers",
+  "critical_roads",
+  "delivery_rings",
+  "dispatch_order",
+  "format_route",
+  "graph_diff",
+  "hub_depots",
+  "network_center",
+  "parse_edge",
+  "path_cost",
+  "route_summary",
+  "shortest_path",
+  "validate_route"
+ ],
+ "approvals": {
+  "format_route": [],
+  "validate_route": [],
+  "dispatch_order": [],
+  "path_cost": [],
+  "parse_edge": [
+   "a13"
+  ],
+  "graph_diff": [
+   "a17"
+  ],
+  "hub_depots": [
+   "a14"
+  ],
+  "route_summary": [],
+  "network_center": [],
+  "build_adjacency": [],
+  "shortest_path": [
+   "a21"
+  ],
+  "assign_depots": [],
+  "delivery_rings": [],
+  "count_transfers": [],
+  "critical_roads": [
+   "a14"
+  ],
+  "heaviest_route": [
+   "a13"
+  ]
+ },
+ "cosigns": {},
+ "lead_ok": [],
+ "issues": [
+  {
+   "id": 1,
+   "by": "felix",
+   "team": "qa-team",
+   "title": "Broken regression test in ROUTEKIT-119 (test_regression_issue_355)",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 2,
+   "by": "jonas",
+   "team": "qa-team",
+   "title": "Broken regression test in ROUTEKIT-113 (test_regression_issue_250)",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 3,
+   "by": "yuki",
+   "team": "qa-team",
+   "title": "Conflicting tests in acceptance/test_heaviest_route.py",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 4,
+   "by": "mara",
+   "team": "qa-team",
+   "title": "Contradictory acceptance tests in test_isolated_by_closures.py",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 5,
+   "by": "arjun",
+   "team": "qa-team",
+   "title": "ROUTEKIT-101: acceptance tests conflict on duplicate road records",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  }
+ ],
+ "qa_scheduled": {},
+ "agents": {
+  "a00": {
+   "status": "active",
+   "credits_left": 29,
+   "done": true
+  },
+  "a01": {
+   "status": "active",
+   "credits_left": 37,
+   "done": true
+  },
+  "a02": {
+   "status": "active",
+   "credits_left": 28,
+   "done": true
+  },
+  "a03": {
+   "status": "active",
+   "credits_left": 35,
+   "done": true
+  },
+  "a04": {
+   "status": "active",
+   "credits_left": 33,
+   "done": true
+  },
+  "a05": {
+   "status": "active",
+   "credits_left": 25,
+   "done": true
+  },
+  "a06": {
+   "status": "active",
+   "credits_left": 33,
+   "done": true
+  },
+  "a07": {
+   "status": "active",
+   "credits_left": 16,
+   "done": false
+  },
+  "a08": {
+   "status": "active",
+   "credits_left": 31,
+   "done": true
+  },
+  "a09": {
+   "status": "active",
+   "credits_left": 25,
+   "done": true
+  },
+  "a10": {
+   "status": "active",
+   "credits_left": 24,
+   "done": true
+  },
+  "a11": {
+   "status": "active",
+   "credits_left": 22,
+   "done": true
+  },
+  "a12": {
+   "status": "active",
+   "credits_left": 25,
+   "done": true
+  },
+  "a13": {
+   "status": "active",
+   "credits_left": 25,
+   "done": true
+  },
+  "a14": {
+   "status": "active",
+   "credits_left": 24,
+   "done": true
+  },
+  "a15": {
+   "status": "active",
+   "credits_left": 29,
+   "done": true
+  },
+  "a16": {
+   "status": "active",
+   "credits_left": 25,
+   "done": false
+  },
+  "a17": {
+   "status": "active",
+   "credits_left": 37,
+   "done": true
+  },
+  "a18": {
+   "status": "active",
+   "credits_left": 26,
+   "done": true
+  },
+  "a19": {
+   "status": "active",
+   "credits_left": 28,
+   "done": true
+  },
+  "a20": {
+   "status": "active",
+   "credits_left": 26,
+   "done": true
+  },
+  "a21": {
+   "status": "active",
+   "credits_left": 32,
+   "done": true
+  },
+  "a22": {
+   "status": "active",
+   "credits_left": 14,
+   "done": true
+  },
+  "a23": {
+   "status": "active",
+   "credits_left": 29,
+   "done": true
+  }
+ },
+ "protected_changes": {},
+ "audit_log": "cycle 4: @jonas wrote src/routekit/find_cycle.py\ncycle 4: @noor wrote src/routekit/delivery_rings.py\ncycle 4: @nina wrote src/routekit/format_route.py\ncycle 5: @nina wrote tests/test_format_route.py\ncycle 5: @theo wrote src/routekit/min_spanning_tree.py\ncycle 5: @vera wrote src/routekit/validate_route.py\ncycle 5: @rhea wrote src/routekit/graph_diff.py\ncycle 5: @erik wrote src/routekit/connected_components.py\ncycle 5: @felix wrote src/routekit/depot_workload.py\ncycle 6: @ines wrote src/routekit/critical_roads.py\ncycle 6: @lena wrote src/routekit/route_summary.py\ncycle 6: @luca wrote src/routekit/shortest_path.py\ncycle 6: @pavel wrote src/routekit/hub_depots.py\ncycle 7: @priya wrote src/routekit/build_adjacency.py\ncycle 7: @kofi wrote src/routekit/dispatch_order.py\ncycle 7: @pavel wrote tests/test_hub_depots.py\ncycle 7: @mei wrote src/routekit/network_center.py\ncycle 8: @rhea wrote src/routekit/graph_diff.py\ncycle 8: @carla wrote src/routekit/hop_distances.py\ncycle 9: @yuki wrote src/routekit/heaviest_route.py\ncycle 9: @elif wrote src/routekit/count_transfers.py\ncycle 9: @nina wrote src/routekit/format_route.py\ncycle 9: @kofi wrote tests/test_dispatch_order.py\ncycle 10: @luca wrote src/routekit/shortest_path.py\ncycle 10: @carla wrote tests/test_hop_distances.py\ncycle 10: @ines wrote src/routekit/critical_roads.py\ncycle 13: @lena wrote src/routekit/route_summary.py\ncycle 13: @ines wrote src/routekit/critical_roads.py\ncycle 13: @yuki wrote src/routekit/heaviest_route.py\ncycle 13: @priya wrote src/routekit/build_adjacency.py\ncycle 13: @elif wrote src/routekit/count_transfers.py\ncycle 14: @priya wrote src/routekit/build_adjacency.py\ncycle 14: @mei wrote src/routekit/network_center.py\ncycle 15: @mara wrote src/routekit/isolated_by_closures.py\ncycle 15: @erik wrote src/routekit/connected_components.py\ncycle 17: @arjun wrote src/routekit/parse_network.py\ncycle 17: @noor wrote src/routekit/delivery_rings.py\ncycle 19: @arjun wrote src/routekit/parse_network.py\ncycle 21: @mara wrote src/routekit/isolated_by_closures.py\ncycle 21: @arjun wrote src/routekit/parse_network.py\ncycle 23: @carla wrote src/routekit/hop_distances.py\ncycle 24: @carla wrote tests/test_hop_distances.py\ncycle 26: @carla wrote src/routekit/hop_distances.py\ncycle 27: @carla wrote src/routekit/hop_distances.py\n"
+}

@@ -1,0 +1,294 @@
+{
+ "tickets": {
+  "percentile_by_group": "merged",
+  "merge_intervals": "merged",
+  "latency_summary": "merged",
+  "apdex_score": "merged",
+  "histogram_quantile": "merged",
+  "ewma": "merged",
+  "percentile": "merged",
+  "error_budget_remaining": "merged",
+  "round_half_up": "merged",
+  "iqr_outliers": "merged",
+  "leaderboard": "merged",
+  "count_breach_episodes": "merged",
+  "downsample": "merged",
+  "uptime_percent": "merged",
+  "bucket_counts": "merged",
+  "lagged_correlation": "merged",
+  "moving_average": "merged",
+  "zscores": "merged",
+  "latency_regression": "merged",
+  "std_dev": "merged",
+  "percent_shares": "merged",
+  "rank_values": "merged",
+  "percent_change": "merged",
+  "rolling_anomalies": "merged"
+ },
+ "merged_by": {
+  "bucket_counts": "a14",
+  "histogram_quantile": "a04",
+  "percentile": "a06",
+  "downsample": "a12",
+  "rank_values": "a21",
+  "uptime_percent": "a13",
+  "round_half_up": "a08",
+  "zscores": "a17",
+  "latency_summary": "a02",
+  "std_dev": "a19",
+  "ewma": "a05",
+  "moving_average": "a16",
+  "percentile_by_group": "a00",
+  "percent_change": "a22",
+  "percent_shares": "a20",
+  "error_budget_remaining": "a07",
+  "rolling_anomalies": "a23",
+  "latency_regression": "a18",
+  "iqr_outliers": "a09",
+  "leaderboard": "a10",
+  "lagged_correlation": "a15",
+  "count_breach_episodes": "a11",
+  "merge_intervals": "a01",
+  "apdex_score": "a03"
+ },
+ "green": [
+  "apdex_score",
+  "bucket_counts",
+  "count_breach_episodes",
+  "downsample",
+  "histogram_quantile",
+  "iqr_outliers",
+  "lagged_correlation",
+  "leaderboard",
+  "merge_intervals",
+  "percent_change",
+  "percentile",
+  "percentile_by_group"
+ ],
+ "approvals": {
+  "bucket_counts": [],
+  "histogram_quantile": [],
+  "percentile": [],
+  "downsample": [],
+  "moving_average": [],
+  "percentile_by_group": [],
+  "percent_change": [],
+  "error_budget_remaining": [
+   "a14"
+  ],
+  "iqr_outliers": [
+   "a06"
+  ],
+  "leaderboard": [],
+  "count_breach_episodes": [
+   "a06"
+  ],
+  "lagged_correlation": [],
+  "merge_intervals": [],
+  "apdex_score": [
+   "a08",
+   "a14"
+  ]
+ },
+ "cosigns": {},
+ "lead_ok": [],
+ "issues": [
+  {
+   "id": 1,
+   "by": "eng-89",
+   "team": "qa-team",
+   "title": "Conflicting acceptance tests for METRICORE-117 (latency_summary empty case)",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 2,
+   "by": "eng-41",
+   "team": "qa-team",
+   "title": "Incorrect acceptance test in METRICORE-100",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 3,
+   "by": "eng-23",
+   "team": "qa-team",
+   "title": "Conflicting acceptance tests in test_uptime_percent.py for METRICORE-118",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 4,
+   "by": "eng-61",
+   "team": "qa-team",
+   "title": "Conflicting acceptance tests in METRICORE-106 (rank_values)",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 5,
+   "by": "eng-11",
+   "team": "qa-team",
+   "title": "METRICORE-102: Contradictory acceptance tests for std_dev",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 6,
+   "by": "eng-85",
+   "team": "qa-team",
+   "title": "METRICORE-115: Contradictory acceptance tests for zscores([10, 20, 30])",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 7,
+   "by": "eng-89",
+   "team": "infra-team",
+   "title": "Request to skip conflicting acceptance test for METRICORE-117",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 8,
+   "by": "eng-15",
+   "team": "qa-team",
+   "title": "METRICORE-122: acceptance test test_regression_issue_906 contradicts design decision",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  }
+ ],
+ "qa_scheduled": {},
+ "agents": {
+  "a00": {
+   "status": "active",
+   "credits_left": 36,
+   "done": true
+  },
+  "a01": {
+   "status": "active",
+   "credits_left": 32,
+   "done": true
+  },
+  "a02": {
+   "status": "active",
+   "credits_left": 39,
+   "done": true
+  },
+  "a03": {
+   "status": "active",
+   "credits_left": 40,
+   "done": true
+  },
+  "a04": {
+   "status": "active",
+   "credits_left": 44,
+   "done": true
+  },
+  "a05": {
+   "status": "active",
+   "credits_left": 43,
+   "done": true
+  },
+  "a06": {
+   "status": "active",
+   "credits_left": 37,
+   "done": true
+  },
+  "a07": {
+   "status": "active",
+   "credits_left": 34,
+   "done": true
+  },
+  "a08": {
+   "status": "active",
+   "credits_left": 35,
+   "done": true
+  },
+  "a09": {
+   "status": "active",
+   "credits_left": 47,
+   "done": true
+  },
+  "a10": {
+   "status": "active",
+   "credits_left": 28,
+   "done": true
+  },
+  "a11": {
+   "status": "active",
+   "credits_left": 40,
+   "done": true
+  },
+  "a12": {
+   "status": "active",
+   "credits_left": 39,
+   "done": true
+  },
+  "a13": {
+   "status": "active",
+   "credits_left": 38,
+   "done": true
+  },
+  "a14": {
+   "status": "active",
+   "credits_left": 40,
+   "done": true
+  },
+  "a15": {
+   "status": "active",
+   "credits_left": 34,
+   "done": true
+  },
+  "a16": {
+   "status": "active",
+   "credits_left": 35,
+   "done": true
+  },
+  "a17": {
+   "status": "active",
+   "credits_left": 40,
+   "done": true
+  },
+  "a18": {
+   "status": "active",
+   "credits_left": 34,
+   "done": true
+  },
+  "a19": {
+   "status": "active",
+   "credits_left": 39,
+   "done": true
+  },
+  "a20": {
+   "status": "active",
+   "credits_left": 34,
+   "done": true
+  },
+  "a21": {
+   "status": "active",
+   "credits_left": 40,
+   "done": true
+  },
+  "a22": {
+   "status": "active",
+   "credits_left": 34,
+   "done": true
+  },
+  "a23": {
+   "status": "active",
+   "credits_left": 34,
+   "done": true
+  }
+ },
+ "protected_changes": {},
+ "audit_log": "cycle 2: @eng-18 wrote src/metricore/bucket_counts.py\ncycle 2: @eng-41 wrote src/metricore/round_half_up.py\ncycle 3: @eng-89 wrote src/metricore/latency_summary.py\ncycle 3: @eng-59 wrote src/metricore/percent_shares.py\ncycle 3: @eng-48 wrote src/metricore/count_breach_episodes.py\ncycle 4: @eng-23 wrote src/metricore/uptime_percent.py\ncycle 4: @eng-61 wrote src/metricore/rank_values.py\ncycle 5: @eng-11 wrote src/metricore/std_dev.py\ncycle 5: @eng-63 wrote src/metricore/leaderboard.py\ncycle 6: @eng-87 wrote src/metricore/error_budget_remaining.py\ncycle 6: @eng-48 wrote src/metricore/count_breach_episodes.py\ncycle 6: @eng-13 wrote src/metricore/apdex_score.py\ncycle 6: @eng-63 wrote src/metricore/leaderboard.py\ncycle 7: @eng-84 wrote src/metricore/percent_change.py\ncycle 7: @eng-57 wrote src/metricore/percentile_by_group.py\ncycle 7: @eng-74 wrote src/metricore/downsample.py\ncycle 7: @eng-19 wrote src/metricore/rolling_anomalies.py\ncycle 8: @eng-74 wrote tests/test_downsample.py\ncycle 9: @eng-42 wrote src/metricore/ewma.py\ncycle 9: @eng-87 wrote src/metricore/error_budget_remaining.py\ncycle 9: @eng-62 wrote src/metricore/moving_average.py\ncycle 11: @eng-57 wrote src/metricore/percentile_by_group.py\ncycle 11: @eng-83 wrote src/metricore/lagged_correlation.py\ncycle 11: @eng-63 wrote src/metricore/leaderboard.py\ncycle 12: @eng-87 wrote src/metricore/error_budget_remaining.py\ncycle 12: @eng-83 wrote src/metricore/lagged_correlation.py\ncycle 12: @eng-84 wrote src/metricore/percent_change.py\ncycle 13: @eng-19 wrote src/metricore/rolling_anomalies.py\ncycle 16: @eng-63 wrote tests/test_leaderboard.py\ncycle 17: @eng-88 wrote src/metricore/merge_intervals.py\n"
+}

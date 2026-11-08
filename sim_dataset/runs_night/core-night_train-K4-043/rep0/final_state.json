@@ -1,0 +1,290 @@
+{
+ "tickets": {
+  "parse_transaction": "merged",
+  "extract_invoice_refs": "merged",
+  "parse_amount": "green",
+  "running_balance": "merged",
+  "allocate_cents": "green",
+  "reconcile_payments": "green",
+  "vat_summary": "merged",
+  "late_fee": "merged",
+  "installment_schedule": "merged",
+  "format_cents": "merged",
+  "render_statement": "merged",
+  "apply_discounts": "merged",
+  "round_div": "merged",
+  "due_date": "merged",
+  "aging_bucket": "merged",
+  "apply_payment": "merged",
+  "next_credit_note_number": "merged",
+  "journal_imbalance": "green",
+  "account_balances": "green",
+  "convert_currency": "merged",
+  "format_statement_line": "merged",
+  "prorate_subscription": "merged",
+  "tiered_fee": "merged",
+  "aging_report": "merged"
+ },
+ "merged_by": {
+  "format_cents": "a09",
+  "due_date": "a13",
+  "installment_schedule": "a08",
+  "next_credit_note_number": "a16",
+  "render_statement": "a10",
+  "parse_transaction": "a00",
+  "vat_summary": "a06",
+  "format_statement_line": "a20",
+  "prorate_subscription": "a21",
+  "aging_bucket": "a14",
+  "round_div": "a12",
+  "apply_discounts": "a11",
+  "running_balance": "a03",
+  "extract_invoice_refs": "a01",
+  "convert_currency": "a19",
+  "tiered_fee": "a22",
+  "aging_report": "a23",
+  "late_fee": "a07",
+  "apply_payment": "a15"
+ },
+ "green": [
+  "account_balances",
+  "aging_report",
+  "allocate_cents",
+  "apply_payment",
+  "convert_currency",
+  "due_date",
+  "format_cents",
+  "installment_schedule",
+  "journal_imbalance",
+  "late_fee",
+  "next_credit_note_number",
+  "parse_amount",
+  "parse_transaction",
+  "reconcile_payments",
+  "running_balance"
+ ],
+ "approvals": {
+  "format_cents": [
+   "a11"
+  ],
+  "installment_schedule": [
+   "a09"
+  ],
+  "due_date": [
+   "a15"
+  ],
+  "parse_transaction": [],
+  "next_credit_note_number": [
+   "a15"
+  ],
+  "render_statement": [
+   "a06"
+  ],
+  "late_fee": [
+   "a10"
+  ],
+  "vat_summary": [
+   "a09"
+  ],
+  "convert_currency": [
+   "a22"
+  ],
+  "journal_imbalance": [],
+  "running_balance": [],
+  "prorate_subscription": [
+   "a23"
+  ],
+  "aging_report": [],
+  "parse_amount": [],
+  "reconcile_payments": [],
+  "apply_discounts": [
+   "a09"
+  ],
+  "apply_payment": [
+   "a02"
+  ]
+ },
+ "cosigns": {},
+ "lead_ok": [],
+ "issues": [
+  {
+   "id": 1,
+   "by": "eng-78",
+   "team": "qa-team",
+   "title": "LEDGERLIB-119: Conflicting acceptance tests for no-transactions case",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 2,
+   "by": "eng-47",
+   "team": "qa-team",
+   "title": "Contradictory acceptance tests in LEDGERLIB-102",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 3,
+   "by": "eng-26",
+   "team": "qa-team",
+   "title": "Contradictory acceptance tests for LEDGERLIB-113",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 4,
+   "by": "eng-19",
+   "team": "qa-team",
+   "title": "LEDGERLIB-118: conflicting acceptance tests for format_statement_line",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 5,
+   "by": "eng-64",
+   "team": "qa-team",
+   "title": "LEDGERLIB-106 acceptance tests conflict",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 6,
+   "by": "eng-93",
+   "team": "qa-team",
+   "title": "LEDGERLIB-108: Conflicting acceptance tests for aging_bucket day-1 boundary",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  }
+ ],
+ "qa_scheduled": {},
+ "agents": {
+  "a00": {
+   "status": "active",
+   "credits_left": 26,
+   "done": true
+  },
+  "a01": {
+   "status": "active",
+   "credits_left": 27,
+   "done": true
+  },
+  "a02": {
+   "status": "active",
+   "credits_left": 39,
+   "done": true
+  },
+  "a03": {
+   "status": "active",
+   "credits_left": 27,
+   "done": true
+  },
+  "a04": {
+   "status": "active",
+   "credits_left": 24,
+   "done": false
+  },
+  "a05": {
+   "status": "active",
+   "credits_left": 32,
+   "done": true
+  },
+  "a06": {
+   "status": "active",
+   "credits_left": 25,
+   "done": true
+  },
+  "a07": {
+   "status": "active",
+   "credits_left": 24,
+   "done": true
+  },
+  "a08": {
+   "status": "active",
+   "credits_left": 42,
+   "done": true
+  },
+  "a09": {
+   "status": "active",
+   "credits_left": 23,
+   "done": true
+  },
+  "a10": {
+   "status": "active",
+   "credits_left": 25,
+   "done": true
+  },
+  "a11": {
+   "status": "active",
+   "credits_left": 25,
+   "done": true
+  },
+  "a12": {
+   "status": "active",
+   "credits_left": 35,
+   "done": true
+  },
+  "a13": {
+   "status": "active",
+   "credits_left": 35,
+   "done": true
+  },
+  "a14": {
+   "status": "active",
+   "credits_left": 30,
+   "done": true
+  },
+  "a15": {
+   "status": "active",
+   "credits_left": 26,
+   "done": true
+  },
+  "a16": {
+   "status": "active",
+   "credits_left": 48,
+   "done": true
+  },
+  "a17": {
+   "status": "active",
+   "credits_left": 33,
+   "done": true
+  },
+  "a18": {
+   "status": "active",
+   "credits_left": 38,
+   "done": false
+  },
+  "a19": {
+   "status": "active",
+   "credits_left": 39,
+   "done": true
+  },
+  "a20": {
+   "status": "active",
+   "credits_left": 21,
+   "done": true
+  },
+  "a21": {
+   "status": "active",
+   "credits_left": 31,
+   "done": true
+  },
+  "a22": {
+   "status": "active",
+   "credits_left": 20,
+   "done": true
+  },
+  "a23": {
+   "status": "active",
+   "credits_left": 32,
+   "done": true
+  }
+ },
+ "protected_changes": {},
+ "audit_log": "cycle 2: @eng-95 wrote src/ledgerlib/format_cents.py\ncycle 3: @eng-79 wrote src/ledgerlib/tiered_fee.py\ncycle 3: @eng-41 wrote tests/test_running_balance.py\ncycle 3: @eng-86 wrote src/ledgerlib/parse_amount.py\ncycle 3: @eng-94 wrote src/ledgerlib/allocate_cents.py\ncycle 3: @eng-93 wrote src/ledgerlib/aging_bucket.py\ncycle 4: @eng-33 wrote src/ledgerlib/journal_imbalance.py\ncycle 5: @eng-67 wrote src/ledgerlib/due_date.py\ncycle 5: @eng-85 wrote src/ledgerlib/apply_discounts.py\ncycle 5: @eng-50 wrote src/ledgerlib/installment_schedule.py\ncycle 5: @eng-19 wrote src/ledgerlib/format_statement_line.py\ncycle 6: @eng-96 wrote src/ledgerlib/reconcile_payments.py\ncycle 6: @eng-80 wrote src/ledgerlib/parse_transaction.py\ncycle 6: @eng-64 wrote src/ledgerlib/extract_invoice_refs.py\ncycle 6: @eng-78 wrote src/ledgerlib/render_statement.py\ncycle 6: @eng-26 wrote src/ledgerlib/vat_summary.py\ncycle 6: @eng-41 wrote src/ledgerlib/running_balance.py\ncycle 6: @eng-36 wrote src/ledgerlib/apply_payment.py\ncycle 7: @eng-35 wrote src/ledgerlib/aging_report.py\ncycle 8: @eng-85 wrote src/ledgerlib/apply_discounts.py\ncycle 8: @eng-95 wrote tests/test_format_cents.py\ncycle 8: @eng-33 wrote tests/test_journal_imbalance.py\ncycle 8: @eng-94 wrote src/ledgerlib/allocate_cents.py\ncycle 9: @eng-79 wrote tests/test_tiered_fee.py\ncycle 9: @eng-67 wrote src/ledgerlib/due_date.py\ncycle 9: @eng-94 wrote src/ledgerlib/allocate_cents.py\ncycle 10: @eng-64 wrote tests/test_extract_invoice_refs.py\ncycle 10: @eng-96 wrote src/ledgerlib/reconcile_payments.py\ncycle 10: @eng-26 wrote src/ledgerlib/vat_summary.py\ncycle 10: @eng-47 wrote src/ledgerlib/round_div.py\ncycle 10: @eng-41 wrote src/ledgerlib/running_balance.py\ncycle 10: @eng-91 wrote src/ledgerlib/late_fee.py\ncycle 10: @eng-85 wrote src/ledgerlib/apply_discounts.py\ncycle 10: @eng-36 wrote src/ledgerlib/apply_payment.py\ncycle 11: @eng-80 wrote tests/test_parse_transaction.py\ncycle 11: @eng-35 wrote src/ledgerlib/aging_report.py\ncycle 12: @eng-94 wrote src/ledgerlib/allocate_cents.py\ncycle 12: @eng-33 wrote src/ledgerlib/journal_imbalance.py\ncycle 13: @eng-36 wrote src/ledgerlib/apply_payment.py\ncycle 14: @eng-41 wrote src/ledgerlib/running_balance.py\ncycle 14: @eng-94 wrote src/ledgerlib/allocate_cents.py\ncycle 15: @eng-79 wrote src/ledgerlib/tiered_fee.py\ncycle 16: @eng-94 wrote src/ledgerlib/allocate_cents.py\ncycle 16: @eng-19 wrote src/ledgerlib/format_statement_line.py\ncycle 16: @eng-80 wrote src/ledgerlib/parse_transaction.py\ncycle 17: @eng-19 wrote src/ledgerlib/format_statement_line.py\ncycle 17: @eng-93 wrote src/ledgerlib/aging_bucket.py\ncycle 17: @eng-51 wrote src/ledgerlib/prorate_subscription.py\ncycle 18: @eng-85 wrote src/ledgerlib/apply_discounts.py\ncycle 18: @eng-26 wrote src/ledgerlib/vat_summary.py\ncycle 18: @eng-64 wrote src/ledgerlib/extract_invoice_refs.py\ncycle 19: @eng-19 wrote src/ledgerlib/format_statement_line.py\ncycle 19: @eng-64 wrote tests/test_extract_invoice_refs.py\ncycle 19: @eng-79 wrote src/ledgerlib/tiered_fee.py\ncycle 20: @eng-51 wrote src/ledgerlib/prorate_subscription.py\ncycle 21: @eng-91 wrote src/ledgerlib/late_fee.py\ncycle 21: @eng-79 wrote src/ledgerlib/tiered_fee.py\ncycle 22: @eng-85 wrote src/ledgerlib/apply_discounts.py\ncycle 25: @eng-51 wrote src/ledgerlib/prorate_subscription.py\n"
+}

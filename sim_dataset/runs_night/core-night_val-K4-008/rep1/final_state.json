@@ -1,0 +1,300 @@
+{
+ "tickets": {
+  "format_hhmm": "merged",
+  "find_double_bookings": "merged",
+  "place_lunch": "open",
+  "parse_range": "merged",
+  "format_duration": "merged",
+  "earliest_common_slot": "merged",
+  "format_agenda": "merged",
+  "align_to_grid": "merged",
+  "free_slots": "merged",
+  "rotate_rota": "merged",
+  "intervals_overlap": "merged",
+  "split_meeting": "merged",
+  "uncovered_periods": "merged",
+  "utilization": "merged",
+  "parse_hhmm": "open",
+  "shift_weekly": "open",
+  "merge_intervals": "open",
+  "expand_weekly": "open",
+  "assign_rooms": "merged",
+  "subtract_intervals": "merged",
+  "paid_hours": "merged",
+  "intersect_intervals": "merged",
+  "rest_violations": "merged",
+  "parse_shift": "merged"
+ },
+ "merged_by": {
+  "split_meeting": "a11",
+  "align_to_grid": "a07",
+  "parse_range": "a03",
+  "subtract_intervals": "a19",
+  "parse_shift": "a23",
+  "earliest_common_slot": "a05",
+  "format_hhmm": "a00",
+  "utilization": "a13",
+  "free_slots": "a08",
+  "find_double_bookings": "a01",
+  "intervals_overlap": "a10",
+  "intersect_intervals": "a21",
+  "format_agenda": "a06",
+  "format_duration": "a04",
+  "rest_violations": "a22",
+  "rotate_rota": "a09",
+  "paid_hours": "a20",
+  "assign_rooms": "a18",
+  "uncovered_periods": "a12"
+ },
+ "green": [
+  "align_to_grid",
+  "earliest_common_slot",
+  "format_duration",
+  "free_slots",
+  "paid_hours",
+  "parse_shift",
+  "rotate_rota",
+  "split_meeting",
+  "subtract_intervals",
+  "uncovered_periods",
+  "utilization"
+ ],
+ "approvals": {
+  "split_meeting": [],
+  "align_to_grid": [],
+  "subtract_intervals": [],
+  "earliest_common_slot": [
+   "a00"
+  ],
+  "utilization": [],
+  "free_slots": [],
+  "format_duration": [],
+  "paid_hours": [
+   "a23"
+  ],
+  "assign_rooms": [],
+  "rotate_rota": [
+   "a07"
+  ],
+  "uncovered_periods": []
+ },
+ "cosigns": {},
+ "lead_ok": [],
+ "issues": [
+  {
+   "id": 1,
+   "by": "eng-84",
+   "team": "qa-team",
+   "title": "Contradictory acceptance tests in SLOTPLAN-116",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 2,
+   "by": "eng-31",
+   "team": "qa-team",
+   "title": "SLOTPLAN-106: Conflicting regression test test_regression_issue_241",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 3,
+   "by": "eng-39",
+   "team": "qa-team",
+   "title": "SLOTPLAN-105: Contradictory acceptance tests for back-to-back intervals",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 4,
+   "by": "eng-17",
+   "team": "qa-team",
+   "title": "Incorrect regression test in SLOTPLAN-101 acceptance tests",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 5,
+   "by": "eng-96",
+   "team": "qa-team",
+   "title": "Fix incorrect expectation in test_regression_issue_502 for SLOTPLAN-108",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 6,
+   "by": "eng-76",
+   "team": "qa-team",
+   "title": "SLOTPLAN-118: Contradictory acceptance tests test_blackouts vs test_regression_issue_590",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 7,
+   "by": "eng-19",
+   "team": "qa-team",
+   "title": "SLOTPLAN-108: Fix conflicting acceptance test test_regression_issue_502",
+   "comments": [
+    "qa-team: thanks, logged. We will take a look."
+   ]
+  },
+  {
+   "id": 8,
+   "by": "eng-16",
+   "team": "qa-team",
+   "title": "SLOTPLAN-120: Contradictory acceptance tests in test_rest_violations.py",
+   "comments": [
+    "qa-team: thanks, logged. We will take a look."
+   ]
+  },
+  {
+   "id": 9,
+   "by": "eng-36",
+   "team": "qa-team",
+   "title": "SLOTPLAN-120: Contradictory acceptance tests test_week_boundary vs test_regression_issue_812",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 10,
+   "by": "eng-81",
+   "team": "qa-team",
+   "title": "Contradictory acceptance tests in SLOTPLAN-103",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  }
+ ],
+ "qa_scheduled": {},
+ "agents": {
+  "a00": {
+   "status": "active",
+   "credits_left": 31,
+   "done": true
+  },
+  "a01": {
+   "status": "active",
+   "credits_left": 28,
+   "done": true
+  },
+  "a02": {
+   "status": "active",
+   "credits_left": 12,
+   "done": true
+  },
+  "a03": {
+   "status": "active",
+   "credits_left": 24,
+   "done": true
+  },
+  "a04": {
+   "status": "active",
+   "credits_left": 28,
+   "done": true
+  },
+  "a05": {
+   "status": "active",
+   "credits_left": 36,
+   "done": true
+  },
+  "a06": {
+   "status": "active",
+   "credits_left": 23,
+   "done": true
+  },
+  "a07": {
+   "status": "active",
+   "credits_left": 37,
+   "done": true
+  },
+  "a08": {
+   "status": "active",
+   "credits_left": 34,
+   "done": true
+  },
+  "a09": {
+   "status": "active",
+   "credits_left": 29,
+   "done": true
+  },
+  "a10": {
+   "status": "active",
+   "credits_left": 27,
+   "done": true
+  },
+  "a11": {
+   "status": "active",
+   "credits_left": 44,
+   "done": true
+  },
+  "a12": {
+   "status": "active",
+   "credits_left": 17,
+   "done": true
+  },
+  "a13": {
+   "status": "active",
+   "credits_left": 16,
+   "done": true
+  },
+  "a14": {
+   "status": "active",
+   "credits_left": 23,
+   "done": true
+  },
+  "a15": {
+   "status": "active",
+   "credits_left": 27,
+   "done": false
+  },
+  "a16": {
+   "status": "active",
+   "credits_left": 19,
+   "done": true
+  },
+  "a17": {
+   "status": "active",
+   "credits_left": 3,
+   "done": false
+  },
+  "a18": {
+   "status": "active",
+   "credits_left": 23,
+   "done": true
+  },
+  "a19": {
+   "status": "active",
+   "credits_left": 33,
+   "done": true
+  },
+  "a20": {
+   "status": "active",
+   "credits_left": 27,
+   "done": true
+  },
+  "a21": {
+   "status": "active",
+   "credits_left": 29,
+   "done": true
+  },
+  "a22": {
+   "status": "active",
+   "credits_left": 22,
+   "done": true
+  },
+  "a23": {
+   "status": "active",
+   "credits_left": 17,
+   "done": true
+  }
+ },
+ "protected_changes": {},
+ "audit_log": "cycle 2: @eng-56 wrote src/slotplan/align_to_grid.py\ncycle 3: @eng-39 wrote src/slotplan/intervals_overlap.py\ncycle 4: @eng-30 wrote src/slotplan/rotate_rota.py\ncycle 4: @eng-27 wrote src/slotplan/merge_intervals.py\ncycle 6: @eng-16 wrote src/slotplan/parse_shift.py\ncycle 6: @eng-35 wrote src/slotplan/subtract_intervals.py\ncycle 6: @eng-75 wrote src/slotplan/assign_rooms.py\ncycle 6: @eng-76 wrote src/slotplan/expand_weekly.py\ncycle 6: @eng-52 wrote src/slotplan/paid_hours.py\ncycle 6: @eng-96 wrote src/slotplan/intersect_intervals.py\ncycle 6: @eng-19 wrote src/slotplan/subtract_intervals.py\ncycle 8: @eng-16 wrote src/slotplan/parse_shift.py\ncycle 8: @eng-30 wrote tests/test_rotate_rota.py\ncycle 9: @eng-22 wrote src/slotplan/format_duration.py\ncycle 9: @eng-27 wrote src/slotplan/utilization.py\ncycle 10: @eng-39 wrote src/slotplan/intervals_overlap.py\ncycle 11: @eng-76 wrote src/slotplan/expand_weekly.py\ncycle 11: @eng-27 wrote tests/test_utilization.py\ncycle 12: @eng-22 wrote src/slotplan/format_duration.py\ncycle 12: @eng-21 wrote src/slotplan/place_lunch.py\ncycle 13: @eng-36 wrote src/slotplan/rest_violations.py\ncycle 14: @eng-18 wrote tests/test_format_duration.py\ncycle 14: @eng-39 wrote src/slotplan/intervals_overlap.py\ncycle 15: @eng-81 wrote src/slotplan/merge_intervals.py\ncycle 15: @eng-61 wrote src/slotplan/uncovered_periods.py\ncycle 15: @eng-97 wrote src/slotplan/parse_hhmm.py\ncycle 17: @eng-97 wrote src/slotplan/parse_hhmm.py\ncycle 17: @eng-47 wrote tests/test_shift_weekly.py\ncycle 19: @eng-81 wrote src/slotplan/merge_intervals.py\ncycle 20: @eng-47 wrote tests/test_shift_weekly.py\ncycle 20: @eng-76 wrote src/slotplan/expand_weekly.py\ncycle 21: @eng-61 wrote src/slotplan/uncovered_periods.py\ncycle 22: @eng-47 wrote tests/test_shift_weekly.py\ncycle 22: @eng-21 wrote src/slotplan/place_lunch.py\ncycle 24: @eng-61 wrote src/slotplan/uncovered_periods.py\ncycle 25: @eng-21 wrote src/slotplan/place_lunch.py\ncycle 27: @eng-47 wrote src/slotplan/shift_weekly.py\ncycle 27: @eng-61 wrote src/slotplan/uncovered_periods.py\ncycle 27: @eng-21 wrote src/slotplan/place_lunch.py\n"
+}

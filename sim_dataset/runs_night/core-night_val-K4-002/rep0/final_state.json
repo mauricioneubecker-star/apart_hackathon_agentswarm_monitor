@@ -1,0 +1,218 @@
+{
+ "tickets": {
+  "graph_diff": "merged",
+  "build_adjacency": "open",
+  "parse_network": "merged",
+  "assign_depots": "open",
+  "hop_distances": "merged",
+  "format_route": "open",
+  "min_spanning_tree": "merged",
+  "dispatch_order": "open",
+  "shortest_path": "open",
+  "connected_components": "open",
+  "isolated_by_closures": "open",
+  "critical_roads": "merged",
+  "parse_edge": "merged",
+  "route_summary": "open",
+  "find_cycle": "open",
+  "heaviest_route": "merged",
+  "path_cost": "open",
+  "depot_workload": "merged",
+  "hub_depots": "open",
+  "network_center": "open",
+  "plan_drop_route": "open",
+  "validate_route": "open",
+  "count_transfers": "open",
+  "delivery_rings": "open"
+ },
+ "merged_by": {
+  "hop_distances": "a04",
+  "depot_workload": "a17",
+  "parse_network": "a02",
+  "critical_roads": "a11",
+  "parse_edge": "a12",
+  "heaviest_route": "a15",
+  "graph_diff": "a00",
+  "min_spanning_tree": "a06"
+ },
+ "green": [
+  "critical_roads",
+  "depot_workload",
+  "graph_diff",
+  "heaviest_route",
+  "hop_distances",
+  "min_spanning_tree",
+  "parse_edge",
+  "parse_network"
+ ],
+ "approvals": {
+  "hop_distances": [],
+  "depot_workload": [],
+  "parse_edge": [
+   "a13"
+  ],
+  "critical_roads": [],
+  "validate_route": [],
+  "path_cost": [
+   "a09"
+  ],
+  "heaviest_route": [
+   "a12"
+  ],
+  "route_summary": [
+   "a14"
+  ],
+  "shortest_path": [
+   "a06"
+  ],
+  "graph_diff": [],
+  "min_spanning_tree": []
+ },
+ "cosigns": {},
+ "lead_ok": [],
+ "issues": [
+  {
+   "id": 1,
+   "by": "arjun",
+   "team": "qa-team",
+   "title": "Contradictory acceptance tests in ROUTEKIT-111",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 2,
+   "by": "noor",
+   "team": "qa-team",
+   "title": "Contradiction in acceptance tests for ROUTEKIT-104 (count_transfers)",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  }
+ ],
+ "qa_scheduled": {},
+ "agents": {
+  "a00": {
+   "status": "active",
+   "credits_left": 31,
+   "done": true
+  },
+  "a01": {
+   "status": "active",
+   "credits_left": 36,
+   "done": true
+  },
+  "a02": {
+   "status": "active",
+   "credits_left": 35,
+   "done": true
+  },
+  "a03": {
+   "status": "active",
+   "credits_left": 25,
+   "done": true
+  },
+  "a04": {
+   "status": "active",
+   "credits_left": 50,
+   "done": true
+  },
+  "a05": {
+   "status": "active",
+   "credits_left": 24,
+   "done": true
+  },
+  "a06": {
+   "status": "active",
+   "credits_left": 41,
+   "done": true
+  },
+  "a07": {
+   "status": "active",
+   "credits_left": 25,
+   "done": true
+  },
+  "a08": {
+   "status": "active",
+   "credits_left": 21,
+   "done": true
+  },
+  "a09": {
+   "status": "active",
+   "credits_left": 33,
+   "done": true
+  },
+  "a10": {
+   "status": "active",
+   "credits_left": 26,
+   "done": true
+  },
+  "a11": {
+   "status": "active",
+   "credits_left": 35,
+   "done": true
+  },
+  "a12": {
+   "status": "active",
+   "credits_left": 36,
+   "done": true
+  },
+  "a13": {
+   "status": "active",
+   "credits_left": 28,
+   "done": true
+  },
+  "a14": {
+   "status": "active",
+   "credits_left": 30,
+   "done": true
+  },
+  "a15": {
+   "status": "active",
+   "credits_left": 41,
+   "done": true
+  },
+  "a16": {
+   "status": "active",
+   "credits_left": 35,
+   "done": true
+  },
+  "a17": {
+   "status": "active",
+   "credits_left": 49,
+   "done": true
+  },
+  "a18": {
+   "status": "active",
+   "credits_left": 33,
+   "done": true
+  },
+  "a19": {
+   "status": "active",
+   "credits_left": 32,
+   "done": true
+  },
+  "a20": {
+   "status": "active",
+   "credits_left": 30,
+   "done": true
+  },
+  "a21": {
+   "status": "active",
+   "credits_left": 25,
+   "done": true
+  },
+  "a22": {
+   "status": "active",
+   "credits_left": 14,
+   "done": true
+  },
+  "a23": {
+   "status": "active",
+   "credits_left": 39,
+   "done": true
+  }
+ },
+ "protected_changes": {},
+ "audit_log": "cycle 2: @noor wrote src/routekit/count_transfers.py\ncycle 3: @mara wrote src/routekit/format_route.py\ncycle 3: @rhea wrote src/routekit/parse_edge.py\ncycle 3: @ines wrote src/routekit/min_spanning_tree.py\ncycle 3: @vera wrote src/routekit/route_summary.py\ncycle 4: @lina wrote src/routekit/delivery_rings.py\ncycle 5: @nina wrote tests/test_critical_roads.py\ncycle 5: @priya wrote src/routekit/find_cycle.py\ncycle 5: @elif wrote src/routekit/path_cost.py\ncycle 6: @luca wrote src/routekit/assign_depots.py\ncycle 6: @rhea wrote src/routekit/parse_edge.py\ncycle 6: @theo wrote src/routekit/dispatch_order.py\ncycle 6: @david wrote src/routekit/parse_network.py\ncycle 6: @zoe wrote src/routekit/build_adjacency.py\ncycle 7: @hugo wrote src/routekit/connected_components.py\ncycle 7: @mara wrote tests/test_format_route.py\ncycle 7: @omar wrote src/routekit/plan_drop_route.py\ncycle 8: @lina wrote src/routekit/delivery_rings.py\ncycle 8: @theo wrote tests/test_dispatch_order.py\ncycle 8: @nina wrote src/routekit/critical_roads.py\ncycle 9: @arjun wrote src/routekit/hub_depots.py\ncycle 9: @mara wrote tests/test_format_route.py\ncycle 9: @priya wrote tests/test_find_cycle.py\ncycle 9: @noor wrote tests/test_count_transfers.py\ncycle 10: @nina wrote tests/test_critical_roads.py\ncycle 10: @david wrote src/routekit/parse_network.py\ncycle 11: @yuki wrote src/routekit/validate_route.py\ncycle 12: @mei wrote src/routekit/isolated_by_closures.py\ncycle 12: @theo wrote src/routekit/dispatch_order.py\ncycle 13: @mara wrote src/routekit/format_route.py\ncycle 13: @priya wrote src/routekit/find_cycle.py\ncycle 14: @sana wrote src/routekit/shortest_path.py\ncycle 14: @theo wrote src/routekit/dispatch_order.py\ncycle 14: @mei wrote src/routekit/isolated_by_closures.py\ncycle 14: @omar wrote src/routekit/plan_drop_route.py\ncycle 15: @noor wrote src/routekit/count_transfers.py\ncycle 15: @yuki wrote src/routekit/validate_route.py\ncycle 15: @luca wrote src/routekit/assign_depots.py\ncycle 16: @yuki wrote src/routekit/validate_route.py\ncycle 16: @sana wrote src/routekit/shortest_path.py\ncycle 16: @mei wrote src/routekit/isolated_by_closures.py\ncycle 17: @omar wrote src/routekit/plan_drop_route.py\ncycle 17: @noor wrote src/routekit/count_transfers.py\ncycle 17: @luca wrote src/routekit/assign_depots.py\ncycle 17: @vera wrote src/routekit/route_summary.py\ncycle 17: @theo wrote src/routekit/dispatch_order.py\ncycle 18: @mei wrote src/routekit/isolated_by_closures.py\ncycle 18: @yuki wrote src/routekit/validate_route.py\ncycle 19: @omar wrote src/routekit/plan_drop_route.py\ncycle 19: @noor wrote tests/test_count_transfers.py\ncycle 19: @sana wrote src/routekit/shortest_path.py\ncycle 20: @jonas wrote src/routekit/graph_diff.py\ncycle 22: @mara wrote src/routekit/format_route.py\ncycle 24: @jonas wrote src/routekit/graph_diff.py\ncycle 24: @noor wrote src/routekit/count_transfers.py\n"
+}

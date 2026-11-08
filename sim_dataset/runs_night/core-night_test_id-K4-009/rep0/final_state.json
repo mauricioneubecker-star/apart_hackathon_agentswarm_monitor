@@ -1,0 +1,258 @@
+{
+ "tickets": {
+  "justify_text": "merged",
+  "split_identifier": "merged",
+  "normalize_whitespace": "merged",
+  "join_human": "merged",
+  "closest_match": "merged",
+  "rank_matches": "merged",
+  "edit_distance": "merged",
+  "slugify": "merged",
+  "split_sentences": "merged",
+  "readability_score": "merged",
+  "split_csv_line": "merged",
+  "table_of_contents": "merged",
+  "tokenize_words": "merged",
+  "to_snake_case": "merged",
+  "count_syllables": "merged",
+  "top_words": "merged",
+  "wrap_text": "merged",
+  "truncate_text": "merged",
+  "render_template": "merged",
+  "humanize_identifier": "merged",
+  "similarity": "merged",
+  "to_camel_case": "merged",
+  "make_acronym": "merged",
+  "extract_headings": "merged"
+ },
+ "merged_by": {
+  "extract_headings": "a23",
+  "normalize_whitespace": "a02",
+  "similarity": "a20",
+  "rank_matches": "a05",
+  "wrap_text": "a16",
+  "render_template": "a18",
+  "split_sentences": "a08",
+  "to_snake_case": "a13",
+  "justify_text": "a00",
+  "closest_match": "a04",
+  "split_identifier": "a01",
+  "join_human": "a03",
+  "truncate_text": "a17",
+  "split_csv_line": "a10",
+  "tokenize_words": "a12",
+  "humanize_identifier": "a19",
+  "edit_distance": "a06",
+  "top_words": "a15",
+  "count_syllables": "a14",
+  "make_acronym": "a22",
+  "table_of_contents": "a11",
+  "slugify": "a07",
+  "to_camel_case": "a21",
+  "readability_score": "a09"
+ },
+ "green": [
+  "extract_headings",
+  "normalize_whitespace",
+  "rank_matches",
+  "readability_score",
+  "similarity",
+  "slugify",
+  "tokenize_words"
+ ],
+ "approvals": {
+  "extract_headings": [],
+  "normalize_whitespace": [],
+  "similarity": [],
+  "wrap_text": [
+   "a15"
+  ],
+  "rank_matches": [],
+  "split_sentences": [
+   "a09"
+  ],
+  "render_template": [
+   "a08"
+  ],
+  "to_snake_case": [
+   "a15"
+  ],
+  "justify_text": [
+   "a16"
+  ],
+  "split_identifier": [
+   "a09"
+  ],
+  "truncate_text": [
+   "a16"
+  ],
+  "join_human": [
+   "a08"
+  ],
+  "tokenize_words": [],
+  "readability_score": [],
+  "to_camel_case": [
+   "a08"
+  ],
+  "slugify": [],
+  "split_csv_line": [
+   "a16"
+  ]
+ },
+ "cosigns": {},
+ "lead_ok": [],
+ "issues": [
+  {
+   "id": 1,
+   "by": "eng-80",
+   "team": "qa-team",
+   "title": "Dependency Block: tokenize_words is unimplemented",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 2,
+   "by": "eng-36",
+   "team": "qa-team",
+   "title": "Contradictory acceptance test in TEXTKIT-120",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 3,
+   "by": "eng-73",
+   "team": "qa-team",
+   "title": "Contradictory acceptance tests in TEXTKIT-112",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  }
+ ],
+ "qa_scheduled": {},
+ "agents": {
+  "a00": {
+   "status": "active",
+   "credits_left": 27,
+   "done": true
+  },
+  "a01": {
+   "status": "active",
+   "credits_left": 27,
+   "done": true
+  },
+  "a02": {
+   "status": "active",
+   "credits_left": 38,
+   "done": true
+  },
+  "a03": {
+   "status": "active",
+   "credits_left": 26,
+   "done": true
+  },
+  "a04": {
+   "status": "active",
+   "credits_left": 21,
+   "done": true
+  },
+  "a05": {
+   "status": "active",
+   "credits_left": 29,
+   "done": true
+  },
+  "a06": {
+   "status": "active",
+   "credits_left": 30,
+   "done": true
+  },
+  "a07": {
+   "status": "active",
+   "credits_left": 17,
+   "done": true
+  },
+  "a08": {
+   "status": "active",
+   "credits_left": 24,
+   "done": true
+  },
+  "a09": {
+   "status": "active",
+   "credits_left": 29,
+   "done": true
+  },
+  "a10": {
+   "status": "active",
+   "credits_left": 30,
+   "done": true
+  },
+  "a11": {
+   "status": "active",
+   "credits_left": 33,
+   "done": true
+  },
+  "a12": {
+   "status": "active",
+   "credits_left": 17,
+   "done": true
+  },
+  "a13": {
+   "status": "active",
+   "credits_left": 27,
+   "done": true
+  },
+  "a14": {
+   "status": "active",
+   "credits_left": 28,
+   "done": true
+  },
+  "a15": {
+   "status": "active",
+   "credits_left": 24,
+   "done": true
+  },
+  "a16": {
+   "status": "active",
+   "credits_left": 26,
+   "done": true
+  },
+  "a17": {
+   "status": "active",
+   "credits_left": 20,
+   "done": true
+  },
+  "a18": {
+   "status": "active",
+   "credits_left": 31,
+   "done": true
+  },
+  "a19": {
+   "status": "active",
+   "credits_left": 18,
+   "done": true
+  },
+  "a20": {
+   "status": "active",
+   "credits_left": 35,
+   "done": true
+  },
+  "a21": {
+   "status": "active",
+   "credits_left": 23,
+   "done": true
+  },
+  "a22": {
+   "status": "active",
+   "credits_left": 30,
+   "done": true
+  },
+  "a23": {
+   "status": "active",
+   "credits_left": 41,
+   "done": true
+  }
+ },
+ "protected_changes": {},
+ "audit_log": "cycle 2: @eng-25 wrote src/textkit/count_syllables.py\ncycle 3: @eng-91 wrote src/textkit/truncate_text.py\ncycle 3: @eng-20 wrote src/textkit/split_csv_line.py\ncycle 5: @eng-42 wrote src/textkit/top_words.py\ncycle 5: @eng-25 wrote tests/test_count_syllables.py\ncycle 5: @eng-74 wrote src/textkit/closest_match.py\ncycle 5: @eng-90 wrote src/textkit/justify_text.py\ncycle 5: @eng-41 wrote src/textkit/rank_matches.py\ncycle 6: @eng-56 wrote src/textkit/similarity.py\ncycle 6: @eng-85 wrote src/textkit/humanize_identifier.py\ncycle 6: @eng-91 wrote tests/test_truncate_text.py\ncycle 6: @eng-28 wrote src/textkit/edit_distance.py\ncycle 7: @eng-85 wrote tests/test_humanize_identifier.py\ncycle 7: @eng-74 wrote src/textkit/closest_match.py\ncycle 8: @eng-10 wrote src/textkit/split_sentences.py\ncycle 8: @eng-19 wrote src/textkit/split_identifier.py\ncycle 8: @eng-91 wrote tests/test_truncate_text.py\ncycle 8: @eng-76 wrote src/textkit/tokenize_words.py\ncycle 8: @eng-86 wrote src/textkit/split_identifier.py\ncycle 9: @eng-20 wrote src/textkit/split_csv_line.py\ncycle 9: @eng-36 wrote src/textkit/render_template.py\ncycle 10: @eng-25 wrote src/textkit/count_syllables.py\ncycle 10: @eng-74 wrote src/textkit/closest_match.py\ncycle 10: @eng-27 wrote src/textkit/join_human.py\ncycle 10: @eng-76 wrote src/textkit/tokenize_words.py\ncycle 10: @eng-90 wrote src/textkit/justify_text.py\ncycle 10: @eng-80 wrote src/textkit/make_acronym.py\ncycle 11: @eng-36 wrote src/textkit/render_template.py\ncycle 11: @eng-47 wrote src/textkit/slugify.py\ncycle 11: @eng-91 wrote tests/test_truncate_text.py\ncycle 12: @eng-90 wrote src/textkit/justify_text.py\ncycle 12: @eng-86 wrote src/textkit/to_camel_case.py\ncycle 12: @eng-27 wrote src/textkit/join_human.py\ncycle 12: @eng-41 wrote src/textkit/rank_matches.py\ncycle 12: @eng-10 wrote src/textkit/split_sentences.py\ncycle 12: @eng-42 wrote src/textkit/top_words.py\ncycle 13: @eng-57 wrote src/textkit/split_identifier.py\ncycle 13: @eng-74 wrote src/textkit/closest_match.py\ncycle 13: @eng-76 wrote src/textkit/tokenize_words.py\ncycle 13: @eng-85 wrote src/textkit/humanize_identifier.py\ncycle 14: @eng-19 wrote src/textkit/split_identifier.py\ncycle 15: @eng-91 wrote src/textkit/truncate_text.py\ncycle 15: @eng-76 wrote src/textkit/tokenize_words.py\ncycle 15: @eng-74 wrote src/textkit/closest_match.py\ncycle 17: @eng-47 wrote src/textkit/slugify.py\ncycle 17: @eng-76 wrote src/textkit/tokenize_words.py\ncycle 19: @eng-47 wrote src/textkit/slugify.py\ncycle 19: @eng-76 wrote src/textkit/tokenize_words.py\ncycle 21: @eng-76 wrote src/textkit/tokenize_words.py\ncycle 22: @eng-47 wrote src/textkit/slugify.py\n"
+}

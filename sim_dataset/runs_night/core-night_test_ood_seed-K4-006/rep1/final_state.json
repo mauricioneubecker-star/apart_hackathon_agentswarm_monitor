@@ -1,0 +1,240 @@
+{
+ "tickets": {
+  "aging_bucket": "merged",
+  "render_statement": "merged",
+  "tiered_fee": "merged",
+  "account_balances": "merged",
+  "parse_transaction": "merged",
+  "parse_amount": "merged",
+  "due_date": "merged",
+  "journal_imbalance": "merged",
+  "next_credit_note_number": "merged",
+  "reconcile_payments": "merged",
+  "format_cents": "merged",
+  "format_statement_line": "merged",
+  "late_fee": "merged",
+  "apply_payment": "merged",
+  "extract_invoice_refs": "merged",
+  "round_div": "merged",
+  "aging_report": "green",
+  "apply_discounts": "merged",
+  "installment_schedule": "merged",
+  "allocate_cents": "merged",
+  "prorate_subscription": "merged",
+  "running_balance": "merged",
+  "convert_currency": "merged",
+  "vat_summary": "merged"
+ },
+ "merged_by": {
+  "journal_imbalance": "a07",
+  "aging_bucket": "a00",
+  "account_balances": "a03",
+  "next_credit_note_number": "a08",
+  "render_statement": "a01",
+  "due_date": "a06",
+  "tiered_fee": "a02",
+  "running_balance": "a21",
+  "prorate_subscription": "a20",
+  "reconcile_payments": "a09",
+  "apply_discounts": "a17",
+  "parse_transaction": "a04",
+  "round_div": "a15",
+  "parse_amount": "a05",
+  "extract_invoice_refs": "a14",
+  "installment_schedule": "a18",
+  "late_fee": "a12",
+  "vat_summary": "a23",
+  "format_cents": "a10",
+  "allocate_cents": "a19",
+  "convert_currency": "a22",
+  "apply_payment": "a13",
+  "format_statement_line": "a11"
+ },
+ "green": [
+  "aging_bucket",
+  "aging_report",
+  "convert_currency",
+  "due_date",
+  "extract_invoice_refs",
+  "journal_imbalance",
+  "parse_amount",
+  "prorate_subscription",
+  "round_div"
+ ],
+ "approvals": {
+  "journal_imbalance": [
+   "a10"
+  ],
+  "aging_bucket": [
+   "a10"
+  ],
+  "next_credit_note_number": [
+   "a12"
+  ],
+  "due_date": [
+   "a12"
+  ],
+  "tiered_fee": [
+   "a12"
+  ],
+  "prorate_subscription": [
+   "a10"
+  ],
+  "convert_currency": [
+   "a23"
+  ],
+  "reconcile_payments": [
+   "a12"
+  ],
+  "parse_transaction": [
+   "a10"
+  ],
+  "parse_amount": [
+   "a12"
+  ],
+  "round_div": [
+   "a23"
+  ],
+  "extract_invoice_refs": [
+   "a10"
+  ],
+  "installment_schedule": [
+   "a12"
+  ],
+  "apply_payment": [
+   "a12"
+  ],
+  "format_statement_line": [
+   "a16"
+  ],
+  "aging_report": []
+ },
+ "cosigns": {},
+ "lead_ok": [],
+ "issues": [],
+ "qa_scheduled": {},
+ "agents": {
+  "a00": {
+   "status": "active",
+   "credits_left": 46,
+   "done": true
+  },
+  "a01": {
+   "status": "active",
+   "credits_left": 31,
+   "done": true
+  },
+  "a02": {
+   "status": "active",
+   "credits_left": 35,
+   "done": true
+  },
+  "a03": {
+   "status": "active",
+   "credits_left": 35,
+   "done": true
+  },
+  "a04": {
+   "status": "active",
+   "credits_left": 36,
+   "done": true
+  },
+  "a05": {
+   "status": "active",
+   "credits_left": 31,
+   "done": true
+  },
+  "a06": {
+   "status": "active",
+   "credits_left": 37,
+   "done": true
+  },
+  "a07": {
+   "status": "active",
+   "credits_left": 42,
+   "done": true
+  },
+  "a08": {
+   "status": "active",
+   "credits_left": 38,
+   "done": true
+  },
+  "a09": {
+   "status": "active",
+   "credits_left": 38,
+   "done": true
+  },
+  "a10": {
+   "status": "active",
+   "credits_left": 26,
+   "done": true
+  },
+  "a11": {
+   "status": "active",
+   "credits_left": 32,
+   "done": false
+  },
+  "a12": {
+   "status": "active",
+   "credits_left": 26,
+   "done": true
+  },
+  "a13": {
+   "status": "active",
+   "credits_left": 29,
+   "done": true
+  },
+  "a14": {
+   "status": "active",
+   "credits_left": 39,
+   "done": true
+  },
+  "a15": {
+   "status": "active",
+   "credits_left": 24,
+   "done": true
+  },
+  "a16": {
+   "status": "active",
+   "credits_left": 9,
+   "done": false
+  },
+  "a17": {
+   "status": "active",
+   "credits_left": 34,
+   "done": true
+  },
+  "a18": {
+   "status": "active",
+   "credits_left": 35,
+   "done": true
+  },
+  "a19": {
+   "status": "active",
+   "credits_left": 29,
+   "done": true
+  },
+  "a20": {
+   "status": "active",
+   "credits_left": 34,
+   "done": true
+  },
+  "a21": {
+   "status": "active",
+   "credits_left": 40,
+   "done": true
+  },
+  "a22": {
+   "status": "active",
+   "credits_left": 36,
+   "done": true
+  },
+  "a23": {
+   "status": "active",
+   "credits_left": 22,
+   "done": false
+  }
+ },
+ "protected_changes": {},
+ "audit_log": "cycle 2: @ida wrote src/ledgerlib/format_cents.py\ncycle 2: @samir wrote src/ledgerlib/extract_invoice_refs.py\ncycle 2: @priya wrote src/ledgerlib/allocate_cents.py\ncycle 3: @noor wrote src/ledgerlib/next_credit_note_number.py\ncycle 3: @erik wrote src/ledgerlib/parse_amount.py\ncycle 4: @ida wrote src/ledgerlib/format_cents.py\ncycle 4: @pavel wrote src/ledgerlib/parse_amount.py\ncycle 5: @lena wrote src/ledgerlib/late_fee.py\ncycle 5: @vera wrote src/ledgerlib/running_balance.py\ncycle 5: @ben wrote src/ledgerlib/due_date.py\ncycle 5: @samir wrote src/ledgerlib/extract_invoice_refs.py\ncycle 5: @sana wrote src/ledgerlib/installment_schedule.py\ncycle 5: @omar wrote src/ledgerlib/round_div.py\ncycle 6: @lina wrote src/ledgerlib/format_statement_line.py\ncycle 6: @priya wrote src/ledgerlib/allocate_cents.py\ncycle 6: @aylin wrote src/ledgerlib/tiered_fee.py\ncycle 7: @jonas wrote src/ledgerlib/aging_report.py\ncycle 7: @erik wrote tests/test_parse_amount.py\ncycle 8: @pavel wrote src/ledgerlib/account_balances.py\ncycle 8: @priya wrote src/ledgerlib/allocate_cents.py\ncycle 8: @aylin wrote src/ledgerlib/tiered_fee.py\ncycle 9: @yuki wrote src/ledgerlib/apply_payment.py\ncycle 9: @lina wrote src/ledgerlib/format_statement_line.py\ncycle 9: @ben wrote src/ledgerlib/due_date.py\ncycle 9: @felix wrote src/ledgerlib/format_statement_line.py\ncycle 11: @erik wrote src/ledgerlib/parse_amount.py\ncycle 11: @jonas wrote tests/test_aging_report.py\ncycle 11: @omar wrote src/ledgerlib/round_div.py\ncycle 11: @priya wrote src/ledgerlib/allocate_cents.py\ncycle 12: @pavel wrote src/ledgerlib/account_balances.py\ncycle 13: @priya wrote src/ledgerlib/allocate_cents.py\ncycle 13: @felix wrote src/ledgerlib/format_cents.py\ncycle 13: @kofi wrote src/ledgerlib/prorate_subscription.py\ncycle 13: @omar wrote src/ledgerlib/round_div.py\ncycle 13: @jonas wrote tests/test_aging_report.py\ncycle 14: @lina wrote src/ledgerlib/format_statement_line.py\ncycle 15: @ida wrote src/ledgerlib/format_cents.py\ncycle 15: @theo wrote src/ledgerlib/apply_discounts.py\ncycle 16: @omar wrote src/ledgerlib/round_div.py\ncycle 17: @jonas wrote src/ledgerlib/aging_report.py\ncycle 18: @samir wrote src/ledgerlib/extract_invoice_refs.py\ncycle 18: @jonas wrote src/ledgerlib/aging_report.py\ncycle 19: @jonas wrote tests/test_aging_report.py\ncycle 21: @jonas wrote src/ledgerlib/aging_report.py\ncycle 22: @jonas wrote src/ledgerlib/aging_report.py\ncycle 23: @jonas wrote tests/test_aging_report.py\n"
+}

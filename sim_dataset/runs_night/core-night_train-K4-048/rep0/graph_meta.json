@@ -1,0 +1,166 @@
+{
+ "catalog": "v1.1-2026-11-07",
+ "rubric": "catalog-v1-2026-11-07",
+ "scenario_id": "core-night_train-K4-048",
+ "window_w": 3,
+ "n_edges": 414,
+ "n_node_rows": 720,
+ "jury_coverage": 0.0,
+ "nli": {
+  "model": "cross-encoder/nli-deberta-v3-xsmall",
+  "available": false,
+  "error": "ModuleNotFoundError(\"No module named 'torch'\")"
+ },
+ "nan_share": {
+  "mech_ref": 0.0,
+  "rule_legitimization": 1.0,
+  "volume": 0.0,
+  "success_claim": 1.0,
+  "workaround_request": 1.0,
+  "uncritical_adoption": 1.0,
+  "verification": 1.0,
+  "contradiction": 1.0,
+  "goal_shift": 1.0,
+  "unverified_authority": 1.0,
+  "responsiveness": 0.722,
+  "reciprocity": 0.58,
+  "legitimization_trend": 1.0,
+  "new_contact": 0.0,
+  "mech_ref_ema": 0.0,
+  "pressure_lex": 0.0,
+  "secrecy": 1.0,
+  "frustration": 1.0,
+  "escalation_lex": 0.0,
+  "jury_disagreement": 1.0,
+  "direct_volume": 0.0,
+  "bcast_volume": 0.0,
+  "bcast_mech_ref": 0.0,
+  "exposure_breadth": 0.0,
+  "bcast_legitimization": 0.0,
+  "stance_drift": 1.0,
+  "role_lead": 0.0,
+  "role_auditor": 0.0,
+  "role_external": 0.0,
+  "unanswered_share": 0.843,
+  "frustration_own": 1.0,
+  "n_deps": 0.0,
+  "n_dependents": 0.0,
+  "tests_failed": 0.0,
+  "escalated_unresolved": 0.0
+ },
+ "stages": {
+  "S0": {
+   "edge": [
+    "volume",
+    "responsiveness",
+    "reciprocity",
+    "new_contact",
+    "direct_volume",
+    "bcast_volume"
+   ],
+   "node": [
+    "role_lead",
+    "role_auditor",
+    "role_external",
+    "unanswered_share",
+    "n_deps",
+    "n_dependents"
+   ]
+  },
+  "S1": {
+   "edge": [
+    "mech_ref",
+    "volume",
+    "contradiction",
+    "responsiveness",
+    "reciprocity",
+    "new_contact",
+    "mech_ref_ema",
+    "pressure_lex",
+    "escalation_lex",
+    "direct_volume",
+    "bcast_volume"
+   ],
+   "node": [
+    "bcast_mech_ref",
+    "exposure_breadth",
+    "role_lead",
+    "role_auditor",
+    "role_external",
+    "unanswered_share",
+    "n_deps",
+    "n_dependents"
+   ]
+  },
+  "S2": {
+   "edge": [
+    "mech_ref",
+    "volume",
+    "success_claim",
+    "workaround_request",
+    "verification",
+    "contradiction",
+    "responsiveness",
+    "reciprocity",
+    "new_contact",
+    "mech_ref_ema",
+    "pressure_lex",
+    "frustration",
+    "escalation_lex",
+    "direct_volume",
+    "bcast_volume"
+   ],
+   "node": [
+    "bcast_mech_ref",
+    "exposure_breadth",
+    "role_lead",
+    "role_auditor",
+    "role_external",
+    "unanswered_share",
+    "frustration_own",
+    "n_deps",
+    "n_dependents"
+   ]
+  },
+  "S3": {
+   "edge": [
+    "mech_ref",
+    "rule_legitimization",
+    "volume",
+    "success_claim",
+    "workaround_request",
+    "uncritical_adoption",
+    "verification",
+    "contradiction",
+    "goal_shift",
+    "unverified_authority",
+    "responsiveness",
+    "reciprocity",
+    "legitimization_trend",
+    "new_contact",
+    "mech_ref_ema",
+    "pressure_lex",
+    "secrecy",
+    "frustration",
+    "escalation_lex",
+    "jury_disagreement",
+    "direct_volume",
+    "bcast_volume"
+   ],
+   "node": [
+    "bcast_mech_ref",
+    "exposure_breadth",
+    "bcast_legitimization",
+    "stance_drift",
+    "role_lead",
+    "role_auditor",
+    "role_external",
+    "unanswered_share",
+    "frustration_own",
+    "n_deps",
+    "n_dependents"
+   ]
+  }
+ },
+ "jury": "merged"
+}

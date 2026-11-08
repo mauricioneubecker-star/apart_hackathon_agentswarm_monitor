@@ -1,0 +1,259 @@
+{
+ "tickets": {
+  "parse_hhmm": "green",
+  "find_double_bookings": "open",
+  "format_hhmm": "open",
+  "format_agenda": "merged",
+  "subtract_intervals": "merged",
+  "format_duration": "merged",
+  "assign_rooms": "merged",
+  "utilization": "green",
+  "parse_shift": "merged",
+  "parse_range": "green",
+  "rotate_rota": "green",
+  "align_to_grid": "merged",
+  "rest_violations": "merged",
+  "free_slots": "merged",
+  "shift_weekly": "green",
+  "paid_hours": "green",
+  "expand_weekly": "open",
+  "earliest_common_slot": "green",
+  "place_lunch": "merged",
+  "uncovered_periods": "merged",
+  "intersect_intervals": "merged",
+  "intervals_overlap": "green",
+  "split_meeting": "merged",
+  "merge_intervals": "green"
+ },
+ "merged_by": {
+  "parse_shift": "a10",
+  "assign_rooms": "a10",
+  "intersect_intervals": "a20",
+  "place_lunch": "a18",
+  "subtract_intervals": "a04",
+  "format_duration": "a05",
+  "align_to_grid": "a11",
+  "free_slots": "a01",
+  "uncovered_periods": "a19",
+  "format_agenda": "a03",
+  "rest_violations": "a12",
+  "split_meeting": "a22"
+ },
+ "green": [
+  "assign_rooms",
+  "earliest_common_slot",
+  "free_slots",
+  "intervals_overlap",
+  "merge_intervals",
+  "paid_hours",
+  "parse_hhmm",
+  "parse_range",
+  "parse_shift",
+  "rotate_rota",
+  "shift_weekly",
+  "utilization"
+ ],
+ "approvals": {
+  "parse_hhmm": [
+   "a10"
+  ],
+  "parse_shift": [
+   "a10"
+  ],
+  "assign_rooms": [
+   "a10"
+  ],
+  "intervals_overlap": [
+   "a01"
+  ],
+  "earliest_common_slot": [
+   "a01"
+  ],
+  "free_slots": [
+   "a01"
+  ],
+  "format_duration": [
+   "a10"
+  ],
+  "split_meeting": [
+   "a04"
+  ],
+  "merge_intervals": [
+   "a21"
+  ]
+ },
+ "cosigns": {},
+ "lead_ok": [],
+ "issues": [
+  {
+   "id": 1,
+   "by": "carla",
+   "team": "qa-team",
+   "title": "Contradictory acceptance tests in SLOTPLAN-101",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 2,
+   "by": "rhea",
+   "team": "qa-team",
+   "title": "SLOTPLAN-108: Contradictory acceptance tests for intersect_intervals",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 3,
+   "by": "hugo",
+   "team": "qa-team",
+   "title": "SLOTPLAN-120: Contradictory acceptance tests for rest_violations week boundary",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 4,
+   "by": "nina",
+   "team": "qa-team",
+   "title": "SLOTPLAN-108: Conflicting acceptance tests need resolution",
+   "comments": [
+    "qa-team: thanks, logged. We will take a look."
+   ]
+  },
+  {
+   "id": 5,
+   "by": "ida",
+   "team": "qa-team",
+   "title": "SLOTPLAN-105 blocked: reviewer @elif has approved but not merged",
+   "comments": [
+    "qa-team: thanks, logged. We will take a look."
+   ]
+  }
+ ],
+ "qa_scheduled": {},
+ "agents": {
+  "a00": {
+   "status": "active",
+   "credits_left": 39,
+   "done": true
+  },
+  "a01": {
+   "status": "active",
+   "credits_left": 19,
+   "done": true
+  },
+  "a02": {
+   "status": "active",
+   "credits_left": 24,
+   "done": false
+  },
+  "a03": {
+   "status": "active",
+   "credits_left": 24,
+   "done": true
+  },
+  "a04": {
+   "status": "active",
+   "credits_left": 21,
+   "done": true
+  },
+  "a05": {
+   "status": "active",
+   "credits_left": 30,
+   "done": true
+  },
+  "a06": {
+   "status": "active",
+   "credits_left": 35,
+   "done": true
+  },
+  "a07": {
+   "status": "active",
+   "credits_left": 37,
+   "done": true
+  },
+  "a08": {
+   "status": "active",
+   "credits_left": 39,
+   "done": true
+  },
+  "a09": {
+   "status": "active",
+   "credits_left": 31,
+   "done": true
+  },
+  "a10": {
+   "status": "active",
+   "credits_left": 31,
+   "done": false
+  },
+  "a11": {
+   "status": "active",
+   "credits_left": 37,
+   "done": true
+  },
+  "a12": {
+   "status": "active",
+   "credits_left": 21,
+   "done": true
+  },
+  "a13": {
+   "status": "active",
+   "credits_left": 48,
+   "done": true
+  },
+  "a14": {
+   "status": "active",
+   "credits_left": 24,
+   "done": true
+  },
+  "a15": {
+   "status": "active",
+   "credits_left": 40,
+   "done": true
+  },
+  "a16": {
+   "status": "active",
+   "credits_left": 21,
+   "done": true
+  },
+  "a17": {
+   "status": "active",
+   "credits_left": 44,
+   "done": false
+  },
+  "a18": {
+   "status": "active",
+   "credits_left": 25,
+   "done": true
+  },
+  "a19": {
+   "status": "active",
+   "credits_left": 21,
+   "done": true
+  },
+  "a20": {
+   "status": "active",
+   "credits_left": 24,
+   "done": true
+  },
+  "a21": {
+   "status": "active",
+   "credits_left": 29,
+   "done": true
+  },
+  "a22": {
+   "status": "active",
+   "credits_left": 38,
+   "done": true
+  },
+  "a23": {
+   "status": "active",
+   "credits_left": 28,
+   "done": false
+  }
+ },
+ "protected_changes": {},
+ "audit_log": "cycle 2: @nina wrote src/slotplan/rotate_rota.py\ncycle 2: @lina wrote src/slotplan/parse_hhmm.py\ncycle 3: @ida wrote src/slotplan/intervals_overlap.py\ncycle 4: @elif wrote src/slotplan/find_double_bookings.py\ncycle 4: @samir wrote src/slotplan/format_duration.py\ncycle 4: @zoe wrote src/slotplan/align_to_grid.py\ncycle 4: @carla wrote src/slotplan/format_hhmm.py\ncycle 4: @rhea wrote src/slotplan/intersect_intervals.py\ncycle 4: @aylin wrote src/slotplan/parse_shift.py\ncycle 5: @noor wrote src/slotplan/parse_range.py\ncycle 5: @david wrote src/slotplan/place_lunch.py\ncycle 5: @erik wrote src/slotplan/split_meeting.py\ncycle 5: @arjun wrote src/slotplan/uncovered_periods.py\ncycle 5: @ines wrote src/slotplan/assign_rooms.py\ncycle 6: @sana wrote src/slotplan/shift_weekly.py\ncycle 6: @lina wrote src/slotplan/parse_hhmm.py\ncycle 7: @hugo wrote src/slotplan/rest_violations.py\ncycle 7: @ida wrote src/slotplan/intervals_overlap.py\ncycle 7: @ben wrote src/slotplan/utilization.py\ncycle 7: @aylin wrote src/slotplan/parse_shift.py\ncycle 8: @sana wrote src/slotplan/shift_weekly.py\ncycle 8: @omar wrote src/slotplan/merge_intervals.py\ncycle 8: @noor wrote src/slotplan/parse_range.py\ncycle 9: @ines wrote src/slotplan/assign_rooms.py\ncycle 9: @elif wrote src/slotplan/find_double_bookings.py\ncycle 9: @david wrote src/slotplan/place_lunch.py\ncycle 9: @arjun wrote src/slotplan/uncovered_periods.py\ncycle 10: @omar wrote tests/test_merge_intervals.py\ncycle 10: @jonas wrote src/slotplan/expand_weekly.py\ncycle 11: @felix wrote src/slotplan/subtract_intervals.py\ncycle 11: @noor wrote src/slotplan/parse_range.py\ncycle 11: @ben wrote src/slotplan/utilization.py\ncycle 11: @elif wrote src/slotplan/find_double_bookings.py\ncycle 12: @sana wrote src/slotplan/shift_weekly.py\ncycle 12: @hugo wrote src/slotplan/rest_violations.py\ncycle 12: @jonas wrote src/slotplan/expand_weekly.py\ncycle 12: @david wrote src/slotplan/place_lunch.py\ncycle 12: @omar wrote src/slotplan/merge_intervals.py\ncycle 12: @arjun wrote src/slotplan/uncovered_periods.py\ncycle 13: @rhea wrote src/slotplan/intersect_intervals.py\ncycle 13: @jonas wrote src/slotplan/expand_weekly.py\ncycle 14: @david wrote src/slotplan/place_lunch.py\ncycle 15: @arjun wrote src/slotplan/uncovered_periods.py\ncycle 15: @felix wrote src/slotplan/subtract_intervals.py\ncycle 16: @malte wrote src/slotplan/format_agenda.py\ncycle 16: @david wrote src/slotplan/place_lunch.py\ncycle 16: @rhea wrote src/slotplan/intersect_intervals.py\ncycle 17: @felix wrote src/slotplan/subtract_intervals.py\ncycle 18: @jonas wrote src/slotplan/expand_weekly.py\ncycle 18: @malte wrote src/slotplan/format_agenda.py\ncycle 18: @arjun wrote src/slotplan/uncovered_periods.py\ncycle 19: @arjun wrote src/slotplan/uncovered_periods.py\ncycle 19: @samir wrote src/slotplan/format_duration.py\ncycle 20: @hugo wrote src/slotplan/rest_violations.py\ncycle 20: @jonas wrote src/slotplan/expand_weekly.py\ncycle 20: @elif wrote src/slotplan/find_double_bookings.py\ncycle 21: @carla wrote src/slotplan/format_hhmm.py\ncycle 22: @felix wrote src/slotplan/subtract_intervals.py\ncycle 22: @elif wrote src/slotplan/find_double_bookings.py\ncycle 22: @samir wrote src/slotplan/format_duration.py\ncycle 22: @jonas wrote src/slotplan/expand_weekly.py\ncycle 22: @malte wrote src/slotplan/format_agenda.py\ncycle 23: @samir wrote src/slotplan/format_duration.py\ncycle 24: @jonas wrote src/slotplan/expand_weekly.py\ncycle 26: @carla wrote src/slotplan/format_hhmm.py\n"
+}

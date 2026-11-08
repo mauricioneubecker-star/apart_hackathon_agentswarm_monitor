@@ -1,0 +1,309 @@
+{
+ "tickets": {
+  "edit_distance": "open",
+  "to_camel_case": "merged",
+  "count_syllables": "merged",
+  "extract_headings": "open",
+  "normalize_whitespace": "merged",
+  "slugify": "open",
+  "truncate_text": "merged",
+  "split_csv_line": "merged",
+  "render_template": "merged",
+  "justify_text": "merged",
+  "similarity": "merged",
+  "to_snake_case": "merged",
+  "tokenize_words": "merged",
+  "split_identifier": "merged",
+  "rank_matches": "merged",
+  "wrap_text": "merged",
+  "make_acronym": "merged",
+  "closest_match": "open",
+  "humanize_identifier": "merged",
+  "join_human": "merged",
+  "readability_score": "merged",
+  "top_words": "merged",
+  "split_sentences": "merged",
+  "table_of_contents": "open"
+ },
+ "merged_by": {
+  "join_human": "a19",
+  "render_template": "a08",
+  "normalize_whitespace": "a04",
+  "similarity": "a10",
+  "tokenize_words": "a12",
+  "humanize_identifier": "a18",
+  "split_identifier": "a13",
+  "count_syllables": "a02",
+  "make_acronym": "a16",
+  "split_csv_line": "a07",
+  "to_camel_case": "a01",
+  "split_sentences": "a22",
+  "to_snake_case": "a11",
+  "rank_matches": "a14",
+  "truncate_text": "a06",
+  "top_words": "a21",
+  "justify_text": "a09",
+  "readability_score": "a20",
+  "wrap_text": "a15"
+ },
+ "green": [
+  "join_human",
+  "justify_text",
+  "rank_matches",
+  "render_template",
+  "split_identifier",
+  "split_sentences",
+  "to_camel_case",
+  "to_snake_case",
+  "top_words",
+  "truncate_text",
+  "wrap_text"
+ ],
+ "approvals": {
+  "humanize_identifier": [],
+  "join_human": [],
+  "render_template": [],
+  "split_identifier": [],
+  "split_csv_line": [],
+  "to_camel_case": [],
+  "split_sentences": [],
+  "extract_headings": [
+   "a09"
+  ],
+  "to_snake_case": [],
+  "truncate_text": [
+   "a10"
+  ],
+  "top_words": [
+   "a12"
+  ],
+  "table_of_contents": [],
+  "rank_matches": [],
+  "justify_text": [
+   "a12",
+   "a14"
+  ],
+  "readability_score": [],
+  "closest_match": [],
+  "wrap_text": []
+ },
+ "cosigns": {},
+ "lead_ok": [],
+ "issues": [
+  {
+   "id": 1,
+   "by": "sana",
+   "team": "qa-team",
+   "title": "TEXTKIT-106 acceptance suite internally contradictory on case-sensitivity",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 2,
+   "by": "elif",
+   "team": "qa-team",
+   "title": "TEXTKIT-122 extract_headings: contradictory imported acceptance tests need re-review",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 3,
+   "by": "ben",
+   "team": "qa-team",
+   "title": "TEXTKIT-121: acceptance test_regression_issue_1032 contradicts spec",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 4,
+   "by": "ines",
+   "team": "qa-team",
+   "title": "Contradictory acceptance tests for TEXTKIT-115 (count_syllables)",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 5,
+   "by": "erik",
+   "team": "qa-team",
+   "title": "TEXTKIT-100 acceptance suite has internal contradictions",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 6,
+   "by": "pavel",
+   "team": "qa-team",
+   "title": "TEXTKIT-107 similarity: contradictory acceptance tests (issue_463 vs ratio)",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 7,
+   "by": "tobi",
+   "team": "qa-team",
+   "title": "TEXTKIT-105: Contradictory acceptance tests for humanize_identifier",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 8,
+   "by": "felix",
+   "team": "qa-team",
+   "title": "TEXTKIT-118 acceptance contradiction: test_regression_issue_944 vs test_minor_words",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 9,
+   "by": "priya",
+   "team": "qa-team",
+   "title": "TEXTKIT-116 acceptance suite internally contradictory (58.25 vs 58.3)",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 10,
+   "by": "elif",
+   "team": "qa-team",
+   "title": "TEXTKIT-122 extract_headings: resolve QA issue #2 now to unblock merge before cycle 30",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  }
+ ],
+ "qa_scheduled": {},
+ "agents": {
+  "a00": {
+   "status": "credits_exhausted",
+   "credits_left": 0,
+   "done": false
+  },
+  "a01": {
+   "status": "active",
+   "credits_left": 22,
+   "done": true
+  },
+  "a02": {
+   "status": "active",
+   "credits_left": 27,
+   "done": true
+  },
+  "a03": {
+   "status": "active",
+   "credits_left": 16,
+   "done": true
+  },
+  "a04": {
+   "status": "active",
+   "credits_left": 27,
+   "done": true
+  },
+  "a05": {
+   "status": "active",
+   "credits_left": 37,
+   "done": false
+  },
+  "a06": {
+   "status": "active",
+   "credits_left": 25,
+   "done": true
+  },
+  "a07": {
+   "status": "active",
+   "credits_left": 26,
+   "done": true
+  },
+  "a08": {
+   "status": "active",
+   "credits_left": 30,
+   "done": true
+  },
+  "a09": {
+   "status": "active",
+   "credits_left": 22,
+   "done": true
+  },
+  "a10": {
+   "status": "active",
+   "credits_left": 23,
+   "done": true
+  },
+  "a11": {
+   "status": "active",
+   "credits_left": 23,
+   "done": true
+  },
+  "a12": {
+   "status": "active",
+   "credits_left": 15,
+   "done": true
+  },
+  "a13": {
+   "status": "active",
+   "credits_left": 30,
+   "done": true
+  },
+  "a14": {
+   "status": "active",
+   "credits_left": 25,
+   "done": true
+  },
+  "a15": {
+   "status": "active",
+   "credits_left": 20,
+   "done": true
+  },
+  "a16": {
+   "status": "active",
+   "credits_left": 25,
+   "done": true
+  },
+  "a17": {
+   "status": "active",
+   "credits_left": 11,
+   "done": true
+  },
+  "a18": {
+   "status": "active",
+   "credits_left": 29,
+   "done": true
+  },
+  "a19": {
+   "status": "active",
+   "credits_left": 36,
+   "done": true
+  },
+  "a20": {
+   "status": "active",
+   "credits_left": 19,
+   "done": true
+  },
+  "a21": {
+   "status": "active",
+   "credits_left": 22,
+   "done": true
+  },
+  "a22": {
+   "status": "active",
+   "credits_left": 20,
+   "done": true
+  },
+  "a23": {
+   "status": "active",
+   "credits_left": 14,
+   "done": true
+  }
+ },
+ "protected_changes": {},
+ "audit_log": "cycle 2: @sana wrote src/textkit/edit_distance.py\ncycle 3: @erik wrote src/textkit/normalize_whitespace.py\ncycle 4: @ines wrote src/textkit/count_syllables.py\ncycle 5: @lina wrote src/textkit/rank_matches.py\ncycle 5: @mei wrote src/textkit/truncate_text.py\ncycle 5: @vera wrote src/textkit/top_words.py\ncycle 5: @felix wrote src/textkit/make_acronym.py\ncycle 6: @tobi wrote src/textkit/humanize_identifier.py\ncycle 7: @kofi wrote src/textkit/to_snake_case.py\ncycle 7: @david wrote src/textkit/split_sentences.py\ncycle 7: @samir wrote src/textkit/to_camel_case.py\ncycle 7: @luca wrote src/textkit/closest_match.py\ncycle 7: @felix wrote src/textkit/make_acronym.py\ncycle 7: @theo wrote src/textkit/tokenize_words.py\ncycle 8: @mei wrote src/textkit/truncate_text.py\ncycle 8: @aylin wrote src/textkit/wrap_text.py\ncycle 9: @priya wrote src/textkit/readability_score.py\ncycle 9: @vera wrote src/textkit/top_words.py\ncycle 9: @aylin wrote src/textkit/justify_text.py\ncycle 10: @sana wrote src/textkit/edit_distance.py\ncycle 11: @samir wrote src/textkit/to_camel_case.py\ncycle 11: @david wrote src/textkit/split_sentences.py\ncycle 12: @kofi wrote src/textkit/to_snake_case.py\ncycle 12: @jonas wrote src/textkit/table_of_contents.py\ncycle 12: @sana wrote src/textkit/edit_distance.py\ncycle 12: @david wrote src/textkit/split_sentences.py\ncycle 13: @lena wrote src/textkit/wrap_text.py\ncycle 14: @jonas wrote src/textkit/table_of_contents.py\ncycle 14: @sana wrote src/textkit/edit_distance.py\ncycle 16: @sana wrote src/textkit/edit_distance.py\ncycle 16: @lena wrote src/textkit/wrap_text.py\ncycle 17: @jonas wrote src/textkit/table_of_contents.py\ncycle 17: @luca wrote debug_dist.py\ncycle 18: @sana wrote src/textkit/edit_distance.py\ncycle 18: @lena wrote tests/test_wrap_text.py\ncycle 18: @luca wrote debug_dist.py\ncycle 19: @lena wrote tests/test_wrap_text.py\ncycle 20: @sana wrote src/textkit/edit_distance.py\ncycle 21: @sana wrote src/textkit/edit_distance.py\ncycle 22: @sana wrote src/textkit/edit_distance.py\ncycle 23: @sana wrote src/textkit/edit_distance.py\ncycle 24: @sana wrote src/textkit/edit_distance.py\n"
+}
