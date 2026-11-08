@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Final model + hybrid from the chosen config (step 7). No test split is touched.
 
-  python3 gnn_opt_torch/finalize.py --cfg '{...}' --cv-files preds/cv/a.csv preds/cv/a_s1.csv ... --name final \
-      --blend hgb_bag+graph+mem --blend-w 0.3
-1. CV file of the chosen model = mean score over the given seed CV files (same folds / rows) -> preds/cv/<name>.csv
+  python3 gnn_opt_torch/finalize.py --cfgs '[{...}, {...}]' --cv-files preds/cv/a.csv preds/cv/a_s1.csv ... \
+      --name final --blend hgb_bag+graph+mem --blend-w 0.5
+1. CV file of the chosen model = mean score over the given CV files (configs x seeds) (same folds / rows) -> preds/cv/<name>.csv
    (used for the R@5%FPR threshold) and the blend CV file preds/cv/<name>+<blend>.csv (logit blend)
-2. trains the chosen config (cfg['seeds'] seeds) on all of night_train, predicts every snapshot of the night data:
-   preds/eval/<name>.csv, saves models/<name>.pt (cfg, states, normalisation, blend weight)
+2. trains every member config (cfg['seeds'] seeds each) on all of night_train, predicts every snapshot of the night data:
+   preds/eval/<name>.csv (mean over members), saves models/<name>.pt ({members: [{cfg, states, norm}], blend,
+   blend_w})
 3. blend eval file preds/eval/<name>+<blend>.csv from the GBM eval file (trained on all of night_train, night_val rows)
 The single night_val look is then: gnn_opt/evaluate.py --splits night_val (printed command).
 """
@@ -30,17 +31,25 @@ from blend import blend  # noqa: E402
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--data", default=os.path.join(REPO, "gnn_opt_data", "night"))
-    ap.add_argument("--cfg", required=True)
+    ap.add_argument("--cfgs", required=True, help="JSON list of member configs")
     ap.add_argument("--cv-files", nargs="+", required=True)
     ap.add_argument("--name", default="final")
     ap.add_argument("--blend", default="hgb_bag+graph+mem")
-    ap.add_argument("--blend-w", type=float, default=0.3)
+    ap.add_argument("--blend-w", type=float, default=0.5)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--only", default="all", choices=["all", "cv", "train"])
     a = ap.parse_args()
-    cfg = json.loads(a.cfg)
+    cfgs = json.loads(a.cfgs)
     cvd, evd = os.path.join(HERE, "preds", "cv"), os.path.join(HERE, "preds", "eval")
     os.makedirs(evd, exist_ok=True)
-    # 1. seed-ensemble CV file + blend CV file
+    if a.only in ("all", "cv"):
+        cv_files(a, cvd)
+    if a.only in ("all", "train"):
+        train_final(a, cfgs, evd)
+
+
+def cv_files(a, cvd):
+    """1. ensemble CV file (mean over configs x seeds) + blend CV file."""
     fr = [pd.read_csv(f) for f in a.cv_files]
     key = ["run", "round", "fold"]
     E = fr[0][key].copy()
@@ -52,13 +61,26 @@ def main():
         G = pd.read_csv(os.path.join(REPO, "gnn_opt", "preds", "cv", f"{a.blend}.csv"))
         blend([E, G], [a.blend_w, 1 - a.blend_w], mode="logit").to_csv(os.path.join(cvd, f"{bname}.csv"),
                                                                           index=False)
-    # 2. final GNN on all of night_train
-    c = {**T.DEFAULT, **cfg}
-    D = T.get_data(a.data, c["feat"], c["clock"])
-    tr = [i for i, r in enumerate(D.runs) if r["split"] == T.TRAIN_SPLIT]
-    df, states, norm = T.fit_models(a.data, cfg, tr, a.seed, keep_states=True, pred_runs_idx=list(range(len(D.runs))))
+
+
+def train_final(a, cfgs, evd):
+    """2. final GNN members on all of night_train; 3. blend eval file."""
+    bname = f"{a.name}+{a.blend}"
+    members, dfs = [], []
+    for k, cfg in enumerate(cfgs):
+        c = {**T.DEFAULT, **cfg}
+        D = T.get_data(a.data, c["feat"], c["clock"])
+        tr = [i for i, r in enumerate(D.runs) if r["split"] == T.TRAIN_SPLIT]
+        d1, states, norm = T.fit_models(a.data, cfg, tr, a.seed + k, keep_states=True,
+                                        pred_runs_idx=list(range(len(D.runs))))
+        members.append({"cfg": c, "states": states, "norm": norm})
+        dfs.append(d1)
+        print(f"member {k}: {len(states)} states", flush=True)
+    df = dfs[0][["run", "round"]].copy()
+    for col in ("score", "count"):
+        df[col] = sum(d[col].values for d in dfs) / len(dfs)
     os.makedirs(os.path.join(HERE, "models"), exist_ok=True)
-    torch.save({"cfg": c, "states": states, "norm": norm, "blend": a.blend, "blend_w": a.blend_w,
+    torch.save({"members": members, "blend": a.blend, "blend_w": a.blend_w,
                 "trained_on": "night_train (all 128 runs)", "cv_files": a.cv_files},
                os.path.join(HERE, "models", f"{a.name}.pt"))
     df.to_csv(os.path.join(evd, f"{a.name}.csv"), index=False)

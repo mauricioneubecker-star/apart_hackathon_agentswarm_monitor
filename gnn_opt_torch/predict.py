@@ -52,9 +52,14 @@ def main():
         subprocess.run([sys.executable, os.path.join(REPO, "gnn_opt", "build_dataset.py"), "--runs", a.runs,
                         "--out", dd], check=True)
     M = torch.load(a.model, weights_only=False)
-    cfg = M["cfg"]
-    D = Data(dd, cfg["feat"], cfg["clock"])
-    P = T.predict_states(D, cfg, M["states"], M["norm"])
+    members = M.get("members") or [{"cfg": M["cfg"], "states": M["states"], "norm": M["norm"]}]
+    Ps = []
+    for mb in members:     # ensemble of member configs (each: seed x snapshot/SWA states)
+        D = Data(dd, mb["cfg"]["feat"], mb["cfg"]["clock"])
+        Ps.append(T.predict_states(D, mb["cfg"], mb["states"], mb["norm"]))
+    P = Ps[0][["run", "round"]].copy()
+    for col in ("score", "count"):
+        P[col] = sum(q[col].values for q in Ps) / len(Ps)
     mname = os.path.basename(a.model).replace(".pt", "")
     od = os.path.join(HERE, "preds", "new")
     os.makedirs(od, exist_ok=True)
@@ -67,7 +72,8 @@ def main():
         subprocess.run([sys.executable, os.path.join(REPO, "gnn_opt", "baselines.py"), "--data", a.train_data,
                         "--only", a.blend, "--no-cv", "--predict-splits", "night_val", "--tag", "__predict",
                         "--apply", dd], check=True)
-        G = pd.read_csv(os.path.join(REPO, "gnn_opt", "preds", "apply", name, f"{a.blend}__predict.csv"))
+        G = pd.read_csv(os.path.join(REPO, "gnn_opt", "preds", "apply", os.path.basename(os.path.normpath(dd)),
+                                     f"{a.blend}__predict.csv"))
         w = a.blend_w if a.blend_w is not None else M.get("blend_w", 0.3)
         Bl = blend([P, G], [w, 1 - w], mode="logit")
         bname = f"{mname}+{a.blend}"

@@ -6,7 +6,8 @@
   # screening on a subset of folds: --cv id0 (5 folds) | lodo | id | all
   # final model on all of night_train, predictions for every snapshot of --data (eval file)
   python3 gnn_opt_torch/train.py --data gnn_opt_data/night --cfg cfg.json --name best --eval
-  # controls: --control rewire | shuffle_ef | shuffle_labels
+  # controls: --control rewire | shuffle_ef | shuffle_labels (label sequences of other runs; keeps the label-vs-round
+  #           prior, so a model with memory still learns the clock) | shuffle_rows (labels permuted across snapshots)
 
 Config keys (defaults in DEFAULT): model (see model.STGNN) + training (epochs, lr, wd, batch_runs, pos_weight,
 focal_gamma, w_aux, w_risk, w_node, edge_drop, feat_noise, swa_last, swa, swa_lr, seeds, feat).
@@ -133,6 +134,11 @@ def fit_models(data_path, cfg, train_runs_idx, seed=0, control=None, verbose=Fal
                     lb = D.batch([crop_run(tr[perm_lab[j]], k) for j, k in zip(bi, ks)])
                     for k in ("y3", "y5", "yrel3", "risk"):
                         b[k] = lb[k]
+                    b["nlab"] = torch.full_like(b["nlab"], float("nan"))
+                if control == "shuffle_rows":   # strict control: labels permuted across all snapshots of the batch
+                    pr = torch.randperm(len(b["y3"]), generator=gen)
+                    for k in ("y3", "y5", "yrel3", "risk"):
+                        b[k] = b[k][pr]
                     b["nlab"] = torch.full_like(b["nlab"], float("nan"))
                 b = to_dev(b, dev)
                 og, on, _ = model(b)
@@ -282,7 +288,7 @@ def main():
     ap.add_argument("--cv", default=None, help="all | id | id0 | lodo | id0+lodo")
     ap.add_argument("--eval", action="store_true", help="train on all night_train, predict every snapshot of --data")
     ap.add_argument("--train-data", default=None, help="(eval) training data dir if --data is a new batch")
-    ap.add_argument("--control", default=None, choices=[None, "rewire", "shuffle_ef", "shuffle_labels"])
+    ap.add_argument("--control", default=None, choices=[None, "rewire", "shuffle_ef", "shuffle_labels", "shuffle_rows"])
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out-dir", default=os.path.join(HERE, "preds"))
