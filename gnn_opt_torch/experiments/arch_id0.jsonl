@@ -1,0 +1,12 @@
+{"name": "a_rgine_ggru__id0", "cfg": {"epochs": 30}, "cv": "id0"}
+{"name": "a_gine_ggru__id0", "cfg": {"epochs": 30, "conv": "gine"}, "cv": "id0"}
+{"name": "a_gatv2_ggru__id0", "cfg": {"epochs": 30, "conv": "gatv2"}, "cv": "id0"}
+{"name": "a_tf_ggru__id0", "cfg": {"epochs": 30, "conv": "transformer"}, "cv": "id0"}
+{"name": "a_rgine_notemp__id0", "cfg": {"epochs": 30, "gtemp": "none"}, "cv": "id0"}
+{"name": "a_rgine_gconv3__id0", "cfg": {"epochs": 30, "gtemp": "conv3"}, "cv": "id0"}
+{"name": "a_rgine_ngru__id0", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none"}, "cv": "id0"}
+{"name": "a_rgine_ngru_ggru__id0", "cfg": {"epochs": 30, "tmem": "gru"}, "cv": "id0"}
+{"name": "a_rgine_nconv5_gconv5__id0", "cfg": {"epochs": 30, "tmem": "conv5", "gtemp": "conv5"}, "cv": "id0"}
+{"name": "a_rgine_novn_norev__id0", "cfg": {"epochs": 30, "vn": false, "reverse": false}, "cv": "id0"}
+{"name": "a_rgine_noedgero__id0", "cfg": {"epochs": 30, "edge_readout": false, "edge_update": false}, "cv": "id0"}
+{"name": "a_rgine_small__id0", "cfg": {"epochs": 30, "hid": 32, "layers": 2}, "cv": "id0"}

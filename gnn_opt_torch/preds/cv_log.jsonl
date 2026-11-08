@@ -1,0 +1,1 @@
+{"id_auroc": 0.8632365905317992, "id_auprc": 0.2639754742175617, "name": "smoke_default", "cv": "id0", "control": null, "wall_s": 590, "cpu_s": 1515, "cfg": {"epochs": 30}}
