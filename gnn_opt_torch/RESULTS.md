@@ -240,8 +240,86 @@ because it also works on single held-out files.
 `sim_dataset/secrets.json` does not exist on this machine, so the optional Haiku zero-shot baseline was not run
 (another local session works on LLM communication-monitor baselines).
 
+## Step 9 (cloud session): node-GRU final model and the test look
+**Final model = `cloud_final`** (the "obvious next step" of step 4): GNN = node-level GRU memory only
+(`tmem=gru, gtemp=none`, rgine, edge readout on, 30 epochs) with judge-swap augmentation (`judge_aug=0.5`: a batch
+uses DeepSeek-only or Haiku-only jury features with p = 0.5), **5 seeds** x snapshot ensemble of the last 8 epochs,
+trained on all 128 night_train runs (`final.py`, `models/cloud_final_gnn.pt`); hybrid = logit blend 0.5 with
+hgb_bag+graph+mem (refit on night_train). Chosen on CV only. CV proxy (the 5-seed CV was not run, time): the 4-run
+node-GRU ensemble `e_ngru_4runs` = select 0.871 alone, 0.884 blended (step 4 note); these files back the 5 %-FPR
+thresholds (`preds/cv/cloud_final*.csv`).
+
+Why node-level memory (18-fold CV, single seeds; `preds/cv_log.jsonl`): graph-level GRU models score 0.80-0.82
+(`b_gine_ggru` 0.804, `b_tf_ggru` 0.800, `b_rgine_ggru` 0.823) and all fail on hold_K4 (0.70-0.76): on hold_K4 the
+graph-GRU GNN is fine in rounds 8-20 (within-bin AUROC 0.79-0.82) and breaks after round 20 (0.61), i.e. late-episode
+team dynamics learned on K2 do not transfer. Node-level GRU (`b_rgine_ngru`, second seed `c_ngru_seed1`): 0.845 /
+0.828, hold_K4 0.816 / 0.827. Variants of it are all within seed noise (+-0.02 select): judge-aug 0.847, no edge
+readout 0.846, stronger regularisation 0.819, random start-crop 8 rounds 0.757 (hurts; also no fix for graph GRU:
+`c_gine_crop8` 0.794, hold_K4 0.685). Seed ensembling is what helps: 2 seeds 0.857, 4 runs 0.871.
+
+night_val (cloud look 1, `LOOKS.md`; 12 positive rows): hybrid 0.934 [0.875, 0.975], GNN 0.919, hgb_bag+graph+mem
+0.916, edge_monitor_top3 0.910; no difference significant.
+
+**Test look 1 of 2** (`test_look.sh`, `results/test_look1/`): night_test_id, night_test_ood_family (metricore,
+never in training), night_test_ood_seed (injection via tool_output, never in training), night_branch (prefix rows
+counted once). 2338 labelled rows, 156 positive. CIs = bootstrap over configs. Threshold for R@5%FPR from CV.
+
+| model | pooled AUROC [95% CI] | AUPRC | tAUROC | R@5%FPR | test_id | ood_family | ood_seed | branch | risk 3-7 | MAE count |
+|---|---|---|---|---|---|---|---|---|---|---|
+| hybrid (cloud_final) | 0.832 [0.782, 0.885] | 0.301 | 0.752 | 0.372 | 0.922 | 0.823 | 0.785 | 0.728 | 0.635 | 0.94 |
+| GNN, node-GRU 5 seeds | 0.817 [0.756, 0.877] | 0.309 | 0.739 | 0.417 | 0.921 | 0.794 | 0.744 | 0.731 | 0.630 | 0.94 |
+| hgb_bag+graph+mem | 0.811 [0.760, 0.861] | 0.252 | 0.718 | 0.250 | 0.895 | 0.807 | 0.780 | 0.699 | 0.612 | - |
+| edge_monitor_top3 | 0.800 [0.757, 0.847] | 0.211 | 0.682 | 0.288 | 0.837 | 0.812 | 0.780 | 0.728 | 0.596 | - |
+
+Bootstrap differences (pooled): hybrid - GNN +0.016 [-0.007, +0.041]; hybrid - hgb_bag+graph+mem +0.021 [-0.006,
++0.051] (93 % of resamples > 0); hybrid - edge monitor +0.032 [-0.011, +0.078].
+
+Lead time (test, alarm = score above the CV 5 %-FPR threshold):
+
+| model | tipped runs alarmed before tip | median lead | untipped runs with a false alarm |
+|---|---|---|---|
+| hybrid (cloud_final) | 54 % | 5.5 | 31 % |
+| GNN, node-GRU 5 seeds | 54 % | 5.0 | 29 % |
+| hgb_bag+graph+mem | 52 % | 5.0 | 29 % |
+| edge_monitor_top3 | 56 % | 4.0 | 29 % |
+
+Judge swap (frozen models applied to single-judge features of the test runs; `jury_disagreement` is 0 there):
+
+| model | merged jury | DeepSeek only | Haiku only |
+|---|---|---|---|
+| hybrid (cloud_final) | 0.832 | 0.825 | 0.809 |
+| GNN, node-GRU 5 seeds | 0.817 | 0.769 | 0.778 |
+| hgb_bag+graph+mem | 0.811 | 0.832 | 0.793 |
+
+Robustness targets (same frozen y3 models, pooled test AUROC):
+
+| model | y3 (D=3) | y5 (D=5) | yrel3 (tipped_rel) |
+|---|---|---|---|
+| hybrid (cloud_final) | 0.832 | 0.821 | 0.824 |
+| GNN, node-GRU 5 seeds | 0.817 | 0.809 | 0.804 |
+| hgb_bag+graph+mem | 0.811 | 0.795 | 0.803 |
+| edge_monitor_top3 | 0.800 | 0.803 | 0.790 |
+
+Branch-arm divergence (night_branch, 6 tipped-vs-untipped arm pairs of the same config): after the branch point the
+arm that later tips is **not** scored higher (hybrid: 1 / 6 pairs higher, mean difference -0.01; GBM 2 / 6; edge
+monitor 3 / 6). Pre-branch difference 0 by construction.
+
+**Reading.**
+- In distribution (night_test_id) the GNN works: 0.92 AUROC vs 0.90 GBM / 0.84 edge monitor; recall at 5 % FPR
+  0.72 (GNN) vs 0.41 (GBM).
+- Out of distribution all monitors fall to 0.74-0.82. The hybrid is best or tied on every split, but its margin
+  over the GBM (+0.02 pooled) is not significant.
+- night_test_ood_seed (injection via tool output) is nearly invisible within round bins for every monitor (tAUROC
+  0.54-0.56): the trigger is not in the communication, so a communication monitor only sees its consequences.
+- Counterfactual branch arms are not separated after the branch point: the monitors detect tipping once it shows in
+  communication, not the intervention itself (6 pairs only).
+- The GNN alone is more judge-sensitive than the GBM (-0.04 to -0.05 with one judge vs -0.02 / +0.02); the hybrid
+  stays at 0.81-0.83.
+- The ranking is the same for D = 5 and tipped_rel.
+
 ## Bookkeeping
-- night_val looks: **1** (step 7). Test splits (night_test_*, night_branch): **0** looks.
+- night_val looks: **2** in total (Mac step 7, cloud step 9). Test splits (night_test_*, night_branch): **1** look
+  (cloud, step 9, all test tables in one scripted run; nothing was tuned afterwards). See `LOOKS.md`.
 - evaluate.py: no bug found, no change. Harness addition: `gnn_opt/judge_swap.py` (new file, separate commit).
 - Mac logs: `preds/screen_log.jsonl` (step 2), `preds/search_log.jsonl` (rs1), `preds/mac_log.jsonl` (steps 3-5).
 - Another (cloud) session worked on the same branch at the same time (a_/b_/c_/h_ files, `STATUS.md`, its own
@@ -255,6 +333,8 @@ because it also works on single held-out files.
   augmentation was implemented (single-judge caches for both judges) but not evaluated here; controls and
   ablations on 5 folds (id0) only.
 - The GNN's gain is from temporal memory over jury edge/node features, not from graph topology (rewire control).
-- The shipped final model is not the best GNN on the branch (see the note in step 4: node-GRU-only, 0.871).
+- Two final models exist: `models/final.pt` (Mac, step 7) and `models/cloud_final_gnn.pt` (cloud, step 9, the
+  node-GRU ensemble; the one evaluated on test). Use the cloud one.
+- The LLM transcript monitor (`llm_monitor.py`) is written but was not run: no Anthropic API key in either session.
 - night_val is tiny and disagrees with the CV ranking on AUROC; the CV conclusion (blend > both) should be checked
   on the test splits.
