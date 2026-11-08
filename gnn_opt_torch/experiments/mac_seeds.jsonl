@@ -1,0 +1,2 @@
+{"name": "m_noer_swa_s1", "cfg": {"epochs": 30, "edge_readout": false, "swa": 1}, "cv": "all", "seed": 100}
+{"name": "m_tmemgru_s1", "cfg": {"epochs": 30, "edge_readout": false, "gtemp": "none", "tmem": "gru"}, "cv": "all", "seed": 100}

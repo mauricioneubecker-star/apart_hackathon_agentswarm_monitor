@@ -103,10 +103,9 @@ def main():
     log = os.path.join(HERE, "preds", "search_log.jsonl")
     cvd = os.path.join(HERE, "preds", "cv")
     cands = [{"name": f"{a.tag}_{i}", "cfg": sample(rng, SPACES[a.space], base)} for i in range(a.n)]
-    if a.extra:
-        for j, l in enumerate(x for x in open(a.extra) if x.strip()):
-            e = json.loads(l)
-            cands.append({"name": e.get("name", f"{a.tag}_x{j}"), "cfg": e["cfg"]})
+    if a.extra:   # hand-picked candidates first in the queue
+        ex = [json.loads(x) for x in open(a.extra) if x.strip()]
+        cands = [{"name": e.get("name", f"{a.tag}_x{j}"), "cfg": e["cfg"]} for j, e in enumerate(ex)] + cands
     kw = dict(workers=a.workers, data=a.data, log=log, mps=a.mps)
     # stage 1: id0 + LODO
     r1 = run_queue([{**c, "name": c["name"] + "__s1"} for c in cands], "id0+lodo", **kw)
