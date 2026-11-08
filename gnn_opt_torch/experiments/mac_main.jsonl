@@ -1,0 +1,16 @@
+{"name": "m_noer__s1", "cfg": {"epochs": 30, "edge_readout": false}, "cv": "id0+lodo"}
+{"name": "m_noer_crop10__s1", "cfg": {"epochs": 30, "edge_readout": false, "crop": 10}, "cv": "id0+lodo"}
+{"name": "m_noer_swa__s1", "cfg": {"epochs": 30, "edge_readout": false, "swa": 1}, "cv": "id0+lodo"}
+{"name": "m_tmemgru__s1", "cfg": {"epochs": 30, "edge_readout": false, "gtemp": "none", "tmem": "gru"}, "cv": "id0+lodo"}
+{"name": "m_noer__id1", "cfg": {"epochs": 30, "edge_readout": false}, "cv": "id1"}
+{"name": "m_noer_crop10__id1", "cfg": {"epochs": 30, "edge_readout": false, "crop": 10}, "cv": "id1"}
+{"name": "m_noer_swa__id1", "cfg": {"epochs": 30, "edge_readout": false, "swa": 1}, "cv": "id1"}
+{"name": "m_tmemgru__id1", "cfg": {"epochs": 30, "edge_readout": false, "gtemp": "none", "tmem": "gru"}, "cv": "id1"}
+{"name": "m_ctl_shuffle_labels__id0", "cfg": {"epochs": 30, "edge_readout": false}, "cv": "id0", "control": "shuffle_labels"}
+{"name": "m_ctl_rewire__id0", "cfg": {"epochs": 30, "edge_readout": false}, "cv": "id0", "control": "rewire"}
+{"name": "m_ctl_shuffle_ef__id0", "cfg": {"epochs": 30, "edge_readout": false}, "cv": "id0", "control": "shuffle_ef"}
+{"name": "m_abl_clock__id0", "cfg": {"epochs": 30, "edge_readout": false, "clock": true}, "cv": "id0"}
+{"name": "m_abl_lex__id0", "cfg": {"epochs": 30, "edge_readout": false, "feat": "+lex"}, "cv": "id0"}
+{"name": "m_abl_S0__id0", "cfg": {"epochs": 30, "edge_readout": false, "feat": "S0"}, "cv": "id0"}
+{"name": "m_abl_S1__id0", "cfg": {"epochs": 30, "edge_readout": false, "feat": "S1"}, "cv": "id0"}
+{"name": "m_abl_S2__id0", "cfg": {"epochs": 30, "edge_readout": false, "feat": "S2"}, "cv": "id0"}

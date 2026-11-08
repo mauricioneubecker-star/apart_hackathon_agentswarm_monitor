@@ -51,7 +51,7 @@ def run_queue(specs, cv="all", workers=12, data=None, force=False, log=None, out
     data = data or os.path.join(T.REPO, "gnn_opt_data", "night")
     out_dir = out_dir or os.path.join(HERE, "preds", "cv")
     os.makedirs(out_dir, exist_ok=True)
-    pending, parts, t0, results = {}, {}, {}, {}
+    pending, parts, t0, results, specs_by_name = {}, {}, {}, {}, {}
     jobs = []
     for sp in specs:
         name = sp["name"]
@@ -63,9 +63,18 @@ def run_queue(specs, cv="all", workers=12, data=None, force=False, log=None, out
         D = T.get_data(dd, c["feat"], c["clock"])
         folds = T.cv_jobs(D, sp.get("cv", cv))
         pending[name], parts[name], t0[name] = len(folds), [], time.time()
+        pdir = os.path.join(out_dir, "parts", name)
         for k, (fname, tr, te) in enumerate(folds):
+            pf = os.path.join(pdir, f"{fname}.csv")
+            if not force and os.path.exists(pf):        # fold finished in an interrupted earlier run
+                parts[name].append(pd.read_csv(pf))
+                pending[name] -= 1
+                continue
             jobs.append((name, (dd, sp["cfg"], tr, te, sp.get("seed", 0) + k, sp.get("control"), fname), sp))
+        specs_by_name[name] = sp
     print(f"{len(jobs)} jobs, {len(pending)} configs", flush=True)
+    for name in [n for n, v in pending.items() if v == 0]:
+        _finish(name, specs_by_name[name], parts[name], data, out_dir, cv, t0[name], log, results)
     if not jobs:
         return results
     ctx = mp.get_context("spawn")
@@ -75,25 +84,31 @@ def run_queue(specs, cv="all", workers=12, data=None, force=False, log=None, out
         for f in as_completed(futs):
             name, args, sp = futs[f]
             df, sec = f.result()
+            pdir = os.path.join(out_dir, "parts", name)
+            os.makedirs(pdir, exist_ok=True)
+            df.to_csv(os.path.join(pdir, f"{args[-1]}.csv"), index=False)
             parts[name].append(df)
             pending[name] -= 1
             if pending[name] == 0:
-                P = pd.concat(parts[name], ignore_index=True)
-                dd = sp.get("data", data)
-                S = T.get_data(dd, "headline", False).S
-                keep = S[(S.split == T.TRAIN_SPLIT) & (S["eval"] == 1) & S.y3.notna()][["run", "round"]]
-                P = P.merge(keep, on=["run", "round"], how="inner")
-                P.to_csv(os.path.join(out_dir, f"{name}.csv"), index=False)
-                cvk = sp.get("cv", cv)
-                s = summarize_cv(dd, P, cvk)
-                s.update({"name": name, "cv": cvk, "control": sp.get("control"),
-                          "wall_s": round(time.time() - t0[name])})
-                results[name] = s
-                print(json.dumps({k: (round(v, 4) if isinstance(v, float) else v) for k, v in s.items()}), flush=True)
-                if log:
-                    with open(log, "a") as fh:
-                        fh.write(json.dumps({**s, "cfg": sp["cfg"], "seed": sp.get("seed", 0)}) + "\n")
+                _finish(name, sp, parts[name], data, out_dir, cv, t0[name], log, results)
     return results
+
+
+def _finish(name, sp, parts, data, out_dir, cv, t0, log, results):
+    P = pd.concat(parts, ignore_index=True)
+    dd = sp.get("data", data)
+    S = T.get_data(dd, "headline", False).S
+    keep = S[(S.split == T.TRAIN_SPLIT) & (S["eval"] == 1) & S.y3.notna()][["run", "round"]]
+    P = P.merge(keep, on=["run", "round"], how="inner")
+    P.to_csv(os.path.join(out_dir, f"{name}.csv"), index=False)
+    cvk = sp.get("cv", cv)
+    s = summarize_cv(dd, P, cvk)
+    s.update({"name": name, "cv": cvk, "control": sp.get("control"), "wall_s": round(time.time() - t0)})
+    results[name] = s
+    print(json.dumps({k: (round(v, 4) if isinstance(v, float) else v) for k, v in s.items()}), flush=True)
+    if log:
+        with open(log, "a") as fh:
+            fh.write(json.dumps({**s, "cfg": sp["cfg"], "seed": sp.get("seed", 0)}) + "\n")
 
 
 def main():
