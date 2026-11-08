@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Final hybrid monitor: GNN seed ensemble (trained on all of night_train) + HGB (hgb_bag+graph+mem), logit blend.
 
-  python3 gnn_opt_torch/final.py --name final --cfg '{"tmem":"gru","gtemp":"none","epochs":30}' --seeds 5 \
+  python3 gnn_opt_torch/final.py --name cloud_final --cfg '{"tmem":"gru","gtemp":"none","epochs":30}' --seeds 5 \
       --gnn-cv preds/cv/b_rgine_ngru.csv --w-gnn 0.5
 Writes
   models/<name>_gnn.pt                  GNN ensemble (cfg, states, training normalisation)
@@ -47,7 +47,7 @@ def hgb_preds(data, out_csv, apply_dir=None):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--data", default=os.path.join(REPO, "gnn_opt_data", "night"))
-    ap.add_argument("--name", default="final")
+    ap.add_argument("--name", default="cloud_final")
     ap.add_argument("--cfg", required=True)
     ap.add_argument("--seeds", type=int, default=5)
     ap.add_argument("--gnn-cv", required=True, help="CV file of the same GNN cfg (for the hybrid CV file)")

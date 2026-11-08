@@ -1,4 +1,9 @@
-# Held-out looks (counted)
+# Held-out looks (counted), cloud session
+
+Models in these looks: `hybrid` = preds/eval/cloud_final.csv (5-seed node-GRU GNN with judge-swap augmentation,
+models/cloud_final_gnn.pt, logit blend 0.5 with hgb_bag+graph+mem); `gnn5` = preds/eval/cloud_final_gnn.csv.
+(The Mac session's own final model is models/final.pt / preds/*/final.csv; it made 1 separate night_val look and
+no test look, see STATUS.md. Team total: night_val 2 looks, test 1 look.)
 
 | # | when (UTC) | split(s) | what | decision taken from it |
 |---|---|---|---|---|

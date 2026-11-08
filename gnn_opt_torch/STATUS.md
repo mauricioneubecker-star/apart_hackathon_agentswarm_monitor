@@ -30,3 +30,10 @@ Local Mac session (12 CPU: 8P+4E, MPS), worktree of gnn-opt-torch, started 2026-
 - [done] m_* candidates on 18 folds, final = 2 cfg x 2 seeds (0.839), blend with hgb_bag+graph+mem (0.875),
   controls/ablations on id0, models/final.pt, predict.py, RESULTS.md (2026-11-08 ~16:45 UTC)
 - night_val looks (Mac): 1 (final + blend). Test-split looks: 0.
+
+Cloud session, 17:30 UTC:
+- [done] final model = models/cloud_final_gnn.pt (node-GRU + judge_aug, 5 seeds) + logit blend 0.5 with HGB ->
+  preds/{cv,eval}/cloud_final*.csv. NOTE: my final.py first wrote preds/{cv,eval}/final.csv and overwrote the Mac's
+  files of the same name (pushed 16:53 UTC); restored from f70a6f6 and my files renamed to cloud_final* (17:30 UTC).
+- [done] night_val look 1 (cloud), TEST LOOK 1 of 2: results/test_look1/ (see LOOKS.md). No further test looks planned.
+- [running] f_* ablations (S0/S1/S2, +lex, shuffle_ef, rewire) and j_* judge-swap CV on the node-GRU base.
