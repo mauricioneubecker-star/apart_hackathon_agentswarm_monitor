@@ -317,6 +317,12 @@ monitor 3 / 6). Pre-branch difference 0 by construction.
   stays at 0.81-0.83.
 - The ranking is the same for D = 5 and tipped_rel.
 
+One command for any new batch (build dataset -> GNN ensemble -> GBM refit -> blend -> evaluate):
+`python3 gnn_opt_torch/predict.py --runs sim_dataset/runs_<new> --model gnn_opt_torch/models/cloud_final_gnn.pt`.
+Caveat: to save space, `cloud_final_gnn.pt` keeps only the last 3 of the 8 snapshot states per seed (15 states),
+whereas the reported val/test predictions average all 8. Checked on 120 night_val snapshots (2-config pipeline check
+via predict.py): Spearman 0.99+, max |score diff| 0.05 (GNN) / 0.02 (hybrid). `final.py` now saves all states.
+
 ## Bookkeeping
 - night_val looks: **2** in total (Mac step 7, cloud step 9). Test splits (night_test_*, night_branch): **1** look
   (cloud, step 9, all test tables in one scripted run; nothing was tuned afterwards). See `LOOKS.md`.

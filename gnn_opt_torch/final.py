@@ -61,9 +61,9 @@ def main():
     G, states, norm = T.fit_models(a.data, cfg, tr, a.seed, keep_states=True, pred_runs_idx=list(range(len(D.runs))))
     os.makedirs(os.path.join(HERE, "models"), exist_ok=True)
     os.makedirs(os.path.join(HERE, "preds", "eval"), exist_ok=True)
-    # keep the last 3 snapshot states per seed (file size); predictions above use all swa_last snapshots
-    k = {**T.DEFAULT, **cfg}["swa_last"]
-    keep = [st for i, st in enumerate(states) if i % k >= k - 3]
+    # keep ALL snapshot states so that predict.py reproduces preds/eval exactly (cloud_final_gnn.pt of 2026-11-08
+    # was saved with only the last 3 of 8 snapshots per seed: max |score diff| 0.05 vs the evaluated predictions)
+    keep = states
     torch.save({"cfg": {**T.DEFAULT, **cfg}, "states": keep, "norm": norm, "w_gnn": a.w_gnn},
                os.path.join(HERE, "models", f"{a.name}_gnn.pt"))
     G.to_csv(os.path.join(HERE, "preds", "eval", f"{a.name}_gnn.csv"), index=False)
