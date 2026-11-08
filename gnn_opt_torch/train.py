@@ -38,7 +38,7 @@ DEFAULT = dict(hid=64, layers=3, conv="rgine", reverse=True, vn=True, tmem="none
                heads=4, aggr=["sum", "mean", "max"], edge_readout=True, att_pool=True, edge_update=True,
                epochs=40, lr=2e-3, wd=1e-4, batch_runs=8, pos_weight=3.0, focal_gamma=0.0, w_aux=0.5, w_risk=0.2,
                w_node=0.5, edge_drop=0.1, feat_noise=0.05, swa_last=8, seeds=1, feat="headline", clock=False,
-               label_smooth=0.0)
+               label_smooth=0.0, judge_aug=0.0)
 
 _D = {}
 
@@ -66,14 +66,19 @@ def bce(logit, y, pw=1.0, gamma=0.0, ls=0.0):
     return (w * l).sum() / w.sum()
 
 
-def fit_predict(data_path, cfg, train_runs_idx, pred_runs_idx, seed=0, control=None, verbose=False):
+def fit_models(data_path, cfg, train_runs_idx, seed=0, control=None, verbose=False, keep_states=False,
+               pred_runs_idx=None):
+    """Train cfg['seeds'] models; returns (snapshot-ensembled predictions for pred_runs_idx, saved states)."""
     torch.set_num_threads(1)
     c = {**DEFAULT, **cfg}
     D = get_data(data_path, c["feat"], c["clock"])
+    if c["judge_aug"] > 0 and not D.alt:
+        for j in ("night_ds", "night_hk"):
+            D.add_judge(os.path.join(os.path.dirname(os.path.normpath(data_path)), j))
     tr = [D.runs[i] for i in train_runs_idx]
-    pr = [D.runs[i] for i in pred_runs_idx]
     D.fit_norm(tr)
-    preds = []
+    pb = D.batch([D.runs[i] for i in pred_runs_idx]) if pred_runs_idx is not None else None
+    preds, states = [], []
     for s in range(c["seeds"]):
         sd = seed * 1000 + s
         torch.manual_seed(sd)
@@ -83,24 +88,20 @@ def fit_predict(data_path, cfg, train_runs_idx, pred_runs_idx, seed=0, control=N
         opt = torch.optim.AdamW(model.parameters(), lr=c["lr"], weight_decay=c["wd"])
         steps = c["epochs"] * int(np.ceil(len(tr) / c["batch_runs"]))
         sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=c["lr"], total_steps=steps, pct_start=0.15)
-        # shuffled-labels control: permute y3/y5/yrel3 sequences between training runs (keeps per-run structure)
-        perm_lab = None
-        if control == "shuffle_labels":
-            perm_lab = np.random.RandomState(sd).permutation(len(tr))
-        pb = D.batch(pr)
-        acc = None
-        n_acc = 0
+        # shuffled-labels control: training runs get the label sequences of other training runs
+        perm_lab = np.random.RandomState(sd).permutation(len(tr)) if control == "shuffle_labels" else None
+        acc, n_acc = None, 0
         for ep in range(c["epochs"]):
             model.train()
             order = np.random.permutation(len(tr))
             tot = 0.0
             for i in range(0, len(tr), c["batch_runs"]):
                 bi = order[i:i + c["batch_runs"]]
+                jd = int(np.random.randint(len(D.alt))) if (D.alt and np.random.rand() < c["judge_aug"]) else -1
                 b = D.batch([tr[j] for j in bi], gen, c["edge_drop"], c["feat_noise"],
-                            rewire=(control == "rewire"), shuffle_ef=(control == "shuffle_ef"))
+                            rewire=(control == "rewire"), shuffle_ef=(control == "shuffle_ef"), judge=jd)
                 if perm_lab is not None:
                     lb = D.batch([tr[perm_lab[j]] for j in bi])
-                    T1, T2 = b["seq"].shape[1], lb["seq"].shape[1]
                     for k in ("y3", "y5", "yrel3", "risk"):
                         b[k] = lb[k]
                     b["nlab"] = torch.full_like(b["nlab"], float("nan"))
@@ -120,19 +121,52 @@ def fit_predict(data_path, cfg, train_runs_idx, pred_runs_idx, seed=0, control=N
                 sched.step()
                 tot += float(loss)
             if ep >= c["epochs"] - c["swa_last"]:
-                model.eval()
-                with torch.no_grad():
-                    og, _, _ = model(pb)
-                p = torch.stack([torch.sigmoid(og[:, 0]), og[:, 3].exp()], 1)
-                acc = p if acc is None else acc + p
-                n_acc += 1
+                if keep_states:
+                    states.append({k: v.detach().clone() for k, v in model.state_dict().items()})
+                if pb is not None:
+                    model.eval()
+                    with torch.no_grad():
+                        og, _, _ = model(pb)
+                    p = torch.stack([torch.sigmoid(og[:, 0]), og[:, 3].exp()], 1)
+                    acc = p if acc is None else acc + p
+                    n_acc += 1
             if verbose:
                 print(f"  seed {s} ep {ep} loss {tot:.3f}", flush=True)
-        preds.append(acc / n_acc)
-    P = torch.stack(preds).mean(0).numpy()
+        if pb is not None:
+            preds.append(acc / n_acc)
+    out = None
+    if pb is not None:
+        P = torch.stack(preds).mean(0).numpy()
+        snaps = pb["snaps"].numpy()
+        S = D.S
+        out = pd.DataFrame({"run": S.run.values[snaps], "round": S["round"].values[snaps], "score": P[:, 0],
+                            "count": P[:, 1]})
+    norm = {"xm": D.xm, "xs": D.xs, "em": D.em_, "es": D.es_, "e_names": D.e_names, "n_names": D.n_names}
+    return out, states, norm
+
+
+def fit_predict(data_path, cfg, train_runs_idx, pred_runs_idx, seed=0, control=None, verbose=False):
+    return fit_models(data_path, cfg, train_runs_idx, seed, control, verbose, pred_runs_idx=pred_runs_idx)[0]
+
+
+def predict_states(D, cfg, states, norm, runs_idx=None):
+    """Apply saved snapshot/seed ensemble to Data D (normalisation from training)."""
+    c = {**DEFAULT, **cfg}
+    assert D.e_names == norm["e_names"] and D.n_names == norm["n_names"], "feature columns differ"
+    D.xm, D.xs, D.em_, D.es_ = norm["xm"], norm["xs"], norm["em"], norm["es"]
+    runs_idx = list(range(len(D.runs))) if runs_idx is None else runs_idx
+    pb = D.batch([D.runs[i] for i in runs_idx])
+    model = STGNN(D.d_node, D.d_edge, **c)
+    acc = 0
+    for st in states:
+        model.load_state_dict(st)
+        model.eval()
+        with torch.no_grad():
+            og, _, _ = model(pb)
+        acc = acc + torch.stack([torch.sigmoid(og[:, 0]), og[:, 3].exp()], 1)
+    P = (acc / len(states)).numpy()
     snaps = pb["snaps"].numpy()
-    S = D.S
-    return pd.DataFrame({"run": S.run.values[snaps], "round": S["round"].values[snaps], "score": P[:, 0],
+    return pd.DataFrame({"run": D.S.run.values[snaps], "round": D.S["round"].values[snaps], "score": P[:, 0],
                          "count": P[:, 1]})
 
 
@@ -224,10 +258,12 @@ def main():
         c = {**DEFAULT, **cfg}
         Dtr = get_data(td, c["feat"], c["clock"])
         tr = [i for i, r in enumerate(Dtr.runs) if r["split"] == TRAIN_SPLIT]
-        if td == a.data:
-            df = fit_predict(a.data, cfg, tr, list(range(len(Dtr.runs))), a.seed, a.control)
-        else:
-            raise SystemExit("use predict.py for new batches")
+        df, states, norm = fit_models(td, cfg, tr, a.seed, a.control, keep_states=True,
+                                      pred_runs_idx=list(range(len(Dtr.runs))))
+        os.makedirs(os.path.join(HERE, "models"), exist_ok=True)
+        if a.control is None:
+            torch.save({"cfg": {**DEFAULT, **cfg}, "states": states, "norm": norm},
+                       os.path.join(HERE, "models", f"{a.name}.pt"))
         os.makedirs(os.path.join(a.out_dir, "eval"), exist_ok=True)
         df.to_csv(os.path.join(a.out_dir, "eval", f"{a.name}.csv"), index=False)
         print("wrote", os.path.join(a.out_dir, "eval", f"{a.name}.csv"), len(df))

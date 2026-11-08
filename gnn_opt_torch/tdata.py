@@ -50,9 +50,28 @@ class Data:
         schema = json.load(open(os.path.join(data_dir, "schema.json")))
         z = np.load(os.path.join(data_dir, "graphs.npz"), allow_pickle=False)
         self.S, self.schema = S, schema
-        ecols, ncols = list(z["ecols"]), list(z["ncols"])
         e_use, n_use = feature_sets(schema, feat_mode)
         self.e_names, self.n_names = e_use, n_use
+        self.feat_mode = feat_mode
+        X, EF = self._feats(z, e_use, n_use, clock, S)
+        self.alt = []                                  # judge-swap feature copies (same graphs, other judge)
+        # relation type from the raw volume columns (always available in the npz)
+        ecols = list(z["ecols"])
+        dv = z["EF"][:, ecols.index("direct_volume")] > 0
+        bv = z["EF"][:, ecols.index("bcast_volume")] > 0
+        rel = np.where(dv & bv, 2, np.where(dv, 0, 1)).astype(np.int64)
+        self.n_snap = len(S)
+        self.node_snap = z["node_snap"].astype(np.int64)
+        self.node_ext = z["node_ext"].astype(np.float32)
+        self.node_lab = torch.from_numpy(z["node_lab"].astype(np.float32))  # [:,0] violated by t, [:,1] within D=3
+        self.clock = clock
+        self.X = torch.from_numpy(X)
+        self.EF = torch.from_numpy(EF)
+        self._init_rest(z, S, rel)
+
+    @staticmethod
+    def _feats(z, e_use, n_use, clock, S):
+        ecols, ncols = list(z["ecols"]), list(z["ncols"])
         EF = z["EF"][:, [ecols.index(c) for c in e_use]].astype(np.float32)
         X = z["X"][:, [ncols.index(c) for c in n_use]].astype(np.float32)
         ef_flags = [np.isnan(EF[:, e_use.index(c)]).astype(np.float32) for c in NAN_FLAG_E if c in e_use]
@@ -63,19 +82,18 @@ class Data:
             EF = np.concatenate([EF, np.stack(ef_flags, 1)], 1)
         if nf_flags:
             X = np.concatenate([X, np.stack(nf_flags, 1)], 1)
-        # relation type from the raw volume columns (always available in the npz)
-        dv = z["EF"][:, ecols.index("direct_volume")] > 0
-        bv = z["EF"][:, ecols.index("bcast_volume")] > 0
-        rel = np.where(dv & bv, 2, np.where(dv, 0, 1)).astype(np.int64)
-        self.n_snap = len(S)
-        self.node_snap = z["node_snap"].astype(np.int64)
-        self.node_ext = z["node_ext"].astype(np.float32)
-        self.node_lab = torch.from_numpy(z["node_lab"].astype(np.float32))  # [:,0] violated by t, [:,1] violates within D=3
-        self.clock = clock
         if clock:                                                  # ablation only: round index as a node feature
-            X = np.concatenate([X, (S.t.values[self.node_snap] / 30.0)[:, None].astype(np.float32)], 1)
-        self.X = torch.from_numpy(X)
-        self.EF = torch.from_numpy(EF.astype(np.float32))
+            X = np.concatenate([X, (S.t.values[z["node_snap"]] / 30.0)[:, None].astype(np.float32)], 1)
+        return X, EF.astype(np.float32)
+
+    def add_judge(self, data_dir):
+        """Judge-swap augmentation: same snapshots / edges, features from a single-judge build."""
+        z = np.load(os.path.join(data_dir, "graphs.npz"), allow_pickle=False)
+        assert len(z["ES"]) == len(self.ES) and (z["ES"] == self.ES.numpy()).all()
+        X, EF = self._feats(z, self.e_names, self.n_names, self.clock, self.S)
+        self.alt.append((torch.from_numpy(X), torch.from_numpy(EF)))
+
+    def _init_rest(self, z, S, rel):
         self.ES = torch.from_numpy(z["ES"].astype(np.int64))
         self.ED = torch.from_numpy(z["ED"].astype(np.int64))
         self.REL = torch.from_numpy(rel)
@@ -116,7 +134,7 @@ class Data:
         self.em_, self.es_ = En.mean(0), En.std(0).clamp_min(1e-3)
 
     # ------------------------------------------------------------------ batching
-    def batch(self, runs, gen=None, edge_drop=0.0, feat_noise=0.0, rewire=False, shuffle_ef=False):
+    def batch(self, runs, gen=None, edge_drop=0.0, feat_noise=0.0, rewire=False, shuffle_ef=False, judge=-1):
         """Collate whole runs. Returns dict of tensors; graph index g = position of the snapshot in `snaps`."""
         snaps = np.concatenate([r["snaps"] for r in runs])
         node_rows = np.concatenate([np.arange(self.n0[s], self.n0[s] + self.nn_[s]) for s in snaps])
@@ -128,7 +146,8 @@ class Data:
         er = torch.from_numpy(edge_rows)
         src = torch.from_numpy(remap[self.ES[er].numpy()])
         dst = torch.from_numpy(remap[self.ED[er].numpy()])
-        ef = self.EF[er]
+        Xsrc, EFsrc = (self.X, self.EF) if judge < 0 else self.alt[judge]
+        ef = EFsrc[er]
         rel = self.REL[er]
         if rewire:      # control: random endpoints within the same snapshot (keeps edge features + counts)
             gs = torch.from_numpy(g_of_snap[self.edge_snap[edge_rows]])
@@ -144,7 +163,7 @@ class Data:
         if edge_drop > 0:
             keep = torch.rand(len(er), generator=gen) >= edge_drop
             src, dst, ef, rel = src[keep], dst[keep], ef[keep], rel[keep]
-        x = self.X[torch.from_numpy(node_rows)]
+        x = Xsrc[torch.from_numpy(node_rows)]
         x = (x - self.xm) / self.xs
         ef = (ef - self.em_) / self.es_
         if feat_noise > 0:
