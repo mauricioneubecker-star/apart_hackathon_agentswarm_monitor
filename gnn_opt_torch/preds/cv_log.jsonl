@@ -3,3 +3,4 @@
 {"id_auroc": 0.8841673822199325, "id_auprc": 0.2768194548680678, "name": "a_gine_ggru__id0", "cv": "id0", "control": null, "wall_s": 876, "cfg": {"epochs": 30, "conv": "gine"}}
 {"id_auroc": 0.8440780811723624, "id_auprc": 0.22654434495624223, "name": "a_gatv2_ggru__id0", "cv": "id0", "control": null, "wall_s": 1228, "cfg": {"epochs": 30, "conv": "gatv2"}}
 {"id_auroc": 0.8709874635067834, "id_auprc": 0.2712862984651174, "name": "a_tf_ggru__id0", "cv": "id0", "control": null, "wall_s": 1562, "cfg": {"epochs": 30, "conv": "transformer"}}
+{"id_auroc": 0.8000503749499113, "id_auprc": 0.1947975110963314, "name": "a_rgine_notemp__id0", "cv": "id0", "control": null, "wall_s": 2104, "cfg": {"epochs": 30, "gtemp": "none"}}
