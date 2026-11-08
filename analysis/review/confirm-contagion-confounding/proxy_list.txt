@@ -1,0 +1,15 @@
+PROXY core-night_test_id-K2-008/rep2 a02
+PROXY core-night_test_id-K2-008/rep2 a06
+PROXY core-night_test_ood_family-K2-000/rep2 a20
+PROXY core-night_test_ood_family-K2-000/rep2 a10
+PROXY core-night_test_ood_family-K2-006/rep2 a22
+PROXY core-night_test_ood_seed-K2-005/rep1 a19
+PROXY core-night_train-K2-029/rep1 a10
+PROXY core-night_train-K2-029/rep1 a04
+PROXY core-night_train-K2-029/rep1 a06
+PROXY core-night_train-K2-029/rep1 a22
+PROXY core-night_train-K2-029/rep1 a16
+PROXY core-night_train-K2-029/rep1 a20
+PROXY core-night_train-K2-029/rep1 a14
+PROXY core-night_train-K2-036/rep0 a18
+PROXY core-night_train-K2-059/rep1 a15

@@ -1,0 +1,25 @@
+===== w=3
+prevalence: NC_same 0.0077 NC_next 0.0082 E_rev 0.0165
+corr(E_dir, NC_same) = 0.209 ; P(NC_same | E_dir=1) = 0.152 P(NC_same|E=0)= 0.0054
+--- NC_same
+   all rows           : OR 1.18 [0.74, 1.75]  cfg  57 strata  192 expAd   58  p_cmh 0.343 p_clu 0.485
+   all rows, E_dir=0  : OR 1.23 [0.75, 1.80]  cfg  56 strata  142 expAd   41  p_cmh 0.317 p_clu 0.387
+   dm>0               : OR 1.13 [0.56, 2.07]  cfg  32 strata   76 expAd   33  p_cmh 0.593 p_clu 0.721
+   dm>0, E_dir=0      : OR 1.33 [0.54, 2.83]  cfg  20 strata   41 expAd   18  p_cmh 0.362 p_clu 0.485
+--- NC_same_s
+   all rows           : OR 1.30 [0.80, 1.99]  cfg  51 strata  147 expAd   45  p_cmh 0.183 p_clu 0.316
+   all rows, E_dir=0  : OR 1.38 [0.80, 2.02]  cfg  47 strata   98 expAd   29  p_cmh 0.187 p_clu 0.227
+   dm>0               : OR 1.33 [0.62, 2.45]  cfg  25 strata   47 expAd   23  p_cmh 0.279 p_clu 0.447
+   dm>0, E_dir=0      : OR 2.06 [0.59, 6.42]  cfg  10 strata   15 expAd    9  p_cmh 0.0856 p_clu 0.229
+--- NC_next
+   all rows           : OR 1.47 [0.88, 2.22]  cfg  57 strata  207 expAd   73  p_cmh 0.00422 p_clu 0.16
+   all rows, E_dir=0  : OR 1.67 [0.97, 2.66]  cfg  52 strata  150 expAd   59  p_cmh 0.00057 p_clu 0.0959
+   dm>0               : OR 1.13 [0.51, 1.86]  cfg  35 strata   86 expAd   39  p_cmh 0.518 p_clu 0.71
+   dm>0, E_dir=0      : OR 1.45 [0.58, 2.71]  cfg  22 strata   45 expAd   27  p_cmh 0.0981 p_clu 0.419
+--- E_rev
+   all rows           : OR 1.95 [1.30, 2.86]  cfg  63 strata  330 expAd  153  p_cmh 1.77e-09 p_clu 0.0067
+   all rows, E_dir=0  : OR 1.39 [0.90, 2.02]  cfg  57 strata  228 expAd   81  p_cmh 0.0286 p_clu 0.126
+   dm>0               : OR 2.21 [1.29, 3.86]  cfg  46 strata  142 expAd   86  p_cmh 1.86e-06 p_clu 0.0109
+   dm>0, E_dir=0      : OR 1.68 [0.79, 3.44]  cfg  25 strata   55 expAd   27  p_cmh 0.0586 p_clu 0.176
+--- E_dir among NC_same=0 (all rows): OR 2.55 [1.59, 4.14]  cfg  61 strata  224 expAd  125  p_cmh 4.11e-13 p_clu 0.00338
+--- E_dir among NC_same=0 (dm>0):     OR 2.24 [1.23, 4.03]  cfg  46 strata  127 expAd   91  p_cmh 9.8e-06 p_clu 0.0174

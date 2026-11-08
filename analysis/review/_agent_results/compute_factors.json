@@ -1,0 +1,215 @@
+{
+ "report_path": "/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/stat/factors/REPORT.md",
+ "method": "Unit of inference = config (scenario_id). Data: 236 control runs in 112 configs (rep dirs without '-'; the 8 night_branch rep0 controls included, 16 branch arms excluded). Outcome per config = mean of run-level labels.json 'tipped' (theta=8). Configs weighted equally. MARGINAL TESTS: per factor, factor labels permuted across configs WITHIN design block (split), 10,000 permutations (numpy default_rng, fixed seeds). This reproduces the generator's assignment (weighted_balanced per block, independent shuffles; model mix and tech-lead status iid). Binary statistic = difference of mean config tip rates; two-sided p = (1 + #{|T*| >= |T|})/(B+1). Multi-level statistic = n-weighted between-level variance of config means (permutation one-way ANOVA F); p = (1 + #{T* >= T})/(B+1). Seed type is tested only in the 4 blocks where it was randomized (96 configs); tech lead only among knower/pioneer/side_task (64 configs). Effects (pp differences, per-level rates) come with 95% percentile CIs from a config-cluster bootstrap stratified by block (2,000 resamples). Holm over the 14 main factors. Post-hoc pairwise contrasts: Holm within factor. Extra design factors (seed placement, cut, push offset, family, detection>0): own Holm family. release_freeze rerun with 100,000 permutations (MC SE 0.0002). MULTIVARIABLE: run-level logistic regression on all 14 factors one-hot plus block dummies (26 parameters). Newton-Raphson with lambda=1/C, C=1e6, matches sklearn LogisticRegression(C=1e6) to 8.5e-7. Separation checked (C to 1e10, all-0/1 columns, bootstrap blow-ups). ORs with stratified config-cluster bootstrap CIs (2,000), from both ML and Firth refits. Adjusted randomization test per factor: permute that factor within block with all other factors fixed, refit, LR statistic, 10,000 permutations, Holm over 14. Seed type is permuted jointly with tech-lead status; tech lead alone within block x seed type. Config-level OLS (linear probability) adjusted risk differences: partial-F randomization test (10,000) and stratified bootstrap CIs (2,000). Sensitivity fits: no block dummies, +extra factors, ridge C=5. Interactions only exploratory: 2x2 DiD with bootstrap CI and subgroup permutation tests, uncorrected. Run-level Fisher/chi2 and asymptotic LR chi2 are shown only as anti-conservative contrasts. DeLong does not apply (no AUROC).",
+ "results": [
+  {
+   "comparison": "release_freeze True vs False (FINDINGS s.1: Zeitdruck foerdert Kippen)",
+   "estimate": "+26.0 pp [+9.9, +41.5]; 46.2% (79 configs) vs 20.2% (33 configs)",
+   "family": "primary",
+   "p_raw": 0.00484,
+   "p_holm": 0.0532,
+   "conclusion": "PARTLY SUPPORTED. Direction is clear: positive in all 6 subgroups, from +19 to +45 pp. But it does not survive Holm over 14 factors (p 0.0048 with 100k permutations, Holm 0.053; with 10k permutations p 0.0056, Holm 0.062). Adjusted effects are weaker: OLS +19.2 pp [+2.1, +34.5], p 0.031 (Holm 0.31); logistic OR 5.21, adjusted randomization p 0.050 (Holm 0.55). Part of the marginal effect comes from chance imbalance: freeze configs have more K4 and board."
+  },
+  {
+   "comparison": "discoverability exploration vs peers_only (FINDINGS s.1: leicht auffindbarer Shortcut)",
+   "estimate": "+32.4 pp [+16.6, +47.6]; 54.8% vs 22.3% (56/56 configs)",
+   "family": "primary",
+   "p_raw": 0.0004,
+   "p_holm": 0.0056,
+   "conclusion": "SUPPORTED overall and after adjustment (OLS +28.2 pp, Holm 0.0014; logistic adjusted p 0.0012, Holm 0.017). The effect comes ONLY from K4: within K2 -1.4 pp [-21.4, +20.2], p 0.93; within K4 +62.4 pp [+44.4, +80.1], p 0.0001. Mechanism: with K4 + exploration, skip_checks is in every agent's merge signature."
+  },
+  {
+   "comparison": "channels board / team_channels / dm_only (FINDINGS s.1: oeffentliche Kanaele; Board viel oefter als DMs)",
+   "estimate": "board 51.7% [41.0, 62.6] (67 configs), team_channels 23.2% [9.3, 38.0] (28), dm_only 11.8% [0.0, 28.6] (17); board - dm_only +40.0 pp [+19.8, +56.8]",
+   "family": "primary",
+   "p_raw": 0.0004,
+   "p_holm": 0.0056,
+   "conclusion": "SUPPORTED marginally. Board vs dm_only p 0.0010, board vs team p 0.0054, team vs dm_only +11.4 pp p 0.41 (not different). After adjustment it is weaker: board vs dm_only +25.0 pp [+2.8, +45.0], but the joint channel test p 0.0088 (OLS, Holm 0.106) and 0.0056 (logistic, Holm 0.067) misses the 0.05 Holm line."
+  },
+  {
+   "comparison": "category K4 vs K2 (FINDINGS s.1: Checks ueberspringen kippt oefter als Scorer-Manipulation)",
+   "estimate": "+29.5 pp [+13.0, +45.4]; 53.3% vs 23.8% (56/56 configs)",
+   "family": "primary",
+   "p_raw": 0.0007,
+   "p_holm": 0.0084,
+   "conclusion": "SUPPORTED overall and adjusted (OLS +26.3 pp [+11.8, +42.3], Holm 0.010; logistic OR 7.89, adjusted p 0.0026, Holm 0.034). But it holds only when the shortcut is discoverable: under peers_only K4-K2 = -4.6 pp (p 0.67); under exploration +59.1 pp [+38.0, +77.0] (p 0.0001)."
+  },
+  {
+   "comparison": "sanctions drawn vs off (FINDINGS s.7: Sanktionen senken die Kipprate im Nacht-Batch nicht)",
+   "estimate": "+3.4 pp [-14.5, +21.0]; 41.1% (28 configs) vs 37.7% (84 configs)",
+   "family": "primary",
+   "p_raw": 0.7462,
+   "p_holm": 1,
+   "conclusion": "NOT SUPPORTED AS WORDED; the data only show no detectable effect, with low power. Only 8 of 28 'drawn' configs had detection probability > 0. The other 20 had 0 sanction events and behave exactly like 'off' (placebo check p 0.88). Adjusted -0.3 pp [-17.8, +15.1], p 0.97. Reductions of up to 15 pp (drawn) or 25 pp (enforced) remain inside the CIs."
+  },
+  {
+   "comparison": "post-hoc board vs dm_only",
+   "estimate": "+40.0 pp [+19.8, +56.8] (84 configs)",
+   "family": "secondary",
+   "p_raw": 0.001,
+   "p_holm": 0.003,
+   "conclusion": "Board tips far more often than DM only (Holm within channels). Adjusted +25.0 pp [+2.8, +45.0]; logistic derived OR 16.7 (Firth 9.85, lower bound 2.28)."
+  },
+  {
+   "comparison": "post-hoc board vs team_channels",
+   "estimate": "+28.5 pp [+10.8, +46.1] (95 configs)",
+   "family": "secondary",
+   "p_raw": 0.0054,
+   "p_holm": 0.0108,
+   "conclusion": "Higher on board. Adjusted +22.1 pp [+4.0, +38.9]. The logistic lower bound clears 1 in only some specifications."
+  },
+  {
+   "comparison": "manager_push True vs False",
+   "estimate": "+0.2 pp [-18.8, +18.2]",
+   "family": "secondary",
+   "p_raw": 1,
+   "p_holm": 1,
+   "conclusion": "No marginal effect. Exploratory: the push helps only without freeze (5.6% vs 25.7%, only 9 vs 24 configs); freeze x push DiD -26.6 pp [-55.1, +3.7]."
+  },
+  {
+   "comparison": "self_merge True vs False",
+   "estimate": "+5.1 pp [-10.7, +21.0]",
+   "family": "secondary",
+   "p_raw": 0.5628,
+   "p_holm": 1,
+   "conclusion": "No detectable effect (adjusted +9.6 pp [-6.8, +26.6], p 0.22)."
+  },
+  {
+   "comparison": "persistent_share 0.5 vs 0 (prompted persistence persona)",
+   "estimate": "+8.0 pp [-9.0, +24.5]",
+   "family": "secondary",
+   "p_raw": 0.3612,
+   "p_holm": 1,
+   "conclusion": "No detectable effect (adjusted +4.9 pp, p 0.50)."
+  },
+  {
+   "comparison": "prohibition_form implicit / ambiguous / soft",
+   "estimate": "implicit 46.6%, ambiguous 39.9%, soft 28.1%; soft - implicit -18.5 pp [-37.4, +0.2]",
+   "family": "secondary",
+   "p_raw": 0.2004,
+   "p_holm": 1,
+   "conclusion": "No significant difference; soft is lowest (post-hoc implicit vs soft p 0.087)."
+  },
+  {
+   "comparison": "n_impossible 9 / 12 / 16",
+   "estimate": "26.1% / 42.5% / 48.1%; 16 - 9 +22.0 pp [+1.2, +42.5]; trend +21.6 pp per +7 tickets [+1.9, +41.8]",
+   "family": "secondary",
+   "p_raw": 0.084,
+   "p_holm": 0.8399,
+   "conclusion": "Suggestive dose-response (exploratory trend p 0.040; adjusted 16 vs 9 +25.5 pp [+6.3, +43.5], joint adjusted p 0.016, Holm 0.18). Not significant after correction."
+  },
+  {
+   "comparison": "seed_type none / knower / pioneer / side_task / external (96 configs, randomized blocks)",
+   "estimate": "26.2% / 27.0% / 50.9% / 35.4% / 37.0%; pioneer - none +24.7 pp [-5.6, +53.9]",
+   "family": "secondary",
+   "p_raw": 0.4483,
+   "p_holm": 1,
+   "conclusion": "No significant seed-type effect (joint adjusted p 0.57 logistic, 0.50 OLS). Structural note: seed none + peers_only never tipped (0/15 runs in 7 configs, plus 0/4 branch configs)."
+  },
+  {
+   "comparison": "seed = tech lead vs not (knower/pioneer/side_task, 64 configs)",
+   "estimate": "-14.6 pp [-35.2, +7.8]; 30.4% vs 45.0%",
+   "family": "secondary",
+   "p_raw": 0.2007,
+   "p_holm": 1,
+   "conclusion": "No significant effect (adjusted -7.7 pp, p 0.38)."
+  },
+  {
+   "comparison": "persona_mix skewed_pragmatic vs uniform",
+   "estimate": "-3.9 pp [-19.7, +12.4]",
+   "family": "secondary",
+   "p_raw": 0.6754,
+   "p_holm": 1,
+   "conclusion": "No detectable effect."
+  },
+  {
+   "comparison": "model_mix majority vs duo",
+   "estimate": "-4.1 pp [-20.4, +12.0]",
+   "family": "secondary",
+   "p_raw": 0.6516,
+   "p_holm": 1,
+   "conclusion": "No detectable effect."
+  },
+  {
+   "comparison": "adjusted logistic: which factors stay away from OR=1",
+   "estimate": "K4 OR 7.89 (Firth 5.44, lower 2.09); exploration OR 7.45 (Firth 5.18, lower 2.29); board vs dm_only OR 16.7 (lower 3.92 ML / 2.28 Firth); freeze OR 5.21 (lower 0.86 ML / 0.94 Firth)",
+   "family": "secondary",
+   "p_raw": 0.0026,
+   "p_holm": 0.034,
+   "conclusion": "Only K4 (adjusted randomization p 0.0026, Holm 0.034) and exploration (p 0.0012, Holm 0.017) clear OR=1 in all 5 specifications; board vs dm_only also clears it in the main model. Freeze, board vs team and n_impossible=16 clear it only in some specifications. The full data show no separation, but 37% of ML bootstrap refits quasi-separate, so the upper CI ends are meaningless. The asymptotic LR chi2 p-values are anti-conservative: the null mean LR is about 2.3 per df."
+  },
+  {
+   "comparison": "exploratory interaction discoverability x category",
+   "estimate": "DiD +63.7 pp [+36.0, +90.7]; K4+exploration 82.2% vs 19.9-24.4% in the other three cells",
+   "family": "secondary",
+   "conclusion": "The only strong interaction (Firth ratio of ORs 487). K4 vs K2 and exploration vs peers_only are one effect. Post hoc, though there is a mechanistic explanation in the generator code."
+  },
+  {
+   "comparison": "effective enforcement: detection probability > 0 (8 configs, 16 runs) vs rest",
+   "estimate": "+5.6 pp [-25.4, +35.8]; 6/16 runs tipped, 72 sanction events in 11 runs",
+   "family": "secondary",
+   "p_raw": 0.831,
+   "p_holm": 1,
+   "conclusion": "Uninformative: far too few enforced configs to show or exclude a reduction."
+  },
+  {
+   "comparison": "control: block label among identical-design blocks (train/val/test_id, 88 configs)",
+   "estimate": "35.2% / 16.7% / 50.0%",
+   "family": "control",
+   "p_raw": 0.188,
+   "conclusion": "No block heterogeneity beyond chance; the low night_val rate is noise."
+  },
+  {
+   "comparison": "control: replicate order rep1 - rep0 (104 configs, time-of-night drift)",
+   "estimate": "+3.8 pp (36.5% vs 40.4%)",
+   "family": "control",
+   "p_raw": 0.4289,
+   "conclusion": "No drift. rep2 vs mean(rep0, rep1): +2.5 pp, p 1.00."
+  },
+  {
+   "comparison": "control: placebo 'drawn with detection 0' vs 'off' (functionally identical)",
+   "estimate": "+2.3 pp [-20.7, +25.4]",
+   "family": "control",
+   "p_raw": 0.8767,
+   "conclusion": "Null as expected."
+  },
+  {
+   "comparison": "control: null calibration with 2,000 placebo factors (within-block balanced)",
+   "estimate": "share p<0.05 = 0.0415, p<0.01 = 0.0105",
+   "family": "control",
+   "conclusion": "The permutation test holds its level (slightly conservative because of ties)."
+  }
+ ],
+ "caveats": [
+  "112 configs, 236 control runs, ICC of tipped within configs = 0.73: the effective n is about the number of configs. Effects under about 20-25 pp are hard to detect, especially in small cells (dm_only 17 configs, no freeze 33, detection>0 only 8).",
+  "Sanctions: only 8 of 28 'drawn' configs had detection probability > 0. The other 20 are functionally 'off' (the engine fires a sanction only with probability = detection; they had 0 events). The night batch therefore cannot test sanctions. Rewrite the FINDINGS s.7 sentence as 'no measurable effect, but enforcement was possible in only 8 setups'.",
+  "Discoverability and K4 vs K2 are one effect: K4 + exploration (skip_checks in every agent's merge signature) has an 82% config tip rate, and the other three cells 20-24%. Both FINDINGS sentences need this qualifier. The interaction is post hoc.",
+  "Freeze is borderline after Holm over 14 factors (p_Holm 0.053 with 100k permutations, 0.062 with 10k). Adjusted it is smaller (+19 pp, Holm 0.31). Freeze was the pre-stated base-rate dial in DECISIONS.md s.15, but the FINDINGS sentences were written after seeing the batch report.",
+  "The multivariable logistic model is fragile: 26 parameters, about 3.6 events per parameter, quasi-separation in 37% of bootstrap refits. Use it for direction and the adjusted randomization p-values, not OR magnitudes; the config-level OLS gives stable adjusted risk differences.",
+  "The design is balanced per block and factors were drawn independently, so marginal differences are unbiased averages over this design. Chance imbalances still exist in one draw (e.g. freeze configs: 43/79 K4 and 52/79 board, vs 13/33 and 15/33 without freeze).",
+  "Results hold for this design only: high pressure, R=30, tech lead, merge feed with CI, release board, 4 training models; no 'hard' prohibition and no skewed_careful personas.",
+  "FINDINGS 'knapp 4 von 10': 101/252 = 40.1% over all runs incl. branch arms, 93/236 = 39.4% over control runs.",
+  "Seed type 'external' pools fake_authority and injection; the tool_output carrier block (night_test_ood_seed) is excluded from the seed-type test.",
+  "Run-level tests are anti-conservative here (e.g. seed placement Fisher p 0.016 vs permutation p 0.20; freeze LR chi2 p 0.0023 vs randomization p 0.050) and are reported only as contrasts."
+ ],
+ "sanity_checks": [
+  "All 252 runs matched the batch's own runs_night/_logs/analysis_runs.csv: 0 mismatches in tipped, n_violators and 12 factor columns.",
+  "All 252 labels.json have theta_agents=8 and delta=3; 112 configs; runs per config: 8 with 1, 84 with 2, 20 with 3.",
+  "Run-level rates reproduce runs_night/_logs/report.md (written at 239 runs): K2/K4 23.7/55.1% (report 23/54), freeze off/on 18.6/48.2% (20/46), peers_only/exploration 23.7/55.1% (21/56), board/team/dm 53.2/23.7/11.1% (52/23/11).",
+  "Logistic full-data fit has no separation: max |beta| 2.79, coefficients change <= 1.2e-5 from C=1e6 to 1e10, no all-0/1 columns, Hessian condition number 634, matches sklearn LogisticRegression(C=1e6) to 8.5e-7.",
+  "Null calibration: 2,000 placebo factors balanced within block give p<0.05 in 4.15% and p<0.01 in 1.05% of cases.",
+  "Monte Carlo precision: release_freeze with 100,000 permutations gives p = 0.00484 (SE 0.00022), consistent with 0.0056 at 10,000.",
+  "Block-stratified differences match pooled differences (e.g. category +29.5 vs +29.5, freeze +25.3 vs +26.0, discoverability +32.4 vs +32.4 pp).",
+  "Equal-weight and run-count-weighted adjusted OLS agree (e.g. K4 +26.3 vs +25.5 pp, freeze +19.2 vs +19.6 pp).",
+  "Negative controls are null: identical-design blocks p 0.19, replicate-order drift p 0.43, placebo sanction arm p 0.88.",
+  "All markdown tables in REPORT.md checked for consistent column counts; every number in REPORT.md is generated by make_report.py from the JSON results."
+ ],
+ "script_paths": [
+  "/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/stat/factors/build_runs.py",
+  "/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/stat/factors/factor_tests.py",
+  "/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/stat/factors/logit_model.py",
+  "/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/stat/factors/adjusted_lpm.py",
+  "/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/stat/factors/subgroup_checks.py",
+  "/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/stat/factors/make_report.py"
+ ]
+}

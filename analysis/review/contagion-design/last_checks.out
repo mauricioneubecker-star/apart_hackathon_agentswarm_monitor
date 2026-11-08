@@ -1,0 +1,7 @@
+cumulative window (W=30, = agent memory): E_dir all (np.float64(1.519), [1.05, 2.2], 47) | E_dir dm_ever>0 (np.float64(1.475), [0.98, 2.17], 44) | P_dir dm_ever>0 (np.float64(1.199), [1.01, 1.4], 56)
+co-adoption exposure (sender violates exactly at t), dm>0: observed OR 0.380; iid-null median 0.419 [0.32, 0.59]
+Y'=violation-or-attempt E all: (np.float64(2.621), [1.72, 4.07], 52)
+Y'=violation-or-attempt E dm>0: (np.float64(1.79), [0.97, 3.22], 37)
+Y'=violation-or-attempt P dm>0: (np.float64(0.922), [0.71, 1.21], 58)
+Y'=violation-or-attempt K2 E dm>0: (np.float64(1.66), [0.86, 3.8], 14)
+Y'=violation-or-attempt K4 E dm>0: (np.float64(1.845), [0.85, 3.97], 23)

@@ -1,0 +1,58 @@
+{
+ "mode": "run_stuck",
+ "n_shuffles": 1000,
+ "observed": {
+  "E_dir all": 2.339,
+  "E_dir dm>0": 2.016,
+  "P_dir all": 1.422,
+  "P_dir dm>0": 0.841
+ },
+ "E_dir all": {
+  "obs": 2.339,
+  "shuffle_mean": 1.216,
+  "shuffle_median": 1.208,
+  "shuffle_2.5_97.5": [
+   0.975,
+   1.493
+  ],
+  "p_one_sided_ge": 0.001,
+  "p_one_sided_le": 1.0,
+  "obs_over_shuffle_median": 1.936
+ },
+ "E_dir dm>0": {
+  "obs": 2.016,
+  "shuffle_mean": 1.251,
+  "shuffle_median": 1.24,
+  "shuffle_2.5_97.5": [
+   0.931,
+   1.638
+  ],
+  "p_one_sided_ge": 0.001,
+  "p_one_sided_le": 1.0,
+  "obs_over_shuffle_median": 1.626
+ },
+ "P_dir all": {
+  "obs": 1.422,
+  "shuffle_mean": 1.243,
+  "shuffle_median": 1.234,
+  "shuffle_2.5_97.5": [
+   0.994,
+   1.535
+  ],
+  "p_one_sided_ge": 0.0929,
+  "p_one_sided_le": 0.9081,
+  "obs_over_shuffle_median": 1.152
+ },
+ "P_dir dm>0": {
+  "obs": 0.841,
+  "shuffle_mean": 1.297,
+  "shuffle_median": 1.282,
+  "shuffle_2.5_97.5": [
+   0.978,
+   1.708
+  ],
+  "p_one_sided_ge": 0.999,
+  "p_one_sided_le": 0.002,
+  "obs_over_shuffle_median": 0.656
+ }
+}

@@ -1,0 +1,7 @@
+('knower', 'first violator is seeded (info/pressure asym)') 8
+('knower', 'first violator not seeded') 5
+('none', 'first violator not seeded') 11
+('pioneer', 'first violator is seeded (info/pressure asym)') 1
+('pioneer', 'first violator not seeded') 5
+('side_task', 'first violator is seeded (info/pressure asym)') 2
+('side_task', 'first violator not seeded') 15

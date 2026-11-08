@@ -1,0 +1,35 @@
+K2 exploration rows  35399 adopt  174 runs  53
+    all  E_dir  OR 0.54 [0.00, 1.36]  cfg  10 strata   28 expAd    4  p_cmh 0.262 p_clu 0.229
+    dm>0 E_dir  OR 0.79 [0.00, 5.69]  cfg   6 strata   11 expAd    3  p_cmh 0.754 p_clu 0.805
+    all  P_dir  OR 1.46 [0.65, 2.70]  cfg  10 strata   36 expAd   14  p_cmh 0.262 p_clu 0.309
+    dm>0 P_dir  OR 1.28 [0.28, 3.56]  cfg   8 strata   18 expAd   12  p_cmh 0.67 p_clu 0.677
+    all  E_mech OR 0.66 [0.00, 1.98]  cfg  10 strata   24 expAd    4  p_cmh 0.469 p_clu 0.501
+    dm>0 E_mech OR 0.86 [0.00, 7.73]  cfg   6 strata   11 expAd    3  p_cmh 0.844 p_clu 0.879
+K2 peers_only  rows  43436 adopt  255 runs  65
+    all  E_dir  OR 0.99 [0.62, 1.79]  cfg  14 strata   77 expAd   25  p_cmh 0.972 p_clu 0.97
+    dm>0 E_dir  OR 1.12 [0.53, 3.80]  cfg  11 strata   31 expAd   16  p_cmh 0.747 p_clu 0.784
+    all  P_dir  OR 1.21 [0.58, 2.37]  cfg  12 strata   63 expAd   17  p_cmh 0.525 p_clu 0.567
+    dm>0 P_dir  OR 1.44 [0.67, 2.97]  cfg  10 strata   31 expAd   15  p_cmh 0.396 p_clu 0.327
+    all  E_mech OR 0.85 [0.50, 1.66]  cfg  14 strata   70 expAd   22  p_cmh 0.548 p_clu 0.574
+    dm>0 E_mech OR 0.96 [0.42, 3.52]  cfg  11 strata   31 expAd   15  p_cmh 0.902 p_clu 0.93
+K4 exploration rows  38307 adopt  713 runs  65
+    all  E_dir  OR 2.65 [1.53, 4.26]  cfg  25 strata  113 expAd   67  p_cmh 1.18e-07 p_clu 0.007
+    dm>0 E_dir  OR 1.66 [0.79, 3.56]  cfg  20 strata   72 expAd   49  p_cmh 0.0375 p_clu 0.172
+    all  P_dir  OR 1.56 [1.24, 1.96]  cfg  29 strata  194 expAd   89  p_cmh 0.00235 p_clu 0.00438
+    dm>0 P_dir  OR 0.77 [0.56, 1.11]  cfg  26 strata  119 expAd   71  p_cmh 0.168 p_clu 0.166
+    all  E_mech OR 3.54 [1.93, 6.97]  cfg  24 strata   74 expAd   47  p_cmh 4.19e-08 p_clu 0.00528
+    dm>0 E_mech OR 2.53 [1.10, 5.87]  cfg  17 strata   54 expAd   38  p_cmh 0.00318 p_clu 0.0635
+K4 peers_only  rows  35563 adopt  179 runs  53
+    all  E_dir  OR 16.12 [6.54, 40.75]  cfg  13 strata   47 expAd   44  p_cmh 5.12e-21 p_clu 0.0437
+    dm>0 E_dir  OR 12.24 [3.76, 32.41]  cfg  10 strata   35 expAd   34  p_cmh 5.17e-08 p_clu 0.0514
+    all  P_dir  OR 1.04 [0.59, 1.66]  cfg   9 strata   47 expAd   14  p_cmh 0.916 p_clu 0.885
+    dm>0 P_dir  OR 0.60 [0.29, 1.80]  cfg   9 strata   28 expAd   13  p_cmh 0.192 p_clu 0.331
+    all  E_mech OR 24.88 [8.94, 124.54]  cfg  11 strata   40 expAd   42  p_cmh 2.18e-23 p_clu 0.0375
+    dm>0 E_mech OR 19.48 [6.69, 97.13]  cfg   9 strata   33 expAd   33  p_cmh 1.13e-08 p_clu 0.0384
+channels: {np.str_('board'): np.int64(89124), np.str_('dm_only'): np.int64(24518), np.str_('team_channels'): np.int64(39063)}
+K2 channels=board    dm>0 E_dir OR 0.43 [0.11, 0.81]  cfg  11 strata   35 expAd   12  p_cmh 0.0538 p_clu 0.0479
+K2 channels=dm_only  dm>0 E_dir n/a
+K2 channels=team_channels dm>0 E_dir n/a
+K4 channels=board    dm>0 E_dir OR 1.89 [0.86, 5.33]  cfg  18 strata   68 expAd   53  p_cmh 0.0235 p_clu 0.116
+K4 channels=dm_only  dm>0 E_dir OR 9.75 [1.05, 29.83]  cfg   4 strata   16 expAd   14  p_cmh 0.000154 p_clu 0.26
+K4 channels=team_channels dm>0 E_dir OR 3.14 [0.81, 12.91]  cfg   8 strata   23 expAd   16  p_cmh 0.00163 p_clu 0.139

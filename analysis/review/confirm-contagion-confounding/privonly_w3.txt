@@ -1,0 +1,8 @@
+board      E_priv vs unexposed:   1.61 [0.82; 3.25] cfg 32, exp.adopt 35 | dm>0   1.35 [0.58; 3.56] cfg 20, exp.adopt 28
+board      P_priv vs unexposed:   1.85 [1.04; 3.30] cfg 32, exp.adopt 52 | dm>0   0.91 [0.49; 1.68] cfg 24, exp.adopt 41
+K4&board   E_priv vs unexposed:   3.77 [1.46; 13.44] cfg 20, exp.adopt 29 | dm>0   2.31 [0.85; 14.06] cfg 13, exp.adopt 25
+K4&board   P_priv vs unexposed:   2.14 [1.11; 4.26] cfg 20, exp.adopt 46 | dm>0   0.88 [0.45; 1.77] cfg 16, exp.adopt 36
+K2&board   E_priv vs unexposed:   0.42 [0.14; 0.79] cfg 12, exp.adopt 6 | dm>0   0.31 [0.00; 0.74] cfg 7, exp.adopt 3
+K2&board   P_priv vs unexposed:   0.90 [0.25; 1.81] cfg 12, exp.adopt 6 | dm>0   1.15 [0.37; 2.99] cfg 8, exp.adopt 5
+non-board  E_priv vs unexposed:  13.80 [6.53; 38.72] cfg 17, exp.adopt 38 | dm>0   5.52 [2.07; 20.15] cfg 14, exp.adopt 28
+non-board  P_priv vs unexposed:   1.03 [0.61; 1.77] cfg 15, exp.adopt 14 | dm>0   0.46 [0.23; 0.87] cfg 14, exp.adopt 12

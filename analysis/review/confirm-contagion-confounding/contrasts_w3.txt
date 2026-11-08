@@ -1,0 +1,48 @@
+
+### all at-risk rows
+  E_dir: K4 / K2 (perm unrestricted)                         OR_A  3.99  OR_B  0.87  ratio  4.60 [2.30; 9.76]  perm p 0.0004 (10000 valid perms)
+  E_dir: K4 / K2 (perm within channel)                       OR_A  3.99  OR_B  0.87  ratio  4.60 [2.30; 9.76]  perm p 0.0003 (10000 valid perms)
+  E_dir: non-board / board (perm unrestricted)               OR_A  8.07  OR_B  1.43  ratio  5.65 [2.12; 16.38]  perm p 0.0001 (10000 valid perms)
+  E_dir: non-board / board (perm within category)            OR_A  8.07  OR_B  1.43  ratio  5.65 [2.12; 16.38]  perm p 0.0002 (10000 valid perms)
+  E_dir: K4-board / K2-board                                 OR_A  2.67  OR_B  0.55  ratio  4.84 [2.62; 11.17]  perm p 0.0001 (10000 valid perms)
+  E_mech: K4 / K2 (perm unrestricted)                        OR_A  5.97  OR_B  0.80  ratio  7.42 [3.24; 19.02]  perm p 0.0004 (10000 valid perms)
+  E_mech: K4 / K2 (perm within channel)                      OR_A  5.97  OR_B  0.80  ratio  7.42 [3.24; 19.02]  perm p 0.0001 (10000 valid perms)
+  E_mech: non-board / board (perm unrestricted)              OR_A 17.98  OR_B  1.40  ratio 12.89 [4.57; 49.40]  perm p 0.0001 (10000 valid perms)
+  E_mech: non-board / board (perm within category)           OR_A 17.98  OR_B  1.40  ratio 12.89 [4.57; 49.40]  perm p 0.0001 (10000 valid perms)
+  E_mech: K4-board / K2-board                                OR_A  3.50  OR_B  0.46  ratio  7.56 [3.65; 20.94]  perm p 0.0001 (10000 valid perms)
+  P_dir: K4 / K2 (perm unrestricted)                         OR_A  1.46  OR_B  1.31  ratio  1.11 [0.66; 1.92]  perm p 0.6170 (10000 valid perms)
+  P_dir: K4 / K2 (perm within channel)                       OR_A  1.46  OR_B  1.31  ratio  1.11 [0.66; 1.92]  perm p 0.6136 (10000 valid perms)
+  P_dir: non-board / board (perm unrestricted)               OR_A  1.17  OR_B  1.50  ratio  0.77 [0.54; 1.25]  perm p 0.2281 (10000 valid perms)
+  P_dir: non-board / board (perm within category)            OR_A  1.17  OR_B  1.50  ratio  0.77 [0.54; 1.25]  perm p 0.2307 (10000 valid perms)
+  P_dir: K4-board / K2-board                                 OR_A  1.59  OR_B  1.30  ratio  1.23 [0.68; 2.43]  perm p 0.3774 (10000 valid perms)
+  E_dir / P_dir within pooled   :  2.34 /  1.42 =  1.64 [1.00; 2.75]
+  E_dir / P_dir within board    :  1.43 /  1.50 =  0.95 [0.61; 1.47]
+  E_dir / P_dir within K4-board :  2.67 /  1.59 =  1.67 [1.02; 3.08]
+  E_dir / P_dir within K2-board :  0.55 /  1.30 =  0.43 [0.16; 1.07]
+  E_dir / P_dir within non-board:  8.07 /  1.17 =  6.92 [2.32; 20.08]
+  E_dir / P_dir within K4       :  3.99 /  1.46 =  2.73 [1.48; 5.25]
+  E_dir / P_dir within K2       :  0.87 /  1.31 =  0.66 [0.32; 1.36]
+
+### dm>0 (primary in ANALYSIS_PLAN)
+  E_dir: K4 / K2 (perm unrestricted)                         OR_A  2.65  OR_B  1.04  ratio  2.56 [0.83; 7.82]  perm p 0.1133 (10000 valid perms)
+  E_dir: K4 / K2 (perm within channel)                       OR_A  2.65  OR_B  1.04  ratio  2.56 [0.83; 7.82]  perm p 0.1012 (10000 valid perms)
+  E_dir: non-board / board (perm unrestricted)               OR_A  5.74  OR_B  1.19  ratio  4.82 [1.59; 18.64]  perm p 0.0087 (10000 valid perms)
+  E_dir: non-board / board (perm within category)            OR_A  5.74  OR_B  1.19  ratio  4.82 [1.59; 18.64]  perm p 0.0066 (10000 valid perms)
+  E_dir: K4-board / K2-board                                 OR_A  1.89  OR_B  0.43  ratio  4.39 [1.55; 25.15]  perm p 0.0216 (10000 valid perms)
+  E_mech: K4 / K2 (perm unrestricted)                        OR_A  4.41  OR_B  0.94  ratio  4.70 [1.33; 16.18]  perm p 0.0225 (10000 valid perms)
+  E_mech: K4 / K2 (perm within channel)                      OR_A  4.41  OR_B  0.94  ratio  4.70 [1.33; 16.18]  perm p 0.0186 (10000 valid perms)
+  E_mech: non-board / board (perm unrestricted)              OR_A  9.93  OR_B  1.29  ratio  7.69 [2.38; 39.42]  perm p 0.0033 (10000 valid perms)
+  E_mech: non-board / board (perm within category)           OR_A  9.93  OR_B  1.29  ratio  7.69 [2.38; 39.42]  perm p 0.0028 (10000 valid perms)
+  E_mech: K4-board / K2-board                                OR_A  3.07  OR_B  0.37  ratio  8.29 [2.50; 49.07]  perm p 0.0038 (10000 valid perms)
+  P_dir: K4 / K2 (perm unrestricted)                         OR_A  0.74  OR_B  1.38  ratio  0.54 [0.28; 1.12]  perm p 0.0398 (10000 valid perms)
+  P_dir: K4 / K2 (perm within channel)                       OR_A  0.74  OR_B  1.38  ratio  0.54 [0.28; 1.12]  perm p 0.0399 (10000 valid perms)
+  P_dir: non-board / board (perm unrestricted)               OR_A  0.54  OR_B  1.00  ratio  0.54 [0.28; 0.93]  perm p 0.0448 (10000 valid perms)
+  P_dir: non-board / board (perm within category)            OR_A  0.54  OR_B  1.00  ratio  0.54 [0.28; 0.93]  perm p 0.0467 (10000 valid perms)
+  P_dir: K4-board / K2-board                                 OR_A  0.85  OR_B  1.90  ratio  0.45 [0.20; 1.13]  perm p 0.0504 (10000 valid perms)
+  E_dir / P_dir within pooled   :  2.02 /  0.84 =  2.40 [1.30; 4.66]
+  E_dir / P_dir within board    :  1.19 /  1.00 =  1.19 [0.63; 2.22]
+  E_dir / P_dir within K4-board :  1.89 /  0.85 =  2.23 [1.17; 5.79]
+  E_dir / P_dir within K2-board :  0.43 /  1.90 =  0.23 [0.04; 0.73]
+  E_dir / P_dir within non-board:  5.74 /  0.54 = 10.72 [3.78; 49.28]
+  E_dir / P_dir within K4       :  2.65 /  0.74 =  3.58 [1.80; 7.89]
+  E_dir / P_dir within K2       :  1.04 /  1.38 =  0.75 [0.26; 2.73]

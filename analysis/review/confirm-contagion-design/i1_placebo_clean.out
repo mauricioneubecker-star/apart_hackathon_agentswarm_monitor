@@ -1,0 +1,7 @@
+observed P_dir dm>0: 0.841 | P_dir dm>0 & E_dir=0: OR 0.86 [0.62, 1.21]  RR 0.88  cfg 49 strata 153 expAdopt 88 | P_dir all & E_dir=0: 1.514
+  shuffle  P dm>0        obs 0.841 null median 1.291 [0.961, 1.716] p(<=obs) 0.0025
+  shuffle  P dm>0 & E=0  obs 0.860 null median 1.220 [0.855, 1.695] p(<=obs) 0.0299
+  shuffle  P all & E=0   obs 1.514 null median 1.245 [0.993, 1.571] p(<=obs) 0.9501
+  iid      P dm>0        obs 0.841 null median 1.272 [0.926, 1.860] p(<=obs) 0.0100
+  iid      P dm>0 & E=0  obs 0.860 null median 1.307 [0.903, 1.905] p(<=obs) 0.0149
+  iid      P all & E=0   obs 1.514 null median 1.136 [0.853, 1.488] p(<=obs) 0.9801

@@ -1,0 +1,27 @@
+import pandas as pd, numpy as np
+B = pd.read_csv("/Users/mauricio/sim_local/apart_ana/data/llm_monitor/_base/snapshots.csv", low_memory=False)
+H = pd.read_csv("/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/gnnopt_data/night/snapshots.csv", low_memory=False)
+print("base rows", len(B), "harness rows", len(H))
+print("base columns", list(B.columns))
+print("harness columns", list(H.columns))
+print("base tip notna", int(B.tip.notna().sum()), "pos", int(B.tip.fillna(0).sum()))
+print("harness eval==1", int((H['eval']==1).sum()), "y3 notna", int(H.y3.notna().sum()), "eval1&y3", int(((H['eval']==1)&H.y3.notna()).sum()))
+# keys
+kb = set(zip(B.episode_id, B.t)); kh = set(zip(H.run, H['round']))
+print("key sets equal:", kb == kh, len(kb - kh), len(kh - kb))
+M = B.merge(H, left_on=["episode_id","t"], right_on=["run","round"], how="inner")
+print("merged", len(M))
+both = M.tip.notna() & M.y3.notna()
+print("label rows both defined", int(both.sum()), "disagree", int((M.tip[both] != M.y3[both]).sum()))
+print("tip defined but y3 not", int((M.tip.notna() & M.y3.isna()).sum()), "y3 defined but tip not", int((M.tip.isna() & M.y3.notna()).sum()))
+print("cfg == group_id:", (M.cfg == M.group_id).mean())
+dup = M[(M['eval']==0) & M.tip.notna()]
+print("rows with tip defined but harness eval==0:", len(dup), "positives:", int(dup.tip.sum()))
+print(dup.groupby(["split_x"]).size() if "split_x" in dup else dup.groupby("split").size())
+print(dup.groupby("arm_x" if "arm_x" in dup else "arm").size())
+# per split row counts in base (target rows)
+yok = B.tip.notna()
+print(B[yok].groupby("split").agg(rows=("tip","size"), pos=("tip","sum"), cfgs=("group_id","nunique"), runs=("episode_id","nunique")))
+print(B.groupby("split").agg(cfgs=("group_id","nunique"), runs=("episode_id","nunique")))
+# branch arms by split
+print(B.groupby(["split","arm"]).episode_id.nunique())

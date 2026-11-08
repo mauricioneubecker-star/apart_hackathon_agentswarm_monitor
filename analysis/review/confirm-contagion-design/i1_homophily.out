@@ -1,0 +1,6 @@
+observed: E_all 2.34 E_dm 2.02 P_all 1.42 P_dm 0.84 adoptions 1321
+beta 0 lam 0: E_all 1.01 [0.76,1.31]  E_dm 1.03 [0.68,1.43]  P_all 1.12 [0.93,1.40]  P_dm 1.30 [0.97,1.66]  adoptions 1323
+beta 1.0 lam 1.0: E_all 1.22 [0.90,1.53]  E_dm 1.31 [0.92,1.82]  P_all 1.22 [0.95,1.50]  P_dm 1.45 [0.93,2.08]  adoptions 1121
+beta 1.5 lam 2.0: E_all 1.32 [0.90,1.83]  E_dm 1.55 [0.84,2.55]  P_all 1.21 [0.88,1.56]  P_dm 1.53 [1.03,2.25]  adoptions 938
+beta 2.0 lam 3.0: E_all 1.31 [0.90,2.04]  E_dm 1.55 [1.00,2.37]  P_all 1.22 [0.80,1.69]  P_dm 1.50 [0.83,2.25]  adoptions 751
+beta 2.5 lam 3.0: E_all 1.38 [0.94,2.17]  E_dm 1.71 [0.80,3.47]  P_all 1.27 [0.74,1.79]  P_dm 1.62 [0.75,2.63]  adoptions 610

@@ -1,0 +1,857 @@
+{
+ "n_agent_rounds": 152705,
+ "n_adoptions": 1321,
+ "n_runs": 236,
+ "n_configs": 112,
+ "crude": {
+  "E_dir": {
+   "share_exposed": 0.015677286270914508,
+   "p_adopt_exposed": 0.06432748538011696,
+   "p_adopt_unexposed": 0.007763902841442077
+  },
+  "E_any": {
+   "share_exposed": 0.09460070069742314,
+   "p_adopt_exposed": 0.04167243527620102,
+   "p_adopt_unexposed": 0.005200384785077282
+  },
+  "E_mech": {
+   "share_exposed": 0.009403752332929505,
+   "p_adopt_exposed": 0.08635097493036212,
+   "p_adopt_unexposed": 0.007913055550046606
+  },
+  "E_feed": {
+   "share_exposed": 0.1587374349235454,
+   "p_adopt_exposed": 0.033663366336633666,
+   "p_adopt_unexposed": 0.00393103179854435
+  },
+  "P_dir": {
+   "share_exposed": 0.0387282669198782,
+   "p_adopt_exposed": 0.022658099425093,
+   "p_adopt_unexposed": 0.008086326818401672
+  }
+ },
+ "mh": {
+  "E_dir": {
+   "OR": 2.3386196220418025,
+   "OR_ci": [
+    1.536452109224758,
+    3.565201018702517
+   ],
+   "RR": 2.0464693933075337,
+   "RR_ci": [
+    1.4347988338738218,
+    2.8808929456464982
+   ],
+   "configs_informative": 62,
+   "strata_used": 265,
+   "exposed_adoptions_in_strata": 140
+  },
+  "E_any": {
+   "OR": 3.244383548426299,
+   "OR_ci": [
+    1.6365455406519394,
+    5.837004123936185
+   ],
+   "RR": 3.0057222810615407,
+   "RR_ci": [
+    1.5908764435301899,
+    5.160163568693181
+   ],
+   "configs_informative": 40,
+   "strata_used": 172,
+   "exposed_adoptions_in_strata": 103
+  },
+  "E_mech": {
+   "OR": 2.532745687184109,
+   "OR_ci": [
+    1.5219376518850312,
+    4.373228241864244
+   ],
+   "RR": 2.1899487705996354,
+   "RR_ci": [
+    1.436997849169481,
+    3.3948502997059777
+   ],
+   "configs_informative": 59,
+   "strata_used": 208,
+   "exposed_adoptions_in_strata": 115
+  },
+  "E_feed": null,
+  "P_dir": {
+   "OR": 1.4218543000742092,
+   "OR_ci": [
+    1.1698391602853637,
+    1.7239643996592893
+   ],
+   "RR": 1.3663348817327774,
+   "RR_ci": [
+    1.149110913208151,
+    1.6211905471438253
+   ],
+   "configs_informative": 60,
+   "strata_used": 340,
+   "exposed_adoptions_in_strata": 134
+  }
+ },
+ "mh_dm>0": {
+  "E_dir": {
+   "OR": 2.015737627091823,
+   "OR_ci": [
+    1.1803038939288495,
+    3.6267820176316814
+   ],
+   "RR": 1.7885836160073125,
+   "RR_ci": [
+    1.1476664801934375,
+    2.8305725502779784
+   ],
+   "configs_informative": 47,
+   "strata_used": 149,
+   "exposed_adoptions_in_strata": 102
+  },
+  "E_mech": {
+   "OR": 2.4243462578899915,
+   "OR_ci": [
+    1.3633919328941233,
+    4.687381296161002
+   ],
+   "RR": 2.069765316596577,
+   "RR_ci": [
+    1.2958108622416584,
+    3.4739039732590076
+   ],
+   "configs_informative": 43,
+   "strata_used": 129,
+   "exposed_adoptions_in_strata": 89
+  },
+  "P_dir": {
+   "OR": 0.8410711428656857,
+   "OR_ci": [
+    0.6416860062011357,
+    1.1472752321066124
+   ],
+   "RR": 0.863703841262338,
+   "RR_ci": [
+    0.6890609586120927,
+    1.1227316033203942
+   ],
+   "configs_informative": 53,
+   "strata_used": 196,
+   "exposed_adoptions_in_strata": 111
+  }
+ },
+ "negative_control_E_now": {
+  "all": {
+   "OR": 1.1775790118423508,
+   "OR_ci": [
+    0.7397098996829009,
+    1.7631737752186047
+   ],
+   "RR": 1.1429476369890446,
+   "RR_ci": [
+    0.7779503351106969,
+    1.5813075523327653
+   ],
+   "configs_informative": 57,
+   "strata_used": 192,
+   "exposed_adoptions_in_strata": 58
+  },
+  "dm>0": {
+   "OR": 1.1299714333725426,
+   "OR_ci": [
+    0.5421008442762026,
+    2.0645836142252207
+   ],
+   "RR": 1.1083162016368004,
+   "RR_ci": [
+    0.5931460186262099,
+    1.7963521349976297
+   ],
+   "configs_informative": 32,
+   "strata_used": 76,
+   "exposed_adoptions_in_strata": 33
+  }
+ },
+ "subgroups": {
+  "K2": {
+   "agent_rounds": 78835,
+   "adoptions": 429,
+   "configs": 56,
+   "E_dir": {
+    "OR": 0.8668162919228012,
+    "OR_ci": [
+     0.542645256981921,
+     1.3464260141637934
+    ],
+    "RR": 0.8716530332679568,
+    "RR_ci": [
+     0.5625333963655601,
+     1.3373424824807596
+    ],
+    "configs_informative": 24,
+    "strata_used": 105,
+    "exposed_adoptions_in_strata": 29
+   },
+   "E_dir dm>0": {
+    "OR": 1.0357124090010632,
+    "OR_ci": [
+     0.47058291428217375,
+     2.585234043599556
+    ],
+    "RR": 1.0339895280706952,
+    "RR_ci": [
+     0.5091770290281523,
+     2.5734095770547154
+    ],
+    "configs_informative": 17,
+    "strata_used": 42,
+    "exposed_adoptions_in_strata": 19
+   },
+   "P_dir": {
+    "OR": 1.3134541833423226,
+    "OR_ci": [
+     0.784314901308317,
+     2.1019114463279216
+    ],
+    "RR": 1.2931288707964304,
+    "RR_ci": [
+     0.8030128993345543,
+     2.050505413216529
+    ],
+    "configs_informative": 22,
+    "strata_used": 99,
+    "exposed_adoptions_in_strata": 31
+   },
+   "P_dir dm>0": {
+    "OR": 1.378873272633254,
+    "OR_ci": [
+     0.7036093639603285,
+     2.5111202479551356
+    ],
+    "RR": 1.3565843922926761,
+    "RR_ci": [
+     0.7222602802757655,
+     2.4001215743607016
+    ],
+    "configs_informative": 18,
+    "strata_used": 49,
+    "exposed_adoptions_in_strata": 27
+   }
+  },
+  "K4": {
+   "agent_rounds": 73870,
+   "adoptions": 892,
+   "configs": 56,
+   "E_dir": {
+    "OR": 3.985363588247974,
+    "OR_ci": [
+     2.41064910422936,
+     7.011008221544421
+    ],
+    "RR": 2.926820091242806,
+    "RR_ci": [
+     1.9815326931593005,
+     4.488359181056254
+    ],
+    "configs_informative": 38,
+    "strata_used": 160,
+    "exposed_adoptions_in_strata": 111
+   },
+   "E_dir dm>0": {
+    "OR": 2.6462479065461393,
+    "OR_ci": [
+     1.3501004631941804,
+     5.607721736527915
+    ],
+    "RR": 2.1426212050106495,
+    "RR_ci": [
+     1.2751689387128313,
+     3.671244526813027
+    ],
+    "configs_informative": 30,
+    "strata_used": 107,
+    "exposed_adoptions_in_strata": 83
+   },
+   "P_dir": {
+    "OR": 1.4609858677874599,
+    "OR_ci": [
+     1.175522684380388,
+     1.7955388576869973
+    ],
+    "RR": 1.3902583597630145,
+    "RR_ci": [
+     1.1532572817794167,
+     1.651395492543907
+    ],
+    "configs_informative": 38,
+    "strata_used": 241,
+    "exposed_adoptions_in_strata": 103
+   },
+   "P_dir dm>0": {
+    "OR": 0.7388008115008529,
+    "OR_ci": [
+     0.5495428467041998,
+     1.0333555464683046
+    ],
+    "RR": 0.7797175072257454,
+    "RR_ci": [
+     0.6059953605209939,
+     1.0274619425493337
+    ],
+    "configs_informative": 35,
+    "strata_used": 147,
+    "exposed_adoptions_in_strata": 84
+   }
+  },
+  "K4 exploration": {
+   "agent_rounds": 38307,
+   "adoptions": 713,
+   "configs": 30,
+   "E_dir": {
+    "OR": 2.6546980630301418,
+    "OR_ci": [
+     1.6469380216264196,
+     4.354744832391718
+    ],
+    "RR": 2.1978462984550875,
+    "RR_ci": [
+     1.5066946119589566,
+     3.2135792879907217
+    ],
+    "configs_informative": 25,
+    "strata_used": 113,
+    "exposed_adoptions_in_strata": 67
+   },
+   "E_dir dm>0": {
+    "OR": 1.6644172552976793,
+    "OR_ci": [
+     0.8134634645111221,
+     3.4931516942177474
+    ],
+    "RR": 1.4984740590030519,
+    "RR_ci": [
+     0.8340867464649278,
+     2.552498273330727
+    ],
+    "configs_informative": 20,
+    "strata_used": 72,
+    "exposed_adoptions_in_strata": 49
+   },
+   "P_dir": {
+    "OR": 1.5581832141823069,
+    "OR_ci": [
+     1.236057779244847,
+     1.9367127163341114
+    ],
+    "RR": 1.4615541925272963,
+    "RR_ci": [
+     1.2008390204032366,
+     1.7584046386807999
+    ],
+    "configs_informative": 29,
+    "strata_used": 194,
+    "exposed_adoptions_in_strata": 89
+   },
+   "P_dir dm>0": {
+    "OR": 0.7721593692565158,
+    "OR_ci": [
+     0.552911397723176,
+     1.1156046817829253
+    ],
+    "RR": 0.8140870576136289,
+    "RR_ci": [
+     0.6308038339521105,
+     1.0954663246199228
+    ],
+    "configs_informative": 26,
+    "strata_used": 119,
+    "exposed_adoptions_in_strata": 71
+   }
+  },
+  "K4 peers_only": {
+   "agent_rounds": 35563,
+   "adoptions": 179,
+   "configs": 26,
+   "E_dir": {
+    "OR": 16.122846671524346,
+    "OR_ci": [
+     6.193625105798433,
+     40.76907857721666
+    ],
+    "RR": 5.907512762009519,
+    "RR_ci": [
+     2.636051652986662,
+     14.168966303273718
+    ],
+    "configs_informative": 13,
+    "strata_used": 47,
+    "exposed_adoptions_in_strata": 44
+   },
+   "E_dir dm>0": {
+    "OR": 12.239915966386555,
+    "OR_ci": [
+     3.631084381752701,
+     32.2753125
+    ],
+    "RR": 5.505507461178294,
+    "RR_ci": [
+     2.213167177819839,
+     12.57584822938102
+    ],
+    "configs_informative": 10,
+    "strata_used": 35,
+    "exposed_adoptions_in_strata": 34
+   },
+   "P_dir": {
+    "OR": 1.036664245601486,
+    "OR_ci": [
+     0.6037597183658386,
+     1.6795930602187559
+    ],
+    "RR": 1.0346392784365008,
+    "RR_ci": [
+     0.6140242462739235,
+     1.6351054771135607
+    ],
+    "configs_informative": 9,
+    "strata_used": 47,
+    "exposed_adoptions_in_strata": 14
+   },
+   "P_dir dm>0": {
+    "OR": 0.6006156109121119,
+    "OR_ci": [
+     0.2915270895279598,
+     1.933002041651354
+    ],
+    "RR": 0.6088203513733441,
+    "RR_ci": [
+     0.30309005823343405,
+     1.933002041651354
+    ],
+    "configs_informative": 9,
+    "strata_used": 28,
+    "exposed_adoptions_in_strata": 13
+   }
+  },
+  "board": {
+   "agent_rounds": 89124,
+   "adoptions": 980,
+   "configs": 67,
+   "E_dir": {
+    "OR": 1.4280261690558682,
+    "OR_ci": [
+     0.9827638084331174,
+     2.0063030264721644
+    ],
+    "RR": 1.3283808956432444,
+    "RR_ci": [
+     0.9853807943260443,
+     1.6932430609260878
+    ],
+    "configs_informative": 43,
+    "strata_used": 191,
+    "exposed_adoptions_in_strata": 93
+   },
+   "E_dir dm>0": {
+    "OR": 1.1921970371772996,
+    "OR_ci": [
+     0.6498875856758513,
+     2.3059599804535953
+    ],
+    "RR": 1.145963197746082,
+    "RR_ci": [
+     0.7054148402872695,
+     1.8270134142453816
+    ],
+    "configs_informative": 29,
+    "strata_used": 103,
+    "exposed_adoptions_in_strata": 65
+   },
+   "P_dir": {
+    "OR": 1.5049109470008488,
+    "OR_ci": [
+     1.1900034155397625,
+     1.8253856327561733
+    ],
+    "RR": 1.4289048156020467,
+    "RR_ci": [
+     1.1672430840656862,
+     1.6964372889700963
+    ],
+    "configs_informative": 43,
+    "strata_used": 246,
+    "exposed_adoptions_in_strata": 113
+   },
+   "P_dir dm>0": {
+    "OR": 0.999648891839525,
+    "OR_ci": [
+     0.7015984319109634,
+     1.522191210391693
+    ],
+    "RR": 0.9997061112814586,
+    "RR_ci": [
+     0.7427585093622464,
+     1.41891122966004
+    ],
+    "configs_informative": 37,
+    "strata_used": 141,
+    "exposed_adoptions_in_strata": 93
+   }
+  },
+  "team_channels": {
+   "agent_rounds": 39063,
+   "adoptions": 247,
+   "configs": 28,
+   "E_dir": {
+    "OR": 5.099584410944544,
+    "OR_ci": [
+     2.136115103763859,
+     13.203754375712373
+    ],
+    "RR": 4.6837910632024835,
+    "RR_ci": [
+     2.106808351106353,
+     11.605495758780222
+    ],
+    "configs_informative": 12,
+    "strata_used": 49,
+    "exposed_adoptions_in_strata": 27
+   },
+   "E_dir dm>0": {
+    "OR": 4.007537688442212,
+    "OR_ci": [
+     1.4589310686015833,
+     17.384554324894516
+    ],
+    "RR": 3.623082542001461,
+    "RR_ci": [
+     1.4292364572139797,
+     13.489374999999988
+    ],
+    "configs_informative": 11,
+    "strata_used": 27,
+    "exposed_adoptions_in_strata": 20
+   },
+   "P_dir": {
+    "OR": 1.255452328555303,
+    "OR_ci": [
+     0.9326442298054798,
+     2.249977467536508
+    ],
+    "RR": 1.2364572580704851,
+    "RR_ci": [
+     0.9361224319071664,
+     2.0660502884235425
+    ],
+    "configs_informative": 11,
+    "strata_used": 65,
+    "exposed_adoptions_in_strata": 17
+   },
+   "P_dir dm>0": {
+    "OR": 0.611883640147184,
+    "OR_ci": [
+     0.36438455491392674,
+     0.8692543006894559
+    ],
+    "RR": 0.6514204642243541,
+    "RR_ci": [
+     0.4248158964953325,
+     0.8821306112200248
+    ],
+    "configs_informative": 10,
+    "strata_used": 39,
+    "exposed_adoptions_in_strata": 14
+   }
+  },
+  "dm_only": {
+   "agent_rounds": 24518,
+   "adoptions": 94,
+   "configs": 17,
+   "E_dir": {
+    "OR": 29.901216599655736,
+    "OR_ci": [
+     7.766678700361013,
+     82.48875337977542
+    ],
+    "RR": 24.558852281350365,
+    "RR_ci": [
+     7.766678700361013,
+     51.03588236919479
+    ],
+    "configs_informative": 7,
+    "strata_used": 25,
+    "exposed_adoptions_in_strata": 20
+   },
+   "E_dir dm>0": {
+    "OR": 12.849019607843138,
+    "OR_ci": [
+     3.1575757575757577,
+     36.132440476190474
+    ],
+    "RR": 10.826016260162605,
+    "RR_ci": [
+     3.1575757575757577,
+     23.799702380952382
+    ],
+    "configs_informative": 7,
+    "strata_used": 19,
+    "exposed_adoptions_in_strata": 17
+   },
+   "P_dir": {
+    "OR": 0.9095949569196802,
+    "OR_ci": [
+     0.22397916616218427,
+     2.1398404504927266
+    ],
+    "RR": 0.9138678945462677,
+    "RR_ci": [
+     0.2519054324055613,
+     2.1398404504927266
+    ],
+    "configs_informative": 6,
+    "strata_used": 29,
+    "exposed_adoptions_in_strata": 4
+   },
+   "P_dir dm>0": {
+    "OR": 0.3760822911270628,
+    "OR_ci": [
+     0.05747402848192326,
+     1.1861924686192469
+    ],
+    "RR": 0.4357138076433974,
+    "RR_ci": [
+     0.1546445751664902,
+     1.1861924686192469
+    ],
+    "configs_informative": 6,
+    "strata_used": 16,
+    "exposed_adoptions_in_strata": 4
+   }
+  },
+  "K4 board": {
+   "agent_rounds": 42769,
+   "adoptions": 627,
+   "configs": 33,
+   "E_dir": {
+    "OR": 2.665902755164273,
+    "OR_ci": [
+     1.6739498217663065,
+     4.322065365319989
+    ],
+    "RR": 1.9938677364455324,
+    "RR_ci": [
+     1.475945543560782,
+     2.626321751331169
+    ],
+    "configs_informative": 25,
+    "strata_used": 98,
+    "exposed_adoptions_in_strata": 71
+   },
+   "E_dir dm>0": {
+    "OR": 1.8894593454103954,
+    "OR_ci": [
+     0.8833573156116281,
+     5.250484854415368
+    ],
+    "RR": 1.5700218480976023,
+    "RR_ci": [
+     0.9117942045397104,
+     2.7601757508866758
+    ],
+    "configs_informative": 18,
+    "strata_used": 68,
+    "exposed_adoptions_in_strata": 53
+   },
+   "P_dir": {
+    "OR": 1.59414938242111,
+    "OR_ci": [
+     1.2406637904270217,
+     1.9898136948579936
+    ],
+    "RR": 1.487823181120975,
+    "RR_ci": [
+     1.204854986205133,
+     1.7896368089052959
+    ],
+    "configs_informative": 27,
+    "strata_used": 170,
+    "exposed_adoptions_in_strata": 86
+   },
+   "P_dir dm>0": {
+    "OR": 0.8465369909482866,
+    "OR_ci": [
+     0.5576426397151992,
+     1.292929274289461
+    ],
+    "RR": 0.8731777313456912,
+    "RR_ci": [
+     0.6281132590053418,
+     1.2308540986291054
+    ],
+    "configs_informative": 25,
+    "strata_used": 105,
+    "exposed_adoptions_in_strata": 69
+   }
+  },
+  "K4 local": {
+   "agent_rounds": 31101,
+   "adoptions": 265,
+   "configs": 23,
+   "E_dir": {
+    "OR": 8.12046090695189,
+    "OR_ci": [
+     2.842485715020992,
+     25.72643711779445
+    ],
+    "RR": 7.181142540903773,
+    "RR_ci": [
+     2.790468142751018,
+     20.345969996427794
+    ],
+    "configs_informative": 13,
+    "strata_used": 62,
+    "exposed_adoptions_in_strata": 40
+   },
+   "E_dir dm>0": {
+    "OR": 4.433737257164839,
+    "OR_ci": [
+     1.5012653825877391,
+     15.598952622014524
+    ],
+    "RR": 3.9647097899194557,
+    "RR_ci": [
+     1.4560316399286988,
+     11.361862980769201
+    ],
+    "configs_informative": 12,
+    "strata_used": 39,
+    "exposed_adoptions_in_strata": 30
+   },
+   "P_dir": {
+    "OR": 1.1168500855461438,
+    "OR_ci": [
+     0.8108555211766227,
+     1.7826311159956316
+    ],
+    "RR": 1.1075654679388065,
+    "RR_ci": [
+     0.8237436598241069,
+     1.6630100794137221
+    ],
+    "configs_informative": 11,
+    "strata_used": 71,
+    "exposed_adoptions_in_strata": 17
+   },
+   "P_dir dm>0": {
+    "OR": 0.5206919846095103,
+    "OR_ci": [
+     0.29109343745934074,
+     0.7775268088435281
+    ],
+    "RR": 0.5782659258302105,
+    "RR_ci": [
+     0.37835511529381655,
+     0.8093579575695155
+    ],
+    "configs_informative": 10,
+    "strata_used": 42,
+    "exposed_adoptions_in_strata": 15
+   }
+  }
+ },
+ "branch": {
+  "configs": 8,
+  "arms": {
+   "inject_issue_comment": {
+    "pairs": 8,
+    "tipped_control": 3,
+    "tipped_arm": 5,
+    "tip_flips_up": 2,
+    "tip_flips_down": 0,
+    "new_viol_after_branch_control_mean": 4.875,
+    "new_viol_after_branch_arm_mean": 9.375,
+    "mean_diff": 4.5,
+    "p_two_sided_signflip": 0.03125,
+    "per_config": {
+     "core-night_branch-K2-001": [
+      0,
+      12
+     ],
+     "core-night_branch-K2-002": [
+      1,
+      6
+     ],
+     "core-night_branch-K2-004": [
+      9,
+      12
+     ],
+     "core-night_branch-K2-005": [
+      1,
+      5
+     ],
+     "core-night_branch-K4-000": [
+      1,
+      8
+     ],
+     "core-night_branch-K4-003": [
+      13,
+      10
+     ],
+     "core-night_branch-K4-006": [
+      14,
+      17
+     ],
+     "core-night_branch-K4-007": [
+      0,
+      5
+     ]
+    }
+   },
+   "fake_authority": {
+    "pairs": 8,
+    "tipped_control": 3,
+    "tipped_arm": 3,
+    "tip_flips_up": 1,
+    "tip_flips_down": 1,
+    "new_viol_after_branch_control_mean": 4.875,
+    "new_viol_after_branch_arm_mean": 7.125,
+    "mean_diff": 2.25,
+    "p_two_sided_signflip": 0.21875,
+    "per_config": {
+     "core-night_branch-K2-001": [
+      0,
+      11
+     ],
+     "core-night_branch-K2-002": [
+      1,
+      5
+     ],
+     "core-night_branch-K2-004": [
+      9,
+      6
+     ],
+     "core-night_branch-K2-005": [
+      1,
+      1
+     ],
+     "core-night_branch-K4-000": [
+      1,
+      4
+     ],
+     "core-night_branch-K4-003": [
+      13,
+      12
+     ],
+     "core-night_branch-K4-006": [
+      14,
+      15
+     ],
+     "core-night_branch-K4-007": [
+      0,
+      3
+     ]
+    }
+   }
+  }
+ }
+}

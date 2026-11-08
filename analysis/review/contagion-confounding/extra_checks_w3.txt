@@ -1,0 +1,187 @@
+=== heterogeneity by window (K2/K4, board/non-board) ===
+w=1 K2                                                     E_dir      all  OR 0.78 [0.27; 1.49]  RR 0.79  cfg 17  strata 40  expAdopt 8  P(OR<=1) 0.754
+w=1 K2                                                     E_dir      dm>0 OR 0.40 [0.00; 2.00]  RR 0.40  cfg 3  strata 3  expAdopt 1  P(OR<=1) 0.767
+w=1 K2                                                     P_dir      all  OR 0.84 [0.28; 1.62]  RR 0.85  cfg 17  strata 51  expAdopt 7  P(OR<=1) 0.679
+w=1 K2                                                     P_dir      dm>0 OR 1.48 [0.38; 6.33]  RR 1.48  cfg 7  strata 9  expAdopt 5  P(OR<=1) 0.271
+w=1 K4                                                     E_dir      all  OR 5.70 [3.39; 10.22]  RR 3.58  cfg 37  strata 109  expAdopt 84  P(OR<=1) 0.000
+w=1 K4                                                     E_dir      dm>0 OR 2.24 [1.09; 4.85]  RR 1.88  cfg 22  strata 48  expAdopt 36  P(OR<=1) 0.010
+w=1 K4                                                     P_dir      all  OR 2.20 [1.39; 3.45]  RR 2.00  cfg 35  strata 152  expAdopt 65  P(OR<=1) 0.001
+w=1 K4                                                     P_dir      dm>0 OR 0.65 [0.31; 1.19]  RR 0.72  cfg 24  strata 64  expAdopt 37  P(OR<=1) 0.920
+w=1 board                                                  E_dir      all  OR 2.35 [1.49; 3.61]  RR 1.86  cfg 40  strata 104  expAdopt 62  P(OR<=1) 0.001
+w=1 board                                                  E_dir      dm>0 OR 1.35 [0.60; 3.25]  RR 1.24  cfg 18  strata 34  expAdopt 23  P(OR<=1) 0.234
+w=1 board                                                  P_dir      all  OR 2.16 [1.31; 3.30]  RR 1.97  cfg 37  strata 145  expAdopt 62  P(OR<=1) 0.001
+w=1 board                                                  P_dir      dm>0 OR 0.94 [0.45; 1.82]  RR 0.95  cfg 21  strata 52  expAdopt 36  P(OR<=1) 0.560
+w=1 non-board                                              E_dir      all  OR 10.74 [4.14; 30.91]  RR 9.86  cfg 14  strata 45  expAdopt 30  P(OR<=1) 0.000
+w=1 non-board                                              E_dir      dm>0 OR 4.35 [1.27; 25.51]  RR 4.07  cfg 7  strata 17  expAdopt 14  P(OR<=1) 0.013
+w=1 non-board                                              P_dir      all  OR 1.12 [0.56; 2.33]  RR 1.11  cfg 15  strata 58  expAdopt 10  P(OR<=1) 0.356
+w=1 non-board                                              P_dir      dm>0 OR 0.33 [0.00; 0.71]  RR 0.40  cfg 10  strata 21  expAdopt 6  P(OR<=1) 0.997
+w=1 K4 board                                               E_dir      all  OR 3.97 [2.39; 6.95]  RR 2.44  cfg 24  strata 66  expAdopt 55  P(OR<=1) 0.000
+w=1 K4 board                                               E_dir      dm>0 OR 1.50 [0.70; 3.97]  RR 1.32  cfg 15  strata 31  expAdopt 22  P(OR<=1) 0.167
+w=1 K4 board                                               P_dir      all  OR 2.64 [1.56; 4.15]  RR 2.31  cfg 25  strata 106  expAdopt 56  P(OR<=1) 0.000
+w=1 K4 board                                               P_dir      dm>0 OR 0.83 [0.34; 1.59]  RR 0.87  cfg 16  strata 47  expAdopt 32  P(OR<=1) 0.703
+w=1 K4 non-board                                           E_dir      all  OR 10.73 [4.03; 29.61]  RR 9.82  cfg 13  strata 43  expAdopt 29  P(OR<=1) 0.000
+w=1 K4 non-board                                           E_dir      dm>0 OR 4.35 [1.27; 25.51]  RR 4.07  cfg 7  strata 17  expAdopt 14  P(OR<=1) 0.013
+w=1 K4 non-board                                           P_dir      all  OR 1.19 [0.62; 2.96]  RR 1.18  cfg 10  strata 46  expAdopt 9  P(OR<=1) 0.295
+w=1 K4 non-board                                           P_dir      dm>0 OR 0.30 [0.00; 0.75]  RR 0.39  cfg 8  strata 17  expAdopt 5  P(OR<=1) 0.996
+w=1 K2 board                                               E_dir      all  OR 0.64 [0.18; 1.20]  RR 0.66  cfg 16  strata 38  expAdopt 7  P(OR<=1) 0.910
+w=1 K2 board                                               E_dir      dm>0 OR 0.40 [0.00; 2.00]  RR 0.40  cfg 3  strata 3  expAdopt 1  P(OR<=1) 0.767
+w=1 K2 board                                               P_dir      all  OR 0.86 [0.25; 1.96]  RR 0.87  cfg 12  strata 39  expAdopt 6  P(OR<=1) 0.648
+w=1 K2 board                                               P_dir      dm>0 OR 4.58 [0.50; 7.00]  RR 4.58  cfg 5  strata 5  expAdopt 4  P(OR<=1) 0.086
+w=3 K2                                                     E_dir      all  OR 0.87 [0.52; 1.34]  RR 0.87  cfg 24  strata 105  expAdopt 29  P(OR<=1) 0.743
+w=3 K2                                                     E_dir      dm>0 OR 1.04 [0.46; 2.60]  RR 1.03  cfg 17  strata 42  expAdopt 19  P(OR<=1) 0.444
+w=3 K2                                                     P_dir      all  OR 1.31 [0.80; 2.06]  RR 1.29  cfg 22  strata 99  expAdopt 31  P(OR<=1) 0.120
+w=3 K2                                                     P_dir      dm>0 OR 1.38 [0.71; 2.47]  RR 1.36  cfg 18  strata 49  expAdopt 27  P(OR<=1) 0.156
+w=3 K4                                                     E_dir      all  OR 3.99 [2.39; 6.98]  RR 2.93  cfg 38  strata 160  expAdopt 111  P(OR<=1) 0.000
+w=3 K4                                                     E_dir      dm>0 OR 2.65 [1.35; 5.79]  RR 2.14  cfg 30  strata 107  expAdopt 83  P(OR<=1) 0.003
+w=3 K4                                                     P_dir      all  OR 1.46 [1.18; 1.81]  RR 1.39  cfg 38  strata 241  expAdopt 103  P(OR<=1) 0.000
+w=3 K4                                                     P_dir      dm>0 OR 0.74 [0.55; 1.03]  RR 0.78  cfg 35  strata 147  expAdopt 84  P(OR<=1) 0.964
+w=3 board                                                  E_dir      all  OR 1.43 [0.97; 2.05]  RR 1.33  cfg 43  strata 191  expAdopt 93  P(OR<=1) 0.040
+w=3 board                                                  E_dir      dm>0 OR 1.19 [0.63; 2.16]  RR 1.15  cfg 29  strata 103  expAdopt 65  P(OR<=1) 0.275
+w=3 board                                                  P_dir      all  OR 1.50 [1.19; 1.85]  RR 1.43  cfg 43  strata 246  expAdopt 113  P(OR<=1) 0.001
+w=3 board                                                  P_dir      dm>0 OR 1.00 [0.70; 1.52]  RR 1.00  cfg 37  strata 141  expAdopt 93  P(OR<=1) 0.487
+w=3 non-board                                              E_dir      all  OR 8.07 [3.43; 21.85]  RR 7.27  cfg 19  strata 74  expAdopt 47  P(OR<=1) 0.000
+w=3 non-board                                              E_dir      dm>0 OR 5.74 [2.28; 18.65]  RR 5.09  cfg 18  strata 46  expAdopt 37  P(OR<=1) 0.000
+w=3 non-board                                              P_dir      all  OR 1.17 [0.89; 1.71]  RR 1.15  cfg 17  strata 94  expAdopt 21  P(OR<=1) 0.128
+w=3 non-board                                              P_dir      dm>0 OR 0.54 [0.35; 0.76]  RR 0.58  cfg 16  strata 55  expAdopt 18  P(OR<=1) 0.998
+w=3 K4 board                                               E_dir      all  OR 2.67 [1.74; 4.37]  RR 1.99  cfg 25  strata 98  expAdopt 71  P(OR<=1) 0.000
+w=3 K4 board                                               E_dir      dm>0 OR 1.89 [0.86; 5.33]  RR 1.57  cfg 18  strata 68  expAdopt 53  P(OR<=1) 0.051
+w=3 K4 board                                               P_dir      all  OR 1.59 [1.22; 2.01]  RR 1.49  cfg 27  strata 170  expAdopt 86  P(OR<=1) 0.001
+w=3 K4 board                                               P_dir      dm>0 OR 0.85 [0.57; 1.34]  RR 0.87  cfg 25  strata 105  expAdopt 69  P(OR<=1) 0.772
+w=3 K4 non-board                                           E_dir      all  OR 8.12 [3.05; 24.83]  RR 7.18  cfg 13  strata 62  expAdopt 40  P(OR<=1) 0.000
+w=3 K4 non-board                                           E_dir      dm>0 OR 4.43 [1.45; 13.81]  RR 3.96  cfg 12  strata 39  expAdopt 30  P(OR<=1) 0.005
+w=3 K4 non-board                                           P_dir      all  OR 1.12 [0.82; 1.77]  RR 1.11  cfg 11  strata 71  expAdopt 17  P(OR<=1) 0.228
+w=3 K4 non-board                                           P_dir      dm>0 OR 0.52 [0.30; 0.76]  RR 0.58  cfg 10  strata 42  expAdopt 15  P(OR<=1) 1.000
+w=3 K2 board                                               E_dir      all  OR 0.55 [0.28; 0.82]  RR 0.57  cfg 18  strata 93  expAdopt 22  P(OR<=1) 0.998
+w=3 K2 board                                               E_dir      dm>0 OR 0.43 [0.11; 0.81]  RR 0.46  cfg 11  strata 35  expAdopt 12  P(OR<=1) 0.997
+w=3 K2 board                                               P_dir      all  OR 1.30 [0.71; 2.14]  RR 1.27  cfg 16  strata 76  expAdopt 27  P(OR<=1) 0.177
+w=3 K2 board                                               P_dir      dm>0 OR 1.90 [0.90; 3.77]  RR 1.81  cfg 12  strata 36  expAdopt 24  P(OR<=1) 0.043
+w=5 K2                                                     E_dir      all  OR 1.34 [0.79; 2.07]  RR 1.31  cfg 25  strata 138  expAdopt 57  P(OR<=1) 0.131
+w=5 K2                                                     E_dir      dm>0 OR 1.62 [0.81; 3.31]  RR 1.60  cfg 21  strata 71  expAdopt 42  P(OR<=1) 0.087
+w=5 K2                                                     P_dir      all  OR 1.25 [0.88; 1.78]  RR 1.23  cfg 24  strata 130  expAdopt 51  P(OR<=1) 0.095
+w=5 K2                                                     P_dir      dm>0 OR 1.14 [0.73; 1.87]  RR 1.12  cfg 19  strata 83  expAdopt 48  P(OR<=1) 0.258
+w=5 K4                                                     E_dir      all  OR 3.25 [1.98; 5.56]  RR 2.54  cfg 38  strata 184  expAdopt 118  P(OR<=1) 0.000
+w=5 K4                                                     E_dir      dm>0 OR 2.40 [1.29; 4.74]  RR 2.03  cfg 32  strata 144  expAdopt 99  P(OR<=1) 0.000
+w=5 K4                                                     P_dir      all  OR 1.41 [1.15; 1.69]  RR 1.35  cfg 40  strata 275  expAdopt 127  P(OR<=1) 0.002
+w=5 K4                                                     P_dir      dm>0 OR 0.91 [0.69; 1.21]  RR 0.92  cfg 38  strata 186  expAdopt 113  P(OR<=1) 0.760
+w=5 board                                                  E_dir      all  OR 1.50 [1.04; 2.10]  RR 1.39  cfg 43  strata 236  expAdopt 122  P(OR<=1) 0.018
+w=5 board                                                  E_dir      dm>0 OR 1.31 [0.80; 2.13]  RR 1.24  cfg 33  strata 144  expAdopt 90  P(OR<=1) 0.137
+w=5 board                                                  P_dir      all  OR 1.42 [1.16; 1.72]  RR 1.36  cfg 45  strata 295  expAdopt 149  P(OR<=1) 0.001
+w=5 board                                                  P_dir      dm>0 OR 1.10 [0.83; 1.52]  RR 1.08  cfg 39  strata 194  expAdopt 134  P(OR<=1) 0.274
+w=5 non-board                                              E_dir      all  OR 7.16 [3.26; 19.07]  RR 6.38  cfg 20  strata 86  expAdopt 53  P(OR<=1) 0.000
+w=5 non-board                                              E_dir      dm>0 OR 5.51 [2.68; 16.31]  RR 5.09  cfg 20  strata 71  expAdopt 51  P(OR<=1) 0.000
+w=5 non-board                                              P_dir      all  OR 1.15 [0.87; 1.58]  RR 1.14  cfg 19  strata 110  expAdopt 29  P(OR<=1) 0.155
+w=5 non-board                                              P_dir      dm>0 OR 0.70 [0.48; 0.92]  RR 0.72  cfg 18  strata 75  expAdopt 27  P(OR<=1) 0.994
+w=5 K4 board                                               E_dir      all  OR 2.27 [1.41; 3.97]  RR 1.81  cfg 25  strata 114  expAdopt 76  P(OR<=1) 0.002
+w=5 K4 board                                               E_dir      dm>0 OR 1.63 [0.76; 4.00]  RR 1.43  cfg 19  strata 85  expAdopt 59  P(OR<=1) 0.081
+w=5 K4 board                                               P_dir      all  OR 1.53 [1.21; 1.89]  RR 1.44  cfg 27  strata 190  expAdopt 104  P(OR<=1) 0.000
+w=5 K4 board                                               P_dir      dm>0 OR 1.05 [0.74; 1.61]  RR 1.04  cfg 26  strata 131  expAdopt 92  P(OR<=1) 0.398
+w=5 K4 non-board                                           E_dir      all  OR 6.29 [2.57; 18.11]  RR 5.54  cfg 13  strata 70  expAdopt 42  P(OR<=1) 0.000
+w=5 K4 non-board                                           E_dir      dm>0 OR 4.21 [1.80; 12.13]  RR 3.90  cfg 13  strata 59  expAdopt 40  P(OR<=1) 0.001
+w=5 K4 non-board                                           P_dir      all  OR 1.10 [0.82; 1.51]  RR 1.10  cfg 13  strata 85  expAdopt 23  P(OR<=1) 0.227
+w=5 K4 non-board                                           P_dir      dm>0 OR 0.65 [0.39; 0.88]  RR 0.68  cfg 12  strata 55  expAdopt 21  P(OR<=1) 0.996
+w=5 K2 board                                               E_dir      all  OR 0.95 [0.45; 1.47]  RR 0.95  cfg 18  strata 122  expAdopt 46  P(OR<=1) 0.609
+w=5 K2 board                                               E_dir      dm>0 OR 0.94 [0.35; 1.81]  RR 0.95  cfg 14  strata 59  expAdopt 31  P(OR<=1) 0.591
+w=5 K2 board                                               P_dir      all  OR 1.23 [0.83; 1.78]  RR 1.21  cfg 18  strata 105  expAdopt 45  P(OR<=1) 0.139
+w=5 K2 board                                               P_dir      dm>0 OR 1.21 [0.72; 2.36]  RR 1.19  cfg 13  strata 63  expAdopt 42  P(OR<=1) 0.254
+
+=== K2 / K4 shortcut-naming DMs ===
+K2                                                         E_mech     all  OR 0.80 [0.47; 1.38]  RR 0.81  cfg 24  strata 94  expAdopt 26  P(OR<=1) 0.796
+K2                                                         E_mech     dm>0 OR 0.94 [0.40; 2.58]  RR 0.94  cfg 17  strata 42  expAdopt 18  P(OR<=1) 0.532
+K4                                                         E_mech     all  OR 5.97 [3.17; 12.19]  RR 3.74  cfg 35  strata 114  expAdopt 89  P(OR<=1) 0.000
+K4                                                         E_mech     dm>0 OR 4.41 [2.12; 10.27]  RR 2.99  cfg 26  strata 87  expAdopt 71  P(OR<=1) 0.000
+
+=== sender types ===
+tech-lead senders only                                     E_lead     all  OR 2.99 [1.50; 6.98]  RR 2.67  cfg 23  strata 72  expAdopt 46  P(OR<=1) 0.001
+tech-lead senders only                                     E_lead     dm>0 OR 2.61 [1.03; 7.63]  RR 2.24  cfg 20  strata 44  expAdopt 38  P(OR<=1) 0.021
+tech-lead senders only                                     P_lead     all  OR 2.10 [0.48; 6.73]  RR 2.04  cfg 15  strata 32  expAdopt 12  P(OR<=1) 0.142
+tech-lead senders only                                     P_lead     dm>0 OR 0.75 [0.00; 2.77]  RR 0.81  cfg 9  strata 13  expAdopt 7  P(OR<=1) 0.675
+reviewer-role senders only                                 E_reviewerrole all  OR 2.58 [0.97; 9.41]  RR 2.10  cfg 12  strata 27  expAdopt 13  P(OR<=1) 0.028
+reviewer-role senders only                                 E_reviewerrole dm>0 OR 1.50 [0.17; 16.82]  RR 1.42  cfg 8  strata 18  expAdopt 9  P(OR<=1) 0.322
+reviewer-role senders only                                 P_reviewerrole all  OR 2.02 [0.59; 4.23]  RR 1.92  cfg 23  strata 82  expAdopt 26  P(OR<=1) 0.118
+reviewer-role senders only                                 P_reviewerrole dm>0 OR 0.73 [0.25; 1.62]  RR 0.76  cfg 18  strata 48  expAdopt 18  P(OR<=1) 0.777
+info_asym senders only                                     E_infoasym all  OR 1.82 [0.88; 5.15]  RR 1.62  cfg 20  strata 66  expAdopt 29  P(OR<=1) 0.056
+info_asym senders only                                     E_infoasym dm>0 OR 1.74 [0.63; 6.52]  RR 1.51  cfg 15  strata 34  expAdopt 23  P(OR<=1) 0.130
+info_asym senders only                                     P_infoasym all  OR 0.64 [0.00; 2.46]  RR 0.64  cfg 6  strata 16  expAdopt 2  P(OR<=1) 0.756
+info_asym senders only                                     P_infoasym dm>0 OR 0.27 [0.00; 0.57]  RR 0.27  cfg 5  strata 11  expAdopt 2  P(OR<=1) 1.000
+share of exposed agent-rounds with E_instr     : E 0.340 (exposed adopters 0.409) | placebo 0.054
+share of exposed agent-rounds with E_lead      : E 0.277 (exposed adopters 0.325) | placebo 0.060
+share of exposed agent-rounds with E_samemodel : E 0.403 (exposed adopters 0.364) | placebo 0.409
+share of exposed agent-rounds with E_sameteam  : E 0.534 (exposed adopters 0.448) | placebo 0.570
+share of exposed agent-rounds with E_anyrel    : E 0.646 (exposed adopters 0.442) | placebo 0.747
+share of exposed agent-rounds with E_sol2      : E 0.393 (exposed adopters 0.435) | placebo 0.264
+
+=== solicited vs unsolicited (refined: receiver addressed the sender in [r-3, r-1]) ===
+unsolicited                                                E_unsol2   all  OR 1.79 [1.23; 2.63]  RR 1.60  cfg 50  strata 163  expAdopt 82  P(OR<=1) 0.002
+unsolicited                                                E_unsol2   dm>0 OR 1.67 [0.94; 2.94]  RR 1.48  cfg 36  strata 80  expAdopt 57  P(OR<=1) 0.037
+unsolicited                                                P_unsol2   all  OR 1.35 [1.08; 1.69]  RR 1.30  cfg 59  strata 292  expAdopt 102  P(OR<=1) 0.004
+unsolicited                                                P_unsol2   dm>0 OR 0.84 [0.61; 1.18]  RR 0.86  cfg 49  strata 164  expAdopt 85  P(OR<=1) 0.846
+solicited                                                  E_sol2     all  OR 3.59 [1.83; 7.24]  RR 2.97  cfg 43  strata 131  expAdopt 64  P(OR<=1) 0.000
+solicited                                                  E_sol2     dm>0 OR 2.63 [1.23; 6.15]  RR 2.30  cfg 28  strata 85  expAdopt 51  P(OR<=1) 0.003
+solicited                                                  P_sol2     all  OR 1.77 [0.96; 3.06]  RR 1.65  cfg 40  strata 143  expAdopt 41  P(OR<=1) 0.035
+solicited                                                  P_sol2     dm>0 OR 0.97 [0.55; 1.63]  RR 0.98  cfg 30  strata 79  expAdopt 32  P(OR<=1) 0.542
+K4 unsolicited                                             E_unsol2   all  OR 3.15 [1.88; 5.51]  RR 2.26  cfg 31  strata 82  expAdopt 58  P(OR<=1) 0.000
+K4 unsolicited                                             E_unsol2   dm>0 OR 2.81 [1.48; 6.13]  RR 1.98  cfg 23  strata 49  expAdopt 43  P(OR<=1) 0.002
+K4 unsolicited                                             P_unsol2   all  OR 1.31 [1.02; 1.64]  RR 1.26  cfg 38  strata 206  expAdopt 75  P(OR<=1) 0.015
+K4 unsolicited                                             P_unsol2   dm>0 OR 0.68 [0.49; 0.94]  RR 0.73  cfg 33  strata 122  expAdopt 61  P(OR<=1) 0.987
+non-board unsolicited                                      E_unsol2   all  OR 4.53 [1.72; 10.92]  RR 4.35  cfg 13  strata 36  expAdopt 16  P(OR<=1) 0.001
+non-board unsolicited                                      E_unsol2   dm>0 OR 5.41 [2.22; 15.47]  RR 4.81  cfg 11  strata 20  expAdopt 13  P(OR<=1) 0.001
+non-board unsolicited                                      P_unsol2   all  OR 1.29 [0.93; 1.99]  RR 1.27  cfg 16  strata 78  expAdopt 18  P(OR<=1) 0.063
+non-board unsolicited                                      P_unsol2   dm>0 OR 0.60 [0.36; 0.91]  RR 0.65  cfg 14  strata 46  expAdopt 16  P(OR<=1) 0.992
+
+=== further receiver-state strata ===
++rx_mech_prewin                                            E_dir      all  OR 2.62 [1.67; 4.10]  RR 2.28  cfg 59  strata 226  expAdopt 129  P(OR<=1) 0.000
++rx_mech_prewin                                            E_dir      dm>0 OR 2.56 [1.47; 4.69]  RR 2.21  cfg 42  strata 121  expAdopt 87  P(OR<=1) 0.002
++rx_mech_prewin                                            P_dir      all  OR 1.34 [1.08; 1.65]  RR 1.29  cfg 60  strata 314  expAdopt 127  P(OR<=1) 0.003
++rx_mech_prewin                                            P_dir      dm>0 OR 0.79 [0.59; 1.09]  RR 0.82  cfg 51  strata 171  expAdopt 92  P(OR<=1) 0.927
++ext_seen                                                  E_dir      all  OR 2.42 [1.59; 3.71]  RR 2.10  cfg 62  strata 252  expAdopt 138  P(OR<=1) 0.000
++ext_seen                                                  E_dir      dm>0 OR 2.11 [1.23; 3.82]  RR 1.86  cfg 45  strata 145  expAdopt 101  P(OR<=1) 0.004
++ext_seen                                                  P_dir      all  OR 1.44 [1.18; 1.75]  RR 1.39  cfg 59  strata 329  expAdopt 134  P(OR<=1) 0.001
++ext_seen                                                  P_dir      dm>0 OR 0.86 [0.65; 1.18]  RR 0.88  cfg 52  strata 193  expAdopt 111  P(OR<=1) 0.836
++ext_seen_prewin                                           E_dir      all  OR 2.37 [1.56; 3.60]  RR 2.06  cfg 62  strata 254  expAdopt 138  P(OR<=1) 0.000
++ext_seen_prewin                                           E_dir      dm>0 OR 2.04 [1.18; 3.77]  RR 1.81  cfg 46  strata 145  expAdopt 101  P(OR<=1) 0.008
++ext_seen_prewin                                           P_dir      all  OR 1.41 [1.17; 1.72]  RR 1.36  cfg 60  strata 332  expAdopt 134  P(OR<=1) 0.001
++ext_seen_prewin                                           P_dir      dm>0 OR 0.82 [0.62; 1.12]  RR 0.84  cfg 53  strata 189  expAdopt 106  P(OR<=1) 0.899
++saw_team_viol                                             E_dir      all  OR 2.30 [1.49; 3.56]  RR 2.01  cfg 60  strata 250  expAdopt 129  P(OR<=1) 0.000
++saw_team_viol                                             E_dir      dm>0 OR 1.98 [1.19; 3.59]  RR 1.76  cfg 45  strata 133  expAdopt 91  P(OR<=1) 0.004
++saw_team_viol                                             P_dir      all  OR 1.42 [1.19; 1.72]  RR 1.37  cfg 60  strata 331  expAdopt 129  P(OR<=1) 0.001
++saw_team_viol                                             P_dir      dm>0 OR 0.85 [0.64; 1.16]  RR 0.87  cfg 53  strata 189  expAdopt 105  P(OR<=1) 0.856
++saw_team_viol+team                                        E_dir      all  OR 2.21 [1.39; 3.47]  RR 1.87  cfg 48  strata 132  expAdopt 87  P(OR<=1) 0.000
++saw_team_viol+team                                        E_dir      dm>0 OR 1.68 [0.91; 3.55]  RR 1.47  cfg 29  strata 52  expAdopt 37  P(OR<=1) 0.052
++saw_team_viol+team                                        P_dir      all  OR 1.60 [1.24; 2.09]  RR 1.49  cfg 51  strata 216  expAdopt 115  P(OR<=1) 0.000
++saw_team_viol+team                                        P_dir      dm>0 OR 1.01 [0.68; 1.59]  RR 1.00  cfg 39  strata 106  expAdopt 61  P(OR<=1) 0.481
++since_red_bin                                             E_dir      all  OR 2.17 [1.39; 3.46]  RR 1.88  cfg 61  strata 221  expAdopt 127  P(OR<=1) 0.001
++since_red_bin                                             E_dir      dm>0 OR 2.28 [1.34; 4.20]  RR 1.92  cfg 46  strata 118  expAdopt 89  P(OR<=1) 0.003
++since_red_bin                                             P_dir      all  OR 1.39 [1.12; 1.70]  RR 1.33  cfg 59  strata 282  expAdopt 126  P(OR<=1) 0.003
++since_red_bin                                             P_dir      dm>0 OR 0.88 [0.62; 1.25]  RR 0.90  cfg 51  strata 152  expAdopt 91  P(OR<=1) 0.748
++since_esc_bin                                             E_dir      all  OR 2.49 [1.49; 4.10]  RR 2.11  cfg 56  strata 180  expAdopt 101  P(OR<=1) 0.000
++since_esc_bin                                             E_dir      dm>0 OR 1.97 [1.09; 3.83]  RR 1.76  cfg 36  strata 83  expAdopt 53  P(OR<=1) 0.016
++since_esc_bin                                             P_dir      all  OR 1.62 [1.22; 2.07]  RR 1.50  cfg 56  strata 230  expAdopt 112  P(OR<=1) 0.000
++since_esc_bin                                             P_dir      dm>0 OR 1.18 [0.83; 1.77]  RR 1.13  cfg 44  strata 126  expAdopt 82  P(OR<=1) 0.180
++credits_bin                                               E_dir      all  OR 2.37 [1.53; 3.73]  RR 2.07  cfg 56  strata 216  expAdopt 124  P(OR<=1) 0.000
++credits_bin                                               E_dir      dm>0 OR 2.46 [1.48; 4.30]  RR 2.05  cfg 42  strata 113  expAdopt 85  P(OR<=1) 0.001
++credits_bin                                               P_dir      all  OR 1.54 [1.21; 1.96]  RR 1.46  cfg 59  strata 286  expAdopt 129  P(OR<=1) 0.000
++credits_bin                                               P_dir      dm>0 OR 0.98 [0.72; 1.44]  RR 0.99  cfg 50  strata 153  expAdopt 93  P(OR<=1) 0.513
++since_red_bin+credits_bin                                 E_dir      all  OR 2.16 [1.39; 3.48]  RR 1.89  cfg 54  strata 190  expAdopt 112  P(OR<=1) 0.001
++since_red_bin+credits_bin                                 E_dir      dm>0 OR 2.54 [1.43; 4.78]  RR 2.03  cfg 37  strata 89  expAdopt 69  P(OR<=1) 0.001
++since_red_bin+credits_bin                                 P_dir      all  OR 1.55 [1.22; 1.94]  RR 1.45  cfg 58  strata 232  expAdopt 119  P(OR<=1) 0.000
++since_red_bin+credits_bin                                 P_dir      dm>0 OR 1.00 [0.70; 1.57]  RR 1.00  cfg 46  strata 121  expAdopt 78  P(OR<=1) 0.493
++qa_fixed                                                  E_dir      all  OR 2.40 [1.57; 3.71]  RR 2.09  cfg 62  strata 257  expAdopt 140  P(OR<=1) 0.000
++qa_fixed                                                  E_dir      dm>0 OR 2.03 [1.17; 3.68]  RR 1.80  cfg 47  strata 146  expAdopt 100  P(OR<=1) 0.006
++qa_fixed                                                  P_dir      all  OR 1.42 [1.17; 1.72]  RR 1.36  cfg 60  strata 337  expAdopt 134  P(OR<=1) 0.001
++qa_fixed                                                  P_dir      dm>0 OR 0.84 [0.63; 1.16]  RR 0.87  cfg 53  strata 194  expAdopt 111  P(OR<=1) 0.854
++proxy_q                                                   E_dir      all  OR 2.52 [1.67; 3.83]  RR 2.17  cfg 61  strata 256  expAdopt 139  P(OR<=1) 0.000
++proxy_q                                                   E_dir      dm>0 OR 2.06 [1.21; 3.70]  RR 1.82  cfg 47  strata 148  expAdopt 102  P(OR<=1) 0.005
++proxy_q                                                   P_dir      all  OR 1.43 [1.18; 1.73]  RR 1.37  cfg 60  strata 339  expAdopt 134  P(OR<=1) 0.000
++proxy_q                                                   P_dir      dm>0 OR 0.84 [0.63; 1.14]  RR 0.86  cfg 53  strata 196  expAdopt 111  P(OR<=1) 0.866
++n_viol_team_before                                        E_dir      all  OR 2.26 [1.47; 3.51]  RR 1.95  cfg 56  strata 183  expAdopt 109  P(OR<=1) 0.000
++n_viol_team_before                                        E_dir      dm>0 OR 1.82 [0.95; 3.63]  RR 1.62  cfg 37  strata 90  expAdopt 60  P(OR<=1) 0.033
++n_viol_team_before                                        P_dir      all  OR 1.43 [1.17; 1.72]  RR 1.37  cfg 58  strata 297  expAdopt 127  P(OR<=1) 0.000
++n_viol_team_before                                        P_dir      dm>0 OR 0.93 [0.70; 1.28]  RR 0.95  cfg 48  strata 158  expAdopt 91  P(OR<=1) 0.647
++rx_contacted_violator_prewin                              E_dir      all  OR 2.38 [1.59; 3.66]  RR 2.07  cfg 57  strata 228  expAdopt 127  P(OR<=1) 0.000
++rx_contacted_violator_prewin                              E_dir      dm>0 OR 2.13 [1.33; 3.60]  RR 1.87  cfg 44  strata 130  expAdopt 89  P(OR<=1) 0.002
++rx_contacted_violator_prewin                              P_dir      all  OR 1.41 [1.15; 1.73]  RR 1.36  cfg 59  strata 325  expAdopt 130  P(OR<=1) 0.001
++rx_contacted_violator_prewin                              P_dir      dm>0 OR 0.86 [0.64; 1.18]  RR 0.88  cfg 51  strata 184  expAdopt 107  P(OR<=1) 0.834
+configs without injected instruction                       E_dir      all  OR 2.11 [1.47; 3.18]  RR 1.85  cfg 50  strata 200  expAdopt 110  P(OR<=1) 0.000
+configs without injected instruction                       E_dir      dm>0 OR 1.88 [1.05; 3.71]  RR 1.65  cfg 37  strata 110  expAdopt 79  P(OR<=1) 0.018
+receivers never saw a team violation in check_status       E_dir      all  OR 2.29 [1.51; 3.57]  RR 2.03  cfg 59  strata 237  expAdopt 119  P(OR<=1) 0.000
+receivers never saw a team violation in check_status       E_dir      dm>0 OR 2.00 [1.19; 3.68]  RR 1.77  cfg 45  strata 129  expAdopt 88  P(OR<=1) 0.004

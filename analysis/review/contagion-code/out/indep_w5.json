@@ -1,0 +1,216 @@
+{
+ "n_agent_rounds": 152705,
+ "n_adoptions": 1321,
+ "n_runs": 236,
+ "n_configs": 112,
+ "crude": {
+  "E_dir": {
+   "share_exposed": 0.021034019842179365,
+   "p_adopt_exposed": 0.06070983810709838,
+   "p_adopt_unexposed": 0.007532125250011706
+  },
+  "E_any": {
+   "share_exposed": 0.11740938410661078,
+   "p_adopt_exposed": 0.04026995370628591,
+   "p_adopt_unexposed": 0.004444411467917137
+  },
+  "E_mech": {
+   "share_exposed": 0.012953079466946073,
+   "p_adopt_exposed": 0.0839231547017189,
+   "p_adopt_unexposed": 0.007662860668626059
+  },
+  "E_feed": {
+   "share_exposed": 0.19356275171081497,
+   "p_adopt_exposed": 0.029771973746532242,
+   "p_adopt_unexposed": 0.0035810860191478476
+  },
+  "P_dir": {
+   "share_exposed": 0.052283815199240365,
+   "p_adopt_exposed": 0.022294589178356715,
+   "p_adopt_unexposed": 0.007897955376206632
+  }
+ },
+ "mh": {
+  "E_dir": {
+   "OR": 2.250005686386635,
+   "RR": 1.9879134202638362,
+   "configs_informative": 63,
+   "strata_used": 322,
+   "exposed_adoptions_in_strata": 175,
+   "OR_ci_inf_only": [
+    1.590121526252952,
+    3.286626206391762
+   ],
+   "RR_ci_inf_only": [
+    1.4874976645940854,
+    2.7009145570634976
+   ],
+   "nboot_valid_inf_only": 2000,
+   "OR_ci_all_cfgs": [
+    1.5426154853919178,
+    3.277932016722984
+   ],
+   "RR_ci_all_cfgs": [
+    1.447241654146124,
+    2.6963567145267215
+   ],
+   "nboot_valid_all_cfgs": 2000
+  },
+  "E_any": {
+   "OR": 3.132282276453028,
+   "RR": 2.954277793693878,
+   "configs_informative": 36,
+   "strata_used": 181,
+   "exposed_adoptions_in_strata": 117,
+   "OR_ci_inf_only": [
+    1.9334070893831272,
+    5.253671472829927
+   ],
+   "RR_ci_inf_only": [
+    1.8813884565896803,
+    4.819836949251032
+   ],
+   "nboot_valid_inf_only": 2000,
+   "OR_ci_all_cfgs": [
+    1.8913941233239173,
+    5.259570249528233
+   ],
+   "RR_ci_all_cfgs": [
+    1.8220169677548752,
+    4.855201620085663
+   ],
+   "nboot_valid_all_cfgs": 2000
+  },
+  "E_mech": {
+   "OR": 2.556105979357067,
+   "RR": 2.1841440681109807,
+   "configs_informative": 61,
+   "strata_used": 263,
+   "exposed_adoptions_in_strata": 150,
+   "OR_ci_inf_only": [
+    1.6844909494371385,
+    3.932800753752212
+   ],
+   "RR_ci_inf_only": [
+    1.5518006569670175,
+    3.0916571971664495
+   ],
+   "nboot_valid_inf_only": 2000,
+   "OR_ci_all_cfgs": [
+    1.7087255698839148,
+    3.9747408747613546
+   ],
+   "RR_ci_all_cfgs": [
+    1.5563716220350372,
+    3.130050425182245
+   ],
+   "nboot_valid_all_cfgs": 2000
+  },
+  "E_feed": {
+   "OR": null,
+   "informative_strata": 0
+  },
+  "P_dir": {
+   "OR": 1.3548758093450377,
+   "RR": 1.3099297362226718,
+   "configs_informative": 64,
+   "strata_used": 405,
+   "exposed_adoptions_in_strata": 178,
+   "OR_ci_inf_only": [
+    1.1363207546289722,
+    1.6119034734678697
+   ],
+   "RR_ci_inf_only": [
+    1.1218190079017172,
+    1.5215554659978887
+   ],
+   "nboot_valid_inf_only": 2000,
+   "OR_ci_all_cfgs": [
+    1.1424441020387037,
+    1.607645907710924
+   ],
+   "RR_ci_all_cfgs": [
+    1.1265566512615184,
+    1.5220062863618349
+   ],
+   "nboot_valid_all_cfgs": 2000
+  }
+ },
+ "mh_dm>0": {
+  "E_dir": {
+   "OR": 2.1030456067069623,
+   "RR": 1.89176161905339,
+   "configs_informative": 53,
+   "strata_used": 215,
+   "exposed_adoptions_in_strata": 141,
+   "OR_ci_inf_only": [
+    1.3351549819497694,
+    3.4134605525048154
+   ],
+   "RR_ci_inf_only": [
+    1.2822638058248372,
+    2.8480560721414383
+   ],
+   "nboot_valid_inf_only": 2000,
+   "OR_ci_all_cfgs": [
+    1.3099332417110352,
+    3.3886727751874686
+   ],
+   "RR_ci_all_cfgs": [
+    1.253579983340824,
+    2.84384404972185
+   ],
+   "nboot_valid_all_cfgs": 2000
+  },
+  "E_mech": {
+   "OR": 2.6766944259072036,
+   "RR": 2.268978647075708,
+   "configs_informative": 52,
+   "strata_used": 181,
+   "exposed_adoptions_in_strata": 126,
+   "OR_ci_inf_only": [
+    1.6734059671351298,
+    4.797208719384493
+   ],
+   "RR_ci_inf_only": [
+    1.5348226360051986,
+    3.5637473768508126
+   ],
+   "nboot_valid_inf_only": 2000,
+   "OR_ci_all_cfgs": [
+    1.6760614244318073,
+    4.519824997405117
+   ],
+   "RR_ci_all_cfgs": [
+    1.5361571648355365,
+    3.4086341120445427
+   ],
+   "nboot_valid_all_cfgs": 2000
+  },
+  "P_dir": {
+   "OR": 0.9683428551111087,
+   "RR": 0.9724904623452041,
+   "configs_informative": 57,
+   "strata_used": 269,
+   "exposed_adoptions_in_strata": 161,
+   "OR_ci_inf_only": [
+    0.7683717905032649,
+    1.2611232105373775
+   ],
+   "RR_ci_inf_only": [
+    0.796603770252246,
+    1.2219734240390967
+   ],
+   "nboot_valid_inf_only": 2000,
+   "OR_ci_all_cfgs": [
+    0.7709928406069451,
+    1.2541125354331883
+   ],
+   "RR_ci_all_cfgs": [
+    0.7961451580034447,
+    1.2134933184286913
+   ],
+   "nboot_valid_all_cfgs": 2000
+  }
+ }
+}

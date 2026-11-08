@@ -1,0 +1,13 @@
+episodes: 252 skipped (no meta): 0
+tipped: 101 configs: 52
+who started (tipped): {'after_injection': 36, 'organic': 47, 'instructed': 18} organic share 0.465
+organic tipped by seed_type: {'none': 11, 'knower': 13, 'side_task': 17, 'pioneer': 6}
+organic tipped with n_instructed>0: 23
+organic tipped where an instructed agent tied for first round: 1
+tipped by seed_type: {'none': 19, 'knower': 13, 'side_task': 20, 'external': 28, 'pioneer': 21}
+instructed counts by seed_type: {'external': Counter({0: 55}), 'knower': Counter({0: 47}), 'none': Counter({0: 55}), 'pioneer': Counter({1: 42}), 'side_task': Counter({1: 53})}
+control-only tipped: 93 {'organic': 47, 'instructed': 18, 'after_injection': 28} organic share 0.505
+tip rel cut: median -1 range -14 8 distinct 23
+exposure (tipped runs, dynamics_report convention): {'considered': 1071, 'any': 705, 'direct': 206, 'direct_considered': 1071, 'feed': 809, 'feed_considered': 1213}
+  direct/considered 0.192 ; any/considered 0.658 ; feed/considered 0.755 ; feed/feed_considered 0.667
+exposure (all runs): {'considered': 1268, 'direct': 233, 'any': 779, 'feed': 901, 'feed_considered': 1514} direct share 0.184

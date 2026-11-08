@@ -1,0 +1,30 @@
+######## w=1
+pooled        E_dir all   3.65 [2.22; 5.91] cfg 54, exp.adopt 92 | dm>0   2.05 [1.06; 4.25] cfg 25, exp.adopt 37 | P_dir dm>0   0.71 [0.36; 1.26] cfg 31, exp.adopt 42
+K2            E_dir all   0.78 [0.27; 1.49] cfg 17, exp.adopt 8 | dm>0   0.40 [0.00; 2.00] cfg 3, exp.adopt 1 | P_dir dm>0   1.48 [0.38; 6.33] cfg 7, exp.adopt 5
+K4            E_dir all   5.70 [3.39; 10.22] cfg 37, exp.adopt 84 | dm>0   2.24 [1.09; 4.85] cfg 22, exp.adopt 36 | P_dir dm>0   0.65 [0.31; 1.19] cfg 24, exp.adopt 37
+board         E_dir all   2.35 [1.49; 3.61] cfg 40, exp.adopt 62 | dm>0   1.35 [0.60; 3.25] cfg 18, exp.adopt 23 | P_dir dm>0   0.94 [0.45; 1.82] cfg 21, exp.adopt 36
+non-board     E_dir all  10.74 [4.14; 30.91] cfg 14, exp.adopt 30 | dm>0   4.35 [1.27; 25.51] cfg 7, exp.adopt 14 | P_dir dm>0   0.33 [0.00; 0.71] cfg 10, exp.adopt 6
+K2&board      E_dir all   0.64 [0.18; 1.20] cfg 16, exp.adopt 7 | dm>0   0.40 [0.00; 2.00] cfg 3, exp.adopt 1 | P_dir dm>0   4.58 [0.50; 7.00] cfg 5, exp.adopt 4
+K4&board      E_dir all   3.97 [2.39; 6.95] cfg 24, exp.adopt 55 | dm>0   1.50 [0.70; 3.97] cfg 15, exp.adopt 22 | P_dir dm>0   0.83 [0.34; 1.59] cfg 16, exp.adopt 32
+K2&non-board  E_dir all  11.08 [11.08; 11.08] cfg 1, exp.adopt 1 | dm>0 n/a | P_dir dm>0   0.48 [0.00; 0.94] cfg 2, exp.adopt 1
+K4&non-board  E_dir all  10.73 [4.03; 29.61] cfg 13, exp.adopt 29 | dm>0   4.35 [1.27; 25.51] cfg 7, exp.adopt 14 | P_dir dm>0   0.30 [0.00; 0.75] cfg 8, exp.adopt 5
+######## w=3
+pooled        E_dir all   2.34 [1.54; 3.57] cfg 62, exp.adopt 140 | dm>0   2.02 [1.19; 3.61] cfg 47, exp.adopt 102 | P_dir dm>0   0.84 [0.63; 1.14] cfg 53, exp.adopt 111
+K2            E_dir all   0.87 [0.52; 1.34] cfg 24, exp.adopt 29 | dm>0   1.04 [0.46; 2.60] cfg 17, exp.adopt 19 | P_dir dm>0   1.38 [0.71; 2.47] cfg 18, exp.adopt 27
+K4            E_dir all   3.99 [2.39; 6.98] cfg 38, exp.adopt 111 | dm>0   2.65 [1.35; 5.79] cfg 30, exp.adopt 83 | P_dir dm>0   0.74 [0.55; 1.03] cfg 35, exp.adopt 84
+board         E_dir all   1.43 [0.97; 2.05] cfg 43, exp.adopt 93 | dm>0   1.19 [0.63; 2.16] cfg 29, exp.adopt 65 | P_dir dm>0   1.00 [0.70; 1.52] cfg 37, exp.adopt 93
+non-board     E_dir all   8.07 [3.43; 21.85] cfg 19, exp.adopt 47 | dm>0   5.74 [2.28; 18.65] cfg 18, exp.adopt 37 | P_dir dm>0   0.54 [0.35; 0.76] cfg 16, exp.adopt 18
+K2&board      E_dir all   0.55 [0.28; 0.82] cfg 18, exp.adopt 22 | dm>0   0.43 [0.11; 0.81] cfg 11, exp.adopt 12 | P_dir dm>0   1.90 [0.90; 3.77] cfg 12, exp.adopt 24
+K4&board      E_dir all   2.67 [1.74; 4.37] cfg 25, exp.adopt 71 | dm>0   1.89 [0.86; 5.33] cfg 18, exp.adopt 53 | P_dir dm>0   0.85 [0.57; 1.34] cfg 25, exp.adopt 69
+K2&non-board  E_dir all   7.80 [3.87; 16.07] cfg 6, exp.adopt 7 | dm>0 n/a | P_dir dm>0   0.60 [0.16; 1.71] cfg 6, exp.adopt 3
+K4&non-board  E_dir all   8.12 [3.05; 24.83] cfg 13, exp.adopt 40 | dm>0   4.43 [1.45; 13.81] cfg 12, exp.adopt 30 | P_dir dm>0   0.52 [0.30; 0.76] cfg 10, exp.adopt 15
+######## w=5
+pooled        E_dir all   2.25 [1.57; 3.26] cfg 63, exp.adopt 175 | dm>0   2.10 [1.35; 3.46] cfg 53, exp.adopt 141 | P_dir dm>0   0.97 [0.77; 1.23] cfg 57, exp.adopt 161
+K2            E_dir all   1.34 [0.79; 2.07] cfg 25, exp.adopt 57 | dm>0   1.62 [0.81; 3.31] cfg 21, exp.adopt 42 | P_dir dm>0   1.14 [0.73; 1.87] cfg 19, exp.adopt 48
+K4            E_dir all   3.25 [1.98; 5.56] cfg 38, exp.adopt 118 | dm>0   2.40 [1.29; 4.74] cfg 32, exp.adopt 99 | P_dir dm>0   0.91 [0.69; 1.21] cfg 38, exp.adopt 113
+board         E_dir all   1.50 [1.04; 2.10] cfg 43, exp.adopt 122 | dm>0   1.31 [0.80; 2.13] cfg 33, exp.adopt 90 | P_dir dm>0   1.10 [0.83; 1.52] cfg 39, exp.adopt 134
+non-board     E_dir all   7.16 [3.26; 19.07] cfg 20, exp.adopt 53 | dm>0   5.51 [2.68; 16.31] cfg 20, exp.adopt 51 | P_dir dm>0   0.70 [0.48; 0.92] cfg 18, exp.adopt 27
+K2&board      E_dir all   0.95 [0.45; 1.47] cfg 18, exp.adopt 46 | dm>0   0.94 [0.35; 1.81] cfg 14, exp.adopt 31 | P_dir dm>0   1.21 [0.72; 2.36] cfg 13, exp.adopt 42
+K4&board      E_dir all   2.27 [1.41; 3.97] cfg 25, exp.adopt 76 | dm>0   1.63 [0.76; 4.00] cfg 19, exp.adopt 59 | P_dir dm>0   1.05 [0.74; 1.61] cfg 26, exp.adopt 92
+K2&non-board  E_dir all  13.37 [5.66; 109.10] cfg 7, exp.adopt 11 | dm>0  58.10 [14.50; 82.42] cfg 7, exp.adopt 11 | P_dir dm>0   0.89 [0.36; 1.83] cfg 6, exp.adopt 6
+K4&non-board  E_dir all   6.29 [2.57; 18.11] cfg 13, exp.adopt 42 | dm>0   4.21 [1.80; 12.13] cfg 13, exp.adopt 40 | P_dir dm>0   0.65 [0.39; 0.88] cfg 12, exp.adopt 21

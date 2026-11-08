@@ -1,0 +1,48 @@
+t10d3 rows 6796, of which count 8-9: 328 (0.048); positives 231, of which in count 8-9 rows: 113 (0.489); pos rate count<8 0.018, count 8-9 0.345
+  mean zs:global_full  : count<8 neg 0.168 pos 0.465 | count 8-9 neg 0.605 pos 0.593
+  mean zs:global_window: count<8 neg 0.141 pos 0.424 | count 8-9 neg 0.324 pos 0.467
+  mean zs:pairwise     : count<8 neg 0.388 pos 0.814 | count 8-9 neg 0.726 pos 0.858
+  mean p_tip_3         : count<8 neg 16.773 pos 46.506 | count 8-9 neg 60.532 pos 59.339
+  mean est_violators   : count<8 neg 3.011 pos 6.845 | count 8-9 neg 8.293 pos 8.330
+  global_full p_tip_3 quantiles (10/50/90) by true count:
+    count 0: n  4311  p_tip_3 [ 2.   3.7 24.3]  est_violators median 1.0
+    count 1: n   891  p_tip_3 [ 3.7 16.7 60. ]  est_violators median 4.0
+    count 2: n   346  p_tip_3 [ 6. 30. 70.]  est_violators median 5.3
+    count 3: n   212  p_tip_3 [ 8.  27.8 66.7]  est_violators median 5.3
+    count 4: n   227  p_tip_3 [11.3 36.  70. ]  est_violators median 6.3
+    count 5: n   190  p_tip_3 [13.6 45.  73.3]  est_violators median 6.7
+    count 6: n   157  p_tip_3 [18.7 46.7 70. ]  est_violators median 7.3
+    count 7: n   134  p_tip_3 [31.2 53.3 73.8]  est_violators median 7.7
+    count 8: n   140  p_tip_3 [28.8 54.5 76.8]  est_violators median 7.7
+    count 9: n   188  p_tip_3 [45.  66.7 85.8]  est_violators median 8.7
+
+AUROC (pooled):
+                      rows  pos  clock  bag+graph  zs:global_full  zs:global_window  zs:pairwise  hgb:pairwise  oracle
+set                                                                                                                   
+t8d3 all              6468  303  0.783      0.864           0.844             0.856        0.890         0.887   0.934
+t10d3 all             6796  231  0.773      0.834           0.860             0.858        0.872         0.869   0.935
+t10d3 count<8 only    6468  118  0.774      0.842           0.838             0.855        0.864         0.855   0.908
+t10d3 count 8-9 only   328  113  0.697      0.620           0.510             0.670        0.615         0.625   0.740
+t6d3 all              6177  360  0.776      0.834           0.817             0.833        0.878         0.871   0.911
+t8d3 count<6 only     6177  151  0.761      0.828           0.798             0.822        0.856         0.846   0.882
+
+AUROC (time-matched):
+                      clock|tm  bag+graph|tm  zs:global_full|tm  zs:global_window|tm  zs:pairwise|tm  hgb:pairwise|tm  oracle|tm
+set                                                                                                                             
+t8d3 all                 0.698         0.844              0.839                0.835           0.871            0.857      0.897
+t10d3 all                0.687         0.810              0.860                0.840           0.851            0.841      0.909
+t10d3 count<8 only       0.682         0.820              0.837                0.838           0.845            0.814      0.866
+t10d3 count 8-9 only     0.599         0.428              0.578                0.612           0.482            0.518      0.548
+t6d3 all                 0.713         0.826              0.829                0.832           0.874            0.858      0.880
+t8d3 count<6 only        0.699         0.832              0.831                0.832           0.856            0.833      0.842
+
+diff zs:global_full - bag+graph pooled: {'t8d3 all': -0.02, 't10d3 all': 0.026, 't10d3 count<8 only': -0.004, 't10d3 count 8-9 only': -0.11, 't6d3 all': -0.017, 't8d3 count<6 only': -0.03}
+
+Theta 8, identical rows, label horizon 2/3/5 (zero-shot scores identical across tags):
+  t8d2: pos 202/6468  clock 0.780  bag+graph 0.850  zs:global_full 0.860  zs:global_window 0.864  zs:pairwise 0.903  hgb:pairwise 0.897  oracle 0.946
+  t8d3: pos 303/6468  clock 0.783  bag+graph 0.864  zs:global_full 0.844  zs:global_window 0.856  zs:pairwise 0.890  hgb:pairwise 0.887  oracle 0.934
+  t8d5: pos 505/6468  clock 0.780  bag+graph 0.845  zs:global_full 0.813  zs:global_window 0.832  zs:pairwise 0.866  hgb:pairwise 0.866  oracle 0.905
+  max |zs score diff| t8d3 vs t6d3 on 6177 shared rows: 0.10303
+  max |zs score diff| t8d3 vs t10d3 on 6468 shared rows: 0.08970399999999999
+  max |zs score diff| t8d3 vs t8d2 on 6468 shared rows: 0.06739999999999999
+  max |zs score diff| t8d3 vs t8d5 on 6468 shared rows: 0.11857

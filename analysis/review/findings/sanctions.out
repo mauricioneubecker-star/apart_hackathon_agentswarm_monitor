@@ -1,0 +1,12 @@
+                   runs  configs  tip_rate
+sanctions det_pos                         
+drawn     False      45       20     0.422
+          True       18        8     0.444
+off       False     189       84     0.392
+                      runs  tipped
+det vis     sanction              
+0.3 private revert       5       4
+            warning      2       1
+    public  warning      4       1
+0.7 private revert       2       2
+    public  revert       5       0

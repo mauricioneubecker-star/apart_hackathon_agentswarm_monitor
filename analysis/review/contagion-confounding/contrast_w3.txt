@@ -1,0 +1,20 @@
+all: OR_E 2.34  OR_P 1.42  ratio 1.64 [1.00; 2.79]  P(ratio<=1) 0.025
+dm>0: OR_E 2.02  OR_P 0.84  ratio 2.40 [1.31; 4.58]  P(ratio<=1) 0.002
+K4 vs K2 all: OR 3.99 vs 0.87; ratio 4.60 [2.30; 9.76]  P(ratio<=1) 0.000
+K4 vs K2 dm>0: OR 2.65 vs 1.04; ratio 2.56 [0.82; 7.82]  P(ratio<=1) 0.047
+non-board vs board all: OR 8.07 vs 1.43; ratio 5.65 [2.12; 16.38]  P(ratio<=1) 0.001
+non-board vs board dm>0: OR 5.74 vs 1.19; ratio 4.82 [1.59; 18.64]  P(ratio<=1) 0.004
+
+E_dir all: OR 2.34; leave-one-config-out min 2.03 (core-night_test_ood_seed-K4-000), max 2.49 (core-night_test_ood_family-K2-006)
+  share of MH numerator from top 3 / top 5 / top 10 configs: 0.27 / 0.36 / 0.53
+  top 5 configs by numerator share: core-night_test_ood_seed-K4-000 0.14, core-night_test_ood_family-K4-001 0.08, core-night_train-K4-061 0.05, core-night_train-K4-028 0.05, core-night_train-K4-044 0.04
+  without top 1 configs: OR 2.03
+  without top 3 configs: OR 1.81
+  without top 5 configs: OR 1.64
+
+E_dir dm>0: OR 2.02; leave-one-config-out min 1.75 (core-night_test_ood_seed-K4-000), max 2.32 (core-night_test_ood_family-K4-002)
+  share of MH numerator from top 3 / top 5 / top 10 configs: 0.30 / 0.41 / 0.61
+  top 5 configs by numerator share: core-night_test_ood_seed-K4-000 0.14, core-night_test_ood_family-K4-001 0.09, core-night_train-K4-028 0.07, core-night_train-K4-044 0.07, core-night_train-K4-015 0.05
+  without top 1 configs: OR 1.75
+  without top 3 configs: OR 1.53
+  without top 5 configs: OR 1.42

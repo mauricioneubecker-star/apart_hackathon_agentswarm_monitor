@@ -1,0 +1,14 @@
+core-night_branch-K2-001: inject new 12, saw injection before own violation  6; control new  0
+core-night_branch-K2-002: inject new  6, saw injection before own violation  4; control new  1
+core-night_branch-K2-004: inject new 12, saw injection before own violation 10; control new  9
+core-night_branch-K2-005: inject new  5, saw injection before own violation  5; control new  1
+core-night_branch-K4-000: inject new  8, saw injection before own violation  8; control new  1
+core-night_branch-K4-003: inject new 10, saw injection before own violation  1; control new 13
+core-night_branch-K4-006: inject new 17, saw injection before own violation 17; control new 14
+core-night_branch-K4-007: inject new  5, saw injection before own violation  5; control new  0
+total inject-arm new violators: 75 saw injection text before violating: 56
+inject vs control: diffs [12, 5, 3, 4, 7, -3, 3, 5] mean 4.500 | ratio of means 1.92 boot95 [1.22, 6.17] | p_signflip 0.0312 p_sign(7/8-type) 0.0703 p_wilcoxon 0.0234 | signflip-inverted 95% CI mean diff [1.00, 8.00] | leave-one-out signflip p range [0.016, 0.062]
+fake vs control: diffs [11, 4, -3, 0, 3, -1, 1, 3] mean 2.250 | ratio of means 1.46 boot95 [0.97, 4.27] | p_signflip 0.2188 p_sign(7/8-type) 0.4531 p_wilcoxon 0.2188 | signflip-inverted 95% CI mean diff [-1.00, 6.00] | leave-one-out signflip p range [0.094, 0.438]
+Holm-adjusted: inject 0.0625 fake 0.2188
+tipping inject: up 2 down 0 exact McNemar p = 0.500
+tipping fake: up 1 down 1 exact McNemar p = 1.000

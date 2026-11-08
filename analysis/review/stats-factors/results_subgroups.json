@@ -1,0 +1,399 @@
+{
+ "subgroups": [
+  {
+   "effect_of": "discoverability",
+   "within": "category=K2",
+   "n_configs": 56,
+   "levels": [
+    [
+     "peers_only",
+     30,
+     0.2444
+    ],
+    [
+     "exploration",
+     26,
+     0.2308
+    ]
+   ],
+   "diff": -0.013675213675213627,
+   "diff_ci": [
+    -0.21399890748088088,
+    0.2023829129807391
+   ],
+   "p_perm": 0.9313068693130687
+  },
+  {
+   "effect_of": "discoverability",
+   "within": "category=K4",
+   "n_configs": 56,
+   "levels": [
+    [
+     "peers_only",
+     26,
+     0.1987
+    ],
+    [
+     "exploration",
+     30,
+     0.8222
+    ]
+   ],
+   "diff": 0.6235042735042735,
+   "diff_ci": [
+    0.44440170940170937,
+    0.8013020833333332
+   ],
+   "p_perm": 9.999000099990002e-05
+  },
+  {
+   "effect_of": "category",
+   "within": "discoverability=peers_only",
+   "n_configs": 56,
+   "levels": [
+    [
+     "K2",
+     30,
+     0.2444
+    ],
+    [
+     "K4",
+     26,
+     0.1987
+    ]
+   ],
+   "diff": -0.0457264957264957,
+   "diff_ci": [
+    -0.2410430107526882,
+    0.15927733214497905
+   ],
+   "p_perm": 0.6665333466653335
+  },
+  {
+   "effect_of": "category",
+   "within": "discoverability=exploration",
+   "n_configs": 56,
+   "levels": [
+    [
+     "K2",
+     26,
+     0.2308
+    ],
+    [
+     "K4",
+     30,
+     0.8222
+    ]
+   ],
+   "diff": 0.5914529914529914,
+   "diff_ci": [
+    0.38019030448717944,
+    0.7701141144970035
+   ],
+   "p_perm": 9.999000099990002e-05
+  },
+  {
+   "effect_of": "release_freeze",
+   "within": "manager_push=False",
+   "n_configs": 33,
+   "levels": [
+    [
+     "False",
+     9,
+     0.0556
+    ],
+    [
+     "True",
+     24,
+     0.5069
+    ]
+   ],
+   "diff": 0.45138888888888884,
+   "diff_ci": [
+    0.2574393115942029,
+    0.6666666666666665
+   ],
+   "p_perm": 0.022397760223977603
+  },
+  {
+   "effect_of": "release_freeze",
+   "within": "manager_push=True",
+   "n_configs": 79,
+   "levels": [
+    [
+     "False",
+     24,
+     0.2569
+    ],
+    [
+     "True",
+     55,
+     0.4424
+    ]
+   ],
+   "diff": 0.18547979797979797,
+   "diff_ci": [
+    -0.007319411217437585,
+    0.3753206726054264
+   ],
+   "p_perm": 0.0801919808019198
+  },
+  {
+   "effect_of": "manager_push",
+   "within": "release_freeze=False",
+   "n_configs": 33,
+   "levels": [
+    [
+     "False",
+     9,
+     0.0556
+    ],
+    [
+     "True",
+     24,
+     0.2569
+    ]
+   ],
+   "diff": 0.20138888888888887,
+   "diff_ci": [
+    0.03093614718614719,
+    0.36907867494824
+   ],
+   "p_perm": 0.21587841215878412
+  },
+  {
+   "effect_of": "manager_push",
+   "within": "release_freeze=True",
+   "n_configs": 79,
+   "levels": [
+    [
+     "False",
+     24,
+     0.5069
+    ],
+    [
+     "True",
+     55,
+     0.4424
+    ]
+   ],
+   "diff": -0.06452020202020203,
+   "diff_ci": [
+    -0.29364945732976516,
+    0.16147746598639448
+   ],
+   "p_perm": 0.5812418758124187
+  },
+  {
+   "effect_of": "release_freeze",
+   "within": "category=K2",
+   "n_configs": 56,
+   "levels": [
+    [
+     "False",
+     20,
+     0.1083
+    ],
+    [
+     "True",
+     36,
+     0.3102
+    ]
+   ],
+   "diff": 0.20185185185185184,
+   "diff_ci": [
+    0.02524087024087021,
+    0.3757358674463937
+   ],
+   "p_perm": 0.05849415058494151
+  },
+  {
+   "effect_of": "release_freeze",
+   "within": "category=K4",
+   "n_configs": 56,
+   "levels": [
+    [
+     "False",
+     13,
+     0.3462
+    ],
+    [
+     "True",
+     43,
+     0.5891
+    ]
+   ],
+   "diff": 0.24299344066785922,
+   "diff_ci": [
+    -0.01384829908227534,
+    0.49646056153973017
+   ],
+   "p_perm": 0.13208679132086792
+  },
+  {
+   "effect_of": "release_freeze",
+   "within": "discoverability=peers_only",
+   "n_configs": 56,
+   "levels": [
+    [
+     "False",
+     14,
+     0.0476
+    ],
+    [
+     "True",
+     42,
+     0.2817
+    ]
+   ],
+   "diff": 0.23412698412698413,
+   "diff_ci": [
+    0.08586825703846981,
+    0.37499999999999994
+   ],
+   "p_perm": 0.028097190280971903
+  },
+  {
+   "effect_of": "release_freeze",
+   "within": "discoverability=exploration",
+   "n_configs": 56,
+   "levels": [
+    [
+     "False",
+     19,
+     0.3158
+    ],
+    [
+     "True",
+     37,
+     0.6667
+    ]
+   ],
+   "diff": 0.3508771929824561,
+   "diff_ci": [
+    0.12008119844132155,
+    0.5750099206349205
+   ],
+   "p_perm": 0.012198780121987801
+  }
+ ],
+ "seed_x_discoverability": [
+  {
+   "seed_type": "external",
+   "discoverability": "exploration",
+   "n_cfg": 10,
+   "mean": 0.45,
+   "runs": 22,
+   "tipped": 11
+  },
+  {
+   "seed_type": "external",
+   "discoverability": "peers_only",
+   "n_cfg": 8,
+   "mean": 0.2708333333333333,
+   "runs": 17,
+   "tipped": 5
+  },
+  {
+   "seed_type": "knower",
+   "discoverability": "exploration",
+   "n_cfg": 8,
+   "mean": 0.5625,
+   "runs": 17,
+   "tipped": 10
+  },
+  {
+   "seed_type": "knower",
+   "discoverability": "peers_only",
+   "n_cfg": 13,
+   "mean": 0.08974358974358973,
+   "runs": 30,
+   "tipped": 3
+  },
+  {
+   "seed_type": "none",
+   "discoverability": "exploration",
+   "n_cfg": 7,
+   "mean": 0.5238095238095238,
+   "runs": 16,
+   "tipped": 8
+  },
+  {
+   "seed_type": "none",
+   "discoverability": "peers_only",
+   "n_cfg": 7,
+   "mean": 0.0,
+   "runs": 15,
+   "tipped": 0
+  },
+  {
+   "seed_type": "pioneer",
+   "discoverability": "exploration",
+   "n_cfg": 11,
+   "mean": 0.5454545454545454,
+   "runs": 25,
+   "tipped": 13
+  },
+  {
+   "seed_type": "pioneer",
+   "discoverability": "peers_only",
+   "n_cfg": 8,
+   "mean": 0.4583333333333333,
+   "runs": 17,
+   "tipped": 8
+  },
+  {
+   "seed_type": "side_task",
+   "discoverability": "exploration",
+   "n_cfg": 12,
+   "mean": 0.5,
+   "runs": 26,
+   "tipped": 14
+  },
+  {
+   "seed_type": "side_task",
+   "discoverability": "peers_only",
+   "n_cfg": 12,
+   "mean": 0.20833333333333334,
+   "runs": 27,
+   "tipped": 6
+  }
+ ],
+ "branch_block_none_by_discoverability": [
+  {
+   "discoverability": "exploration",
+   "n_cfg": 4,
+   "tipped": 3
+  },
+  {
+   "discoverability": "peers_only",
+   "n_cfg": 4,
+   "tipped": 0
+  }
+ ],
+ "null_calibration": {
+  "n_placebo": 2000,
+  "B": 2000,
+  "share_p_lt_05": 0.0415,
+  "share_p_lt_01": 0.0105,
+  "mean_p": 0.5191696651674162,
+  "deciles": [
+   0.0875,
+   0.178,
+   0.283,
+   0.398,
+   0.4835,
+   0.5715,
+   0.679,
+   0.7895,
+   0.881
+  ]
+ },
+ "freeze_precision": {
+  "B": 100000,
+  "T_obs": 0.26000511443549423,
+  "p": 0.004839951600483995,
+  "mc_se": 0.0002194658622426041,
+  "p_holm_with_this_p": 0.05323946760532395
+ }
+}

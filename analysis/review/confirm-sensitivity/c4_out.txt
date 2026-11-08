@@ -1,0 +1,23 @@
+t6d3: of the 18 θ=8-mixed configs -> mixed 12, all tipped 6, none tipped 0
+   contributing strata by config state: {'all': 11, 'mixed': 21} pairs-weight share: {'all': 0.214, 'mixed': 0.786}
+t10d3: of the 18 θ=8-mixed configs -> mixed 9, all tipped 0, none tipped 9
+   contributing strata by config state: {'mixed': 15} pairs-weight share: {'mixed': 1.0}
+
+θ=6 rows 6177; θ=8 rows with count<6 6177; identical sets: True
+θ=8 labels, all vs count<6 rows; θ=6 for comparison
+  clock              θ8 all 0.783  θ8 count<6 0.761  θ6 0.776
+  bag+graph          θ8 all 0.864  θ8 count<6 0.828  θ6 0.834
+  zs:global_full     θ8 all 0.844  θ8 count<6 0.798  θ6 0.817
+  zs:global_window   θ8 all 0.856  θ8 count<6 0.822  θ6 0.833
+  zs:pairwise        θ8 all 0.890  θ8 count<6 0.856  θ6 0.878
+  θ8 labels on count<6 rows, 1000x: zs:pairwise - bag+graph +0.028 [-0.009, +0.066]; zs:global_full - bag+graph -0.029 [-0.069, +0.006]; clock - bag+graph -0.066 [-0.123, -0.011]
+  θ6 (as in table), 1000x:          zs:pairwise - bag+graph +0.044 [+0.018, +0.073]; zs:global_full - bag+graph -0.018 [-0.050, +0.014]; clock - bag+graph -0.059 [-0.105, -0.012]
+
+θ=10 time-matched AUROC, all rows vs count<8 rows (θ=8 tm in brackets)
+  clock              0.687 -> 0.682  [θ8 0.698]
+  bag+graph          0.810 -> 0.820  [θ8 0.844]
+  zs:global_full     0.860 -> 0.837  [θ8 0.839]
+  zs:global_window   0.840 -> 0.838  [θ8 0.835]
+  zs:pairwise        0.851 -> 0.845  [θ8 0.871]
+  lo+ x hi- bag+graph: 0.611
+  lo+ x hi- zs:global_full: 0.346

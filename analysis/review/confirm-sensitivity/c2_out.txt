@@ -1,0 +1,103 @@
+t8d3: mixed configs 18; tipped runs 101/252
+t6d3: mixed configs 19; tipped runs 120/252
+t10d3: mixed configs 16; tipped runs 77/252
+t8d2: mixed configs 18; tipped runs 101/252
+t8d5: mixed configs 18; tipped runs 101/252
+t8d2 == t8d3: True, t8d5 == t8d3: True
+θ6∩θ8 12 (Jaccard 0.48); θ10∩θ8 9 (Jaccard 0.36); all three 7 of union 32
+t8d3: contributing strata 30, positives in mixed rows 72, mixed rows 1100
+t6d3: contributing strata 31, positives in mixed rows 72, mixed rows 1151
+t10d3: contributing strata 25, positives in mixed rows 60, mixed rows 999
+t8d2: contributing strata 27, positives in mixed rows 48, mixed rows 1100
+t8d5: contributing strata 42, positives in mixed rows 120, mixed rows 1100
+strata shared with t8d3: t6d3 14, t10d3 12
+
+slice AUROC: reported (own mixed set) | θ=8 mixed set | 7-config intersection
+  t8d3
+    clock              0.682 | 0.682 | 0.787
+    bag+graph          0.748 | 0.748 | 0.819
+    zs:global_full     0.746 | 0.746 | 0.908
+    zs:global_window   0.718 | 0.718 | 0.856
+    zs:pairwise        0.824 | 0.824 | 0.853
+    hgb:pairwise       0.798 | 0.798 | 0.819
+    oracle             0.895 | 0.895 | 0.897
+  t6d3
+    clock              0.771 | 0.747 | 0.834
+    bag+graph          0.779 | 0.773 | 0.806
+    zs:global_full     0.894 | 0.879 | 0.947
+    zs:global_window   0.850 | 0.840 | 0.901
+    zs:pairwise        0.878 | 0.863 | 0.871
+    hgb:pairwise       0.877 | 0.866 | 0.872
+    oracle             0.905 | 0.902 | 0.921
+  t10d3
+    clock              0.645 | 0.694 | 0.725
+    bag+graph          0.676 | 0.778 | 0.817
+    zs:global_full     0.719 | 0.765 | 0.847
+    zs:global_window   0.673 | 0.739 | 0.813
+    zs:pairwise        0.712 | 0.784 | 0.785
+    hgb:pairwise       0.721 | 0.790 | 0.777
+    oracle             0.836 | 0.907 | 0.903
+  t8d2
+    clock              0.610 | 0.610 | 0.685
+    bag+graph          0.694 | 0.694 | 0.751
+    zs:global_full     0.731 | 0.731 | 0.896
+    zs:global_window   0.683 | 0.683 | 0.802
+    zs:pairwise        0.805 | 0.805 | 0.850
+    hgb:pairwise       0.813 | 0.813 | 0.822
+    oracle             0.917 | 0.917 | 0.881
+  t8d5
+    clock              0.749 | 0.749 | 0.830
+    bag+graph          0.775 | 0.775 | 0.862
+    zs:global_full     0.807 | 0.807 | 0.938
+    zs:global_window   0.787 | 0.787 | 0.901
+    zs:pairwise        0.851 | 0.851 | 0.855
+    hgb:pairwise       0.828 | 0.828 | 0.842
+    oracle             0.881 | 0.881 | 0.889
+
+2000x config bootstrap (seed 0), slice on own mixed set, merge_dups=False
+  t8d3: clock 0.682 [0.524, 0.814]; bag+graph 0.748 [0.620, 0.831]; zs:global_full 0.746 [0.558, 0.867]; zs:pairwise 0.824 [0.736, 0.886]; oracle 0.895 [0.824, 0.941]
+      diffs: zs:pairwise - bag+graph +0.080 [+0.000, +0.195]; zs:global_full - bag+graph -0.003 [-0.163, +0.127]; clock - bag+graph -0.072 [-0.218, +0.039]
+  t6d3: clock 0.771 [0.588, 0.878]; bag+graph 0.779 [0.685, 0.843]; zs:global_full 0.894 [0.776, 0.949]; zs:pairwise 0.878 [0.837, 0.920]; oracle 0.905 [0.801, 0.962]
+      diffs: zs:pairwise - bag+graph +0.103 [+0.035, +0.200]; zs:global_full - bag+graph +0.107 [-0.009, +0.192]; clock - bag+graph -0.024 [-0.181, +0.106]
+  t10d3: clock 0.645 [0.497, 0.769]; bag+graph 0.676 [0.506, 0.815]; zs:global_full 0.719 [0.539, 0.830]; zs:pairwise 0.712 [0.599, 0.796]; oracle 0.836 [0.708, 0.921]
+      diffs: zs:pairwise - bag+graph +0.046 [-0.084, +0.199]; zs:global_full - bag+graph +0.046 [-0.097, +0.206]; clock - bag+graph -0.028 [-0.115, +0.077]
+  t8d2: clock 0.610 [0.472, 0.737]; bag+graph 0.694 [0.563, 0.801]; zs:global_full 0.731 [0.583, 0.847]; zs:pairwise 0.805 [0.711, 0.881]; oracle 0.917 [0.826, 0.974]
+      diffs: zs:pairwise - bag+graph +0.115 [+0.012, +0.229]; zs:global_full - bag+graph +0.041 [-0.116, +0.205]; clock - bag+graph -0.082 [-0.212, +0.053]
+  t8d5: clock 0.749 [0.610, 0.845]; bag+graph 0.775 [0.635, 0.845]; zs:global_full 0.807 [0.600, 0.915]; zs:pairwise 0.851 [0.776, 0.916]; oracle 0.881 [0.780, 0.935]
+      diffs: zs:pairwise - bag+graph +0.084 [+0.009, +0.195]; zs:global_full - bag+graph +0.026 [-0.104, +0.112]; clock - bag+graph -0.032 [-0.135, +0.058]
+
+2000x config bootstrap (seed 0), slice on theta8 mixed set, merge_dups=False
+  t8d3: clock 0.682 [0.524, 0.814]; bag+graph 0.748 [0.620, 0.831]; zs:global_full 0.746 [0.558, 0.867]; zs:pairwise 0.824 [0.736, 0.886]; oracle 0.895 [0.824, 0.941]
+      diffs: zs:pairwise - bag+graph +0.080 [+0.000, +0.195]; zs:global_full - bag+graph -0.003 [-0.163, +0.127]; clock - bag+graph -0.072 [-0.218, +0.039]
+  t6d3: clock 0.747 [0.551, 0.868]; bag+graph 0.773 [0.660, 0.840]; zs:global_full 0.879 [0.741, 0.944]; zs:pairwise 0.863 [0.819, 0.898]; oracle 0.902 [0.783, 0.963]
+      diffs: zs:pairwise - bag+graph +0.096 [+0.020, +0.201]; zs:global_full - bag+graph +0.101 [+0.000, +0.178]; clock - bag+graph -0.040 [-0.199, +0.093]
+  t10d3: clock 0.694 [0.488, 0.835]; bag+graph 0.778 [0.604, 0.898]; zs:global_full 0.765 [0.510, 0.895]; zs:pairwise 0.784 [0.726, 0.873]; oracle 0.907 [0.781, 0.968]
+      diffs: zs:pairwise - bag+graph +0.024 [-0.118, +0.204]; zs:global_full - bag+graph -0.012 [-0.192, +0.184]; clock - bag+graph -0.081 [-0.205, +0.035]
+  t8d2: clock 0.610 [0.472, 0.737]; bag+graph 0.694 [0.563, 0.801]; zs:global_full 0.731 [0.583, 0.847]; zs:pairwise 0.805 [0.711, 0.881]; oracle 0.917 [0.826, 0.974]
+      diffs: zs:pairwise - bag+graph +0.115 [+0.012, +0.229]; zs:global_full - bag+graph +0.041 [-0.116, +0.205]; clock - bag+graph -0.082 [-0.212, +0.053]
+  t8d5: clock 0.749 [0.610, 0.845]; bag+graph 0.775 [0.635, 0.845]; zs:global_full 0.807 [0.600, 0.915]; zs:pairwise 0.851 [0.776, 0.916]; oracle 0.881 [0.780, 0.935]
+      diffs: zs:pairwise - bag+graph +0.084 [+0.009, +0.195]; zs:global_full - bag+graph +0.026 [-0.104, +0.112]; clock - bag+graph -0.032 [-0.135, +0.058]
+
+2000x config bootstrap (seed 0), slice on own mixed set, merge_dups=True
+  t8d3: clock 0.682 [0.494, 0.865]; bag+graph 0.748 [0.561, 0.857]; zs:global_full 0.746 [0.471, 0.894]; zs:pairwise 0.824 [0.663, 0.903]; oracle 0.895 [0.784, 0.956]
+      diffs: zs:pairwise - bag+graph +0.084 [-0.036, +0.252]; zs:global_full - bag+graph -0.002 [-0.275, +0.171]; clock - bag+graph -0.075 [-0.278, +0.073]
+  t6d3: clock 0.771 [0.549, 0.912]; bag+graph 0.779 [0.627, 0.879]; zs:global_full 0.894 [0.727, 0.964]; zs:pairwise 0.878 [0.808, 0.944]; oracle 0.905 [0.766, 0.978]
+      diffs: zs:pairwise - bag+graph +0.107 [+0.003, +0.269]; zs:global_full - bag+graph +0.103 [-0.065, +0.245]; clock - bag+graph -0.032 [-0.219, +0.144]
+  t10d3: clock 0.645 [0.457, 0.813]; bag+graph 0.676 [0.446, 0.868]; zs:global_full 0.719 [0.452, 0.860]; zs:pairwise 0.712 [0.517, 0.828]; oracle 0.836 [0.642, 0.947]
+      diffs: zs:pairwise - bag+graph +0.055 [-0.142, +0.247]; zs:global_full - bag+graph +0.049 [-0.176, +0.272]; clock - bag+graph -0.024 [-0.173, +0.118]
+  t8d2: clock 0.610 [0.413, 0.779]; bag+graph 0.694 [0.506, 0.845]; zs:global_full 0.731 [0.489, 0.876]; zs:pairwise 0.805 [0.637, 0.904]; oracle 0.917 [0.767, 0.983]
+      diffs: zs:pairwise - bag+graph +0.118 [-0.045, +0.299]; zs:global_full - bag+graph +0.047 [-0.211, +0.277]; clock - bag+graph -0.080 [-0.275, +0.130]
+  t8d5: clock 0.749 [0.600, 0.884]; bag+graph 0.775 [0.572, 0.873]; zs:global_full 0.807 [0.520, 0.945]; zs:pairwise 0.851 [0.707, 0.937]; oracle 0.881 [0.732, 0.951]
+      diffs: zs:pairwise - bag+graph +0.090 [-0.020, +0.235]; zs:global_full - bag+graph +0.023 [-0.190, +0.138]; clock - bag+graph -0.035 [-0.153, +0.101]
+
+2000x config bootstrap (seed 0), slice on theta8 mixed set, merge_dups=True
+  t8d3: clock 0.682 [0.494, 0.865]; bag+graph 0.748 [0.561, 0.857]; zs:global_full 0.746 [0.471, 0.894]; zs:pairwise 0.824 [0.663, 0.903]; oracle 0.895 [0.784, 0.956]
+      diffs: zs:pairwise - bag+graph +0.084 [-0.036, +0.252]; zs:global_full - bag+graph -0.002 [-0.275, +0.171]; clock - bag+graph -0.075 [-0.278, +0.073]
+  t6d3: clock 0.747 [0.512, 0.905]; bag+graph 0.773 [0.593, 0.880]; zs:global_full 0.879 [0.687, 0.961]; zs:pairwise 0.863 [0.790, 0.921]; oracle 0.902 [0.738, 0.979]
+      diffs: zs:pairwise - bag+graph +0.100 [-0.014, +0.272]; zs:global_full - bag+graph +0.098 [-0.036, +0.231]; clock - bag+graph -0.049 [-0.231, +0.136]
+  t10d3: clock 0.694 [0.442, 0.861]; bag+graph 0.778 [0.560, 0.934]; zs:global_full 0.765 [0.394, 0.911]; zs:pairwise 0.784 [0.702, 0.904]; oracle 0.907 [0.735, 0.977]
+      diffs: zs:pairwise - bag+graph +0.036 [-0.154, +0.264]; zs:global_full - bag+graph -0.012 [-0.310, +0.222]; clock - bag+graph -0.079 [-0.265, +0.098]
+  t8d2: clock 0.610 [0.413, 0.779]; bag+graph 0.694 [0.506, 0.845]; zs:global_full 0.731 [0.489, 0.876]; zs:pairwise 0.805 [0.637, 0.904]; oracle 0.917 [0.767, 0.983]
+      diffs: zs:pairwise - bag+graph +0.118 [-0.045, +0.299]; zs:global_full - bag+graph +0.047 [-0.211, +0.277]; clock - bag+graph -0.080 [-0.275, +0.130]
+  t8d5: clock 0.749 [0.600, 0.884]; bag+graph 0.775 [0.572, 0.873]; zs:global_full 0.807 [0.520, 0.945]; zs:pairwise 0.851 [0.707, 0.937]; oracle 0.881 [0.732, 0.951]
+      diffs: zs:pairwise - bag+graph +0.090 [-0.020, +0.235]; zs:global_full - bag+graph +0.023 [-0.190, +0.138]; clock - bag+graph -0.035 [-0.153, +0.101]
