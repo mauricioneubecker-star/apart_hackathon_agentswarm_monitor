@@ -1,0 +1,9 @@
+{"name": "c_gine_seeds3", "cfg": {"epochs": 30, "conv": "gine", "seeds": 3}}
+{"name": "c_gine_nomtl", "cfg": {"epochs": 30, "conv": "gine", "w_aux": 0, "w_risk": 0, "w_node": 0}}
+{"name": "c_gine_nonode", "cfg": {"epochs": 30, "conv": "gine", "w_node": 0}}
+{"name": "c_gine_focal2_pw1", "cfg": {"epochs": 30, "conv": "gine", "focal_gamma": 2.0, "pos_weight": 1.0}}
+{"name": "c_gine_judgeaug", "cfg": {"epochs": 30, "conv": "gine", "judge_aug": 0.5}}
+{"name": "c_gine_noaug", "cfg": {"epochs": 30, "conv": "gine", "edge_drop": 0.0, "feat_noise": 0.0}}
+{"name": "c_gine_reg", "cfg": {"epochs": 30, "conv": "gine", "drop": 0.2, "wd": 0.001, "edge_drop": 0.2}}
+{"name": "c_gine_ep50", "cfg": {"epochs": 50, "conv": "gine", "swa_last": 12}}
+{"name": "c_gine_hid96", "cfg": {"epochs": 30, "conv": "gine", "hid": 96}}
