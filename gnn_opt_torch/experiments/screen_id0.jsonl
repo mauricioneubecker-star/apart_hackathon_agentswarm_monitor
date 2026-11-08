@@ -1,0 +1,25 @@
+{"name": "s_base", "cfg": {"epochs": 30}}
+{"name": "s_base_r1", "cfg": {"epochs": 30}, "seed": 100}
+{"name": "s_base_r2", "cfg": {"epochs": 30}, "seed": 200}
+{"name": "s_gine", "cfg": {"epochs": 30, "conv": "gine"}}
+{"name": "s_gatv2", "cfg": {"epochs": 30, "conv": "gatv2"}}
+{"name": "s_tf", "cfg": {"epochs": 30, "conv": "transformer"}}
+{"name": "s_norev", "cfg": {"epochs": 30, "reverse": false}}
+{"name": "s_tmem_gru", "cfg": {"epochs": 30, "tmem": "gru"}}
+{"name": "s_tmem_conv5", "cfg": {"epochs": 30, "tmem": "conv5"}}
+{"name": "s_gtemp_none", "cfg": {"epochs": 30, "gtemp": "none"}}
+{"name": "s_gtemp_none_tmem_gru", "cfg": {"epochs": 30, "gtemp": "none", "tmem": "gru"}}
+{"name": "s_gtemp_conv5", "cfg": {"epochs": 30, "gtemp": "conv5"}}
+{"name": "s_novn", "cfg": {"epochs": 30, "vn": false}}
+{"name": "s_noer", "cfg": {"epochs": 30, "edge_readout": false}}
+{"name": "s_noap", "cfg": {"epochs": 30, "att_pool": false}}
+{"name": "s_noer_noap", "cfg": {"epochs": 30, "edge_readout": false, "att_pool": false}}
+{"name": "s_waux0", "cfg": {"epochs": 30, "w_aux": 0.0}}
+{"name": "s_wnode0", "cfg": {"epochs": 30, "w_node": 0.0}}
+{"name": "s_wrisk0", "cfg": {"epochs": 30, "w_risk": 0.0}}
+{"name": "s_noauxloss", "cfg": {"epochs": 30, "w_aux": 0.0, "w_node": 0.0, "w_risk": 0.0}}
+{"name": "s_wnode1_wrisk05", "cfg": {"epochs": 30, "w_node": 1.0, "w_risk": 0.5}}
+{"name": "s_pw1", "cfg": {"epochs": 30, "pos_weight": 1.0}}
+{"name": "s_pw6", "cfg": {"epochs": 30, "pos_weight": 6.0}}
+{"name": "s_focal2", "cfg": {"epochs": 30, "pos_weight": 1.0, "focal_gamma": 2.0}}
+{"name": "s_focal1_pw3", "cfg": {"epochs": 30, "focal_gamma": 1.0}}

@@ -30,6 +30,7 @@ def main():
     ap.add_argument("--data", default=os.path.join(T.REPO, "gnn_opt_data", "night"))
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--target", default="y3")
+    ap.add_argument("--log", default=os.path.join(HERE, "preds", "cv_log.jsonl"), help="summary log (JSONL)")
     a = ap.parse_args()
     specs = [json.loads(l) for l in open(a.jobs) if l.strip() and not l.startswith("#")]
     out_dir = os.path.join(HERE, "preds", "cv")
@@ -72,7 +73,7 @@ def main():
                 s.update({"name": name, "cv": cvk, "control": sp.get("control"),
                           "wall_s": round(time.time() - t0[name])})
                 print(json.dumps({k: (round(v, 4) if isinstance(v, float) else v) for k, v in s.items()}), flush=True)
-                with open(os.path.join(HERE, "preds", "cv_log.jsonl"), "a") as fh:
+                with open(a.log, "a") as fh:
                     fh.write(json.dumps({**s, "cfg": sp["cfg"]}) + "\n")
 
 
