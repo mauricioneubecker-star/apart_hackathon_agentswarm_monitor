@@ -1,0 +1,9 @@
+# Who runs what (to avoid duplicate compute)
+
+Cloud session (4 CPU, no GPU), branch gnn-opt-torch:
+- [running] architecture screen on ID repeat 0 (5 folds): experiments/arch_id0.jsonl -> preds/cv/a_*__id0.csv
+- [next] top architectures on all 18 harness folds; then training-trick / multi-task / augmentation ablations,
+  random search (successive halving), controls (rewire, shuffle_ef, shuffle_labels), feature ablations
+- night_val looks: 0 so far. Test-split looks: 0 so far.
+Results log: preds/cv_log.jsonl (one JSON line per finished config).
+If you run experiments elsewhere, please write to a different name prefix (e.g. mac_*) and note them here.
