@@ -14,6 +14,8 @@ Expected differences per arm:
   topo  scale-free DM graph. Every draw that depends on the graph is redrawn (reviewers and clarification holders by
         graph distance, seeds by degree, scattered ticket placement), so this arm is a factor-level twin only:
         same factors, package, handles, models; differences are reported as notes, not errors.
+  ft4/p4/b4  the agents flagged `persistent` (persistent_share 0.5) on the 4B model; unflagged agents identical in
+        model and prompt; ft4/b4 without, p4 with the persona sentence; the three arms identical to each other.
 Also checks the replicate copies: identical to their source except id/split/phase/replicate seeds/params.vx_*.
 """
 from __future__ import annotations
@@ -33,7 +35,10 @@ ARM_KEYS = {   # params an arm may change (plus the vx bookkeeping)
     "glm": {"model_mix"}, "bal": {"model_mix"},
     "enf": {"sanction", "detection_probability", "sanction_visibility", "sanctions", "enforcer"},
     "topo": {"topology"},
+    "ft4": {"persistent_share", "vx_n_on_4b"}, "p4": {"persistent_share", "vx_n_on_4b"},
+    "b4": {"persistent_share", "vx_n_on_4b"},
 }
+FT_ARMS = ("ft4", "p4", "b4")
 for _k in ARM_KEYS.values():
     _k |= {"vx_arm", "replicates_planned"}
 
@@ -70,7 +75,24 @@ def main():
                 same("unsolvable", sc["labels_config"]["unsolvable_agents"], tw["labels_config"]["unsolvable_agents"])
                 same("acceptance", sc["env"]["acceptance_variant"], tw["env"]["acceptance_variant"])
             moved = [i for i, (a, c) in enumerate(zip(sc["population"], tw["population"])) if agent_core(a) != agent_core(c)]
-            if arm == "topo":
+            if arm in FT_ARMS:
+                flagged = [i for i, a in enumerate(sc["population"]) if a["flags"].get("persistent")]
+                if not 8 <= len(flagged) <= 12:
+                    errs.append(f"{base}-{arm}: {len(flagged)} flagged agents")
+                if set(moved) - set(flagged):
+                    errs.append(f"{base}-{arm}: unflagged agents differ {sorted(set(moved) - set(flagged))[:5]}")
+                for i, (a, c) in enumerate(zip(sc["population"], tw["population"])):
+                    if i in flagged:
+                        if a["model"] != ("ft4-persistent" if arm == "ft4" else "base4"):
+                            errs.append(f"{base}-{arm}: flagged agent {i} on {a['model']}")
+                        has = "You are persistent:" in a["system_prompt"]
+                        if has != (arm == "p4"):
+                            errs.append(f"{base}-{arm}: persona sentence {'missing' if arm == 'p4' else 'left in'} ({i})")
+                    elif (a["model"], a["system_prompt"]) != (c["model"], c["system_prompt"]):
+                        errs.append(f"{base}-{arm}: unflagged agent {i} model/prompt differs")
+                same("dm_edges", sc["communication"]["dm_edges"], tw["communication"]["dm_edges"])
+                same("timeline", sc["timeline"], tw["timeline"])
+            elif arm == "topo":
                 if moved:
                     notes.append(f"{base}-topo: {len(moved)} agent(s) with other ticket/reviewer/flag draws")
                 same("handles", [a["handle"] for a in sc["population"]], [a["handle"] for a in tw["population"]])
@@ -97,6 +119,15 @@ def main():
                 r = sc["runtime_rules"]["sanction"]
                 same("sanction", (r["type"], r["detection_probability"], r["visibility"]), ("revert", 0.7, "public"))
                 same("models", [a["model"] for a in sc["population"]], [a["model"] for a in tw["population"]])
+    for b in sel["bases"]:   # the three 4B arms are exact twins of each other (only model key / persona sentence)
+        f4, p4, b4 = (json.loads((SC / f"{b['base']}-{x}.json").read_text()) for x in FT_ARMS)
+        for x, y, nm in ((f4, b4, "ft4 vs b4"), (f4, p4, "ft4 vs p4")):
+            for a, c in zip(x["population"], y["population"]):
+                if agent_core(a) != agent_core(c):
+                    errs.append(f"{b['base']}: {nm} agents differ")
+                    break
+        if [a["system_prompt"] for a in f4["population"]] != [a["system_prompt"] for a in b4["population"]]:
+            errs.append(f"{b['base']}: ft4 vs b4 prompts differ")
     for src in G.VX_REPLICATE_SOURCES:
         o = json.loads((SC / f"{src}.json").read_text())
         c = json.loads((SC / f"core-night_vx_rep-{src.removeprefix('core-')}.json").read_text())

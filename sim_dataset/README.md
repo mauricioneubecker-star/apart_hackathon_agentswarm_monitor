@@ -2,7 +2,7 @@
 
 Stand: 7. Nov. 2026 · Schema 1.1.0 · 1.725 Szenario-Spezifikationen (inkl. Core-Batch mit 560 geplanten Episoden), alle validiert
 
-**Neu (8. Nov., v1.7):** Validierungs-Suite `night_vx_*` (93 Läufe, Sterndesign mit Zwillingen + Replikate zurückgehaltener Konfigurationen) → [VALIDATION.md](VALIDATION.md), [DECISIONS.md §16](DECISIONS.md).
+**Neu (8. Nov., v1.7):** Validierungs-Suite `night_vx_*` (135 Läufe: Sterndesign mit Zwillingen, Replikate zurückgehaltener Konfigurationen, 4B-Persistenz-Fine-Tune; Start per Claude-Code-Prompt `VX_RUN_PROMPT.md`) → [VALIDATION.md](VALIDATION.md), [DECISIONS.md §16](DECISIONS.md).
 
 **Neu (7. Nov., spät, v1.6):** Nacht-Batch `night_*` (232 Läufe, Pilot-4-Rezept + Pilot-5-Hebel als Faktoren), `tools/preflight.sh`, `tools/night_run.sh`, `tools/night_report.py`, Fine-Tune-Arm über `--persistent-model` → [DECISIONS.md §15](DECISIONS.md).
 

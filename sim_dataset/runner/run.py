@@ -121,6 +121,26 @@ def finished_runs(out: Path):
     return sorted(p.parent for p in out.glob("*/rep*/meta.json"))
 
 
+def resolve_env_models(sc: dict) -> tuple[dict, list[str]]:
+    """v1.7: model entries whose provider_model_id is '$VAR' (validation-suite fine-tune arms) are resolved from the
+    environment at run time, so no model id is baked into the dataset. SWARM_FT_OMIT_PARAMS (comma list, e.g.
+    'reasoning_effort') drops request params for these models. Returns the scenario and the unresolved variables."""
+    import os
+    missing = []
+    for m in sc["models"].values():
+        pid = m.get("provider_model_id", "")
+        if isinstance(pid, str) and pid.startswith("$"):
+            val = os.environ.get(pid[1:])
+            if not val:
+                missing.append(pid[1:])
+                continue
+            m["provider_model_id"] = val
+            omit = [x.strip() for x in os.environ.get("SWARM_FT_OMIT_PARAMS", "").split(",") if x.strip()]
+            if omit:
+                m["omit_params"] = omit
+    return sc, missing
+
+
 def with_persistent_model(sc: dict, provider_model_id: str, base: str | None = None) -> dict:
     """v1.6: fine-tuned arm. Agents flagged `persistent` (prompted persistence persona in the generated scenario) get
     the fine-tuned model instead and lose the persona sentence, so the same config runs once with prompted and once
@@ -157,6 +177,10 @@ async def simulate(a):
     if not jobs:
         print("nothing to do")
         return
+    if not a.fake:   # v1.7: env-resolved model ids (fine-tune arms) must be set before anything starts
+        miss = sorted({v for sid in {j[0] for j in jobs} for v in resolve_env_models(ds.load(sid))[1]})
+        if miss:
+            sys.exit(f"model id(s) not set: {', '.join(miss)} (export them, or exclude the night_vx_ft* splits)")
     # longest jobs first: branched episodes run 3 arms on one key and would otherwise form a long tail at the end
     # (outcomes are unaffected - every episode has its own seed)
     branched = {sid for sid, _ in jobs if ds.load(sid).get("branching")}
@@ -196,6 +220,8 @@ async def simulate(a):
                 return
             sid, rep = q.get_nowait()
             sc = ds.load(sid)
+            if not a.fake:
+                sc = resolve_env_models(sc)[0]
             if a.persistent_model:
                 sc = with_persistent_model(sc, a.persistent_model, a.persistent_base)
             run_dir = out / sid / f"rep{rep}"

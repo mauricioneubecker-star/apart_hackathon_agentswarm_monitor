@@ -1,5 +1,6 @@
 # runtime (simulation, jury, labels, queries)
 pandas>=2.0
+tabulate>=0.9      # DataFrame.to_markdown in the reports
 pyarrow>=14
 pytest>=7
 pytest-timeout>=2
