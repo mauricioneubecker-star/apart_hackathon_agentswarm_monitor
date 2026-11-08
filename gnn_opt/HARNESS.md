@@ -62,3 +62,11 @@ python3 gnn_opt/baselines.py --data gnn_opt_data/night            # all baseline
 python3 gnn_opt/baselines.py --data gnn_opt_data/night --only hgb_bag+graph --predict-splits all   # final
 ```
 Files land in `gnn_opt/preds/{cv,eval}/<name>.csv`.
+
+## Pitfalls found so far
+- **Standardisation under LODO:** `role_external` is constant 0 in every training fold that holds out
+  `seed=external` (and some degree/NaN-flag columns are near-constant in other folds). Dividing by a ~0 std blew
+  test inputs up to ~1e6 and sent the numpy GNN to AUROC 0.20 on `hold_seed_external`. Floor the std (we use
+  std < 1e-3 → 1) and clip standardised inputs (we use ±6). Tree models are immune.
+- Branch arms: rows `t <= branch_round` duplicate the control prefix (`eval = 0`); predict them anyway (temporal
+  models need the history), evaluate.py ignores them except for the branch divergence analysis.
