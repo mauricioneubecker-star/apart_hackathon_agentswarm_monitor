@@ -9,3 +9,4 @@
 {"id_auroc": 0.8407556242486689, "id_auprc": 0.274561094619841, "name": "a_rgine_ngru_ggru__id0", "cv": "id0", "control": null, "wall_s": 3095, "cfg": {"epochs": 30, "tmem": "gru"}}
 {"id_auroc": 0.8097498425782814, "id_auprc": 0.2761853102088937, "name": "a_rgine_nconv5_gconv5__id0", "cv": "id0", "control": null, "wall_s": 3618, "cfg": {"epochs": 30, "tmem": "conv5", "gtemp": "conv5"}}
 {"id_auroc": 0.8278001030396702, "id_auprc": 0.24408060491241884, "name": "a_rgine_novn_norev__id0", "cv": "id0", "control": null, "wall_s": 3718, "cfg": {"epochs": 30, "vn": false, "reverse": false}}
+{"id_auroc": 0.8678985631690423, "id_auprc": 0.28757141622309274, "name": "a_rgine_noedgero__id0", "cv": "id0", "control": null, "wall_s": 3847, "cfg": {"epochs": 30, "edge_readout": false, "edge_update": false}}
