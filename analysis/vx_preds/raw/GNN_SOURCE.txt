@@ -1,0 +1,5 @@
+f7194430699dc95e16c4fd68706b5e6971e26112  origin/gnn-opt-torch (gnn_opt + gnn_opt_torch code; models/cloud_final_gnn.pt sha256 70a930540e993a4c6da01a7cb143a130e67f19d6559ee408641eb429b3dce63b)
+Weights/cfg/norm/w_gnn identical since b87b2afb (16:53:19Z, before the test look f7aa3324 17:06:28Z); a35c6d96 (17:11:50Z) only added blend_w = 0.5.
+Run: GNN_DEVICE=cpu predict.py --no-eval --blend '' --model gnn_opt_torch/models/cloud_final_gnn.pt; Python 3.11.7, torch 2.11.0, CPU, default torch threads (1 thread: |diff| <= 2e-8).
+runs_vx__cloud_final_gnn.csv sha256 259130f94c1532174460b18d8a0dca4f6f370969b977c074f5d938c8b0d91af3
+runs_night__cloud_final_gnn.csv sha256 a43834c9a8023984ee9b1d95d84bca567f63108ab5d2928a8af9958e1c6b1633

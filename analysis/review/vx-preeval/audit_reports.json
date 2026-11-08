@@ -1,0 +1,748 @@
+{
+ "workflow": "vx-preeval-audit (wf_b922d13e-683), 8 Nov 2026 22:47-23:53 CET",
+ "rules": "read-only; no score-label association on night_vx; random scores only for vx_eval.py tests",
+ "reports": [
+  {
+   "lens": "thresholds",
+   "verdict": "ok",
+   "blocking": [],
+   "minor": [
+    {
+     "title": "The GNN and hybrid thresholds come from the GNN team's 4-run proxy CV, not from the OOF of the frozen configuration. Nachtrag 2 item 6 says \"aus ihrer ID-OOF\", which is a small, undeclared deviation from §4 (\"aus deren OOF\")",
+     "evidence": "origin/gnn-opt-torch:gnn_opt_torch/preds/cv/cloud_final_gnn.csv is byte-identical to e_ngru_4runs.csv (sha256 c5852975...). cloud_final.csv (CV) is byte-identical to h_ngru4_hgb_logit55.csv and cloud_final_gnn+hgb_bag+graph+mem.csv (1441a2c9...). Content unchanged since 31272d59 (16:18 UTC). Renamed in b87b2afb/a35c6d96/63123a27 (17:12 UTC), so it predates the val look (~17:20) and the test look (~17:45). RESULTS.md:268-270 calls them 'CV proxy ... set the 5 %-FPR thresholds used in the val / test looks'; heldout_full.md:83 says the same. test_look.sh:10 (TH=$C/cloud_final.csv $C/cloud_final_gnn.csv ...) confirms these were the team's threshold files. At our thresholds the committed eval files reproduce RESULTS.md step 9 R@5%FPR exactly on the 2338 test rows (hybrid 0.372, gnn5 0.417, hgb 0.250, edge 0.288). The hybrid CV equals the per-fold logit-0.5 blend of the proxy GNN CV and hgb_bag+graph+mem CV (max diff 1.8e-15). The exact 18-fold CV of the final config (cloud_final_gnn_cv5.csv / cloud_final_cv5.csv, 9169401f 20:59 UTC, night_train only) would give 0.335393 (gnn) and 0.151054 (hybrid), against 0.313991 and 0.143105 used. The proxy thresholds give FPR 5.19 % / 5.13 % on the cv5 OOF. Night test pooled FPR of the vx prediction files: gnn 5.22 % (proxy thr) vs 4.95 % (cv5 thr), hybrid 6.10 % vs 5.64 %. Both alternatives sit well inside the config-bootstrap 95 % range of the threshold itself (gnn [0.155, 0.465], hybrid [0.081, 0.251]). The 15-state model differs from the 40-state eval file by only 17 alarm flips in 3018 night held-out rows (FPR 5.2 % vs 5.4 % test pooled). Neither choice biases H4 (enf and id rep0 share the threshold).",
+     "suggested_fix": "Before committing Nachtrag 2, reword item 6 along these lines: \"Für GNN und Hybrid: die CV-Proxy-Dateien des Teams (preds/cv/cloud_final*.csv = e_ngru_4runs / h_ngru4_hgb_logit55, 4-Lauf-Knoten-GRU-Ensemble), nicht die OOF der eingefrorenen 5-Seed-Konfiguration; gewählt wegen Konsistenz mit dem Test-Blick und heldout.md. Die exakte CV (cloud_final*_cv5.csv) ergäbe 0,3354 / 0,1511.\" List it under the deviations. Keep the choice fixed as it is now, with no reference to any vx number."
+    },
+    {
+     "title": "The CV files of the table-based baselines (struct, bag, bag+graph, tab_mem) are OOF of the same spec but were computed on the GNN team's table.csv build, so a local CV rerun does not reproduce their thresholds bit for bit",
+     "evidence": "/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/audit/thresholds/regen_cv.py reruns H.run_cv with the BL.specs that make_baselines.py uses, on vxpred/repo/gnn_opt_data/night (table.csv and graphs.npz byte-identical to scratchpad/stat/data/night). hgb_clock, oracle_risk+clock, edge_monitor_top3 and hgb_pairwise reproduce bit for bit (17908/17908 rows, identical thresholds). hgb_struct, hgb_bag, hgb_bag+graph and hgb_bag+graph+mem reach Spearman 0.994-0.995 (max diff 0.20-0.27), the known float32 table noise (heldout_full.md §1.2). Their local thresholds would be 0.152378 / 0.159027 / 0.141096 / 0.138498, against 0.151485 / 0.161865 / 0.136285 / 0.136305 used. Night test FPR moves by at most 0.2 pp (e.g. bag+graph 4.81 % to 4.72 %), and all values lie inside the bootstrap range of the threshold. Code and CV files come from the same commit f5803c22 (11:03 UTC, after the jury completion 8eff2276 at 10:13 UTC) and are unchanged since.",
+     "suggested_fix": "Documentation only: add one sentence to Nachtrag 2 item 6 or manifest.json saying that the thresholds come from the committed CV files (GNN team's table build) and that a local CV rerun moves them by at most 0.005, well inside their sampling uncertainty. No change to the values."
+    },
+    {
+     "title": "The +1e-12 is load-bearing on vx: many zero-shot rows sit exactly on the k-th training value",
+     "evidence": "All 12 --thr strings in analysis/vx_preds/run_eval.sh (both calls identical) equal k-th negative + 1.000e-12 and round-trip exactly (repr). Label-free check on the vx score files: 236 zs:pairwise rows are exactly 0.88 and 27 zs:global_full rows exactly 0.65, i.e. 1e-12 below thr. No vx score equals any threshold, and continuous predictors stay at least 2.5e-6 away. Without the epsilon, FPR on the threshold rows would be 7.33 % (zs:pairwise, 103 ties), 5.41 % (zs:global_full, 26 ties) and 5.16 % (clock, 9 ties). heldout_full.md §1.3 prints only 0.88 and 0.65, so anyone retyping thresholds from that table would silently change H4 for the LLM monitors.",
+     "suggested_fix": "Keep run_eval.sh as it is. Optionally add a line to Nachtrag 2 item 6: the thresholds are exactly the strings in run_eval.sh / thresholds.json, including +1e-12. vx_eval's >= then equals the harness's > on every night and vx row, which reconciles §6.4 'Score ≥ Trainingsschwelle' with heldout_full.md 'alarm iff score > thr'."
+    },
+    {
+     "title": "H4 (ii) has no rule for a zero or missing id-rep0 FPR (uncommitted analysis/vx_verdicts.py)",
+     "evidence": "vx_verdicts.py:97-99: ii_ok = fpr_e is not None and fpr_i is not None and fpr_e <= 2 * fpr_i. vx_eval.false_alarms (vx_eval.py:245) returns None when an arm has no untipped runs, so the verdict becomes 'nicht gestützt' instead of 'nicht auswertbar'. If id rep0 has row FPR 0, a single enf alarm row fails (ii). On night held-out untipped runs (68 runs) with the vx prediction files, P(row FPR = 0) when only k untipped runs exist is 0.185 / 0.088 / 0.043 for gnn (k = 5/7/9; VALIDATION.md expects about 7 untipped runs per arm), 0.12 for zs:pairwise and 0.10 for zs:global_full at k = 7. vx_verdicts.py is untracked; its docstring says it is committed before the run.",
+     "suggested_fix": "Before the run, write a convention into Nachtrag 2 item 7 and vx_verdicts.py, then commit both. For example: if fpr_id = 0, (ii) holds only if fpr_enf = 0, or (ii) is reported as 'nicht auswertbar'. If an arm has no untipped runs, H4 (ii) is 'nicht auswertbar'. vx_eval.py stays unchanged."
+    }
+   ],
+   "checks": [
+    {
+     "check": "(a) All 12 thresholds recomputed from scratch (own repeat mean over id folds, plus the smallest negative v with #(neg > v) <= 5 % · n, plus 1e-12) and with the copied harness (H.id_oof + M.thr_at_fpr; copies byte-identical to git blobs 528f663a/9698197d)",
+     "result": "All 12 are exactly equal (float ==) across own implementation, harness, thresholds.json and both run_eval.sh calls: clock 0.120745000001, struct 0.151485000001, feat_pairwise 0.186390000001, bag 0.161865000001, bag+graph 0.136285000001, tab_mem 0.13630500000100002, edge 0.326340000001, gnn 0.313991081096, hybrid 0.14310457898354048, oracle 0.116228000001 (3370 night_train OOF rows, 135 pos), zs:pairwise 0.880000000001, zs:global_full 0.650000000001 (4050 night_train+val rows, 147 pos). Script: /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/audit/thresholds/thr_audit.py, output /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/audit/thresholds/out/thr_audit.json"
+    },
+    {
+     "check": "(a) Comparison with heldout_full.md §1.3 and the held-out analysis at full precision (analysis/heldout/out/results.json 'thresholds')",
+     "result": "9 of 9 shared thresholds are exactly equal at full precision (assemble.py only checks 4 significant digits). The training FPRs match the table (0.0488 clock, 0.0498 others, 0.0469 / 0.0474 zs). struct, feat_pairwise and bag are new and were verified independently."
+    },
+    {
+     "check": "(a) Inputs of the zero-shot thresholds",
+     "result": "Night rows of apart_vx/data/llm_monitor/{pairwise,global_full}/snapshots.csv equal the apart_ana copy used by the held-out analysis on 7560/7560 rows (max diff 0), so the vx aggregation did not touch the night scores. preds/zs_*.csv equals zs_tip on 10464/10464 rows. 0 NaN on the 4050 train+val rows. All 30 NaN zs rows are in night_vx_ft, an excluded split."
+    },
+    {
+     "check": "(b) OOF structure of all threshold CV files (plus cv5 alternatives)",
+     "result": "Every file has 18 folds (10 id + 8 LODO). In each fold the rows are exactly the night_train eval rows of that fold's test configs in folds.json (0 bad folds). Rows are night_train only, each covered once per repeat (2 repeats). The id folds of each repeat partition the 64 train configs. ID AUROC matches the team's reported CV values (bag+graph 0.843, tab_mem 0.867, edge 0.870, pairwise 0.794, bag 0.820, clock 0.754, gnn proxy 0.888, cv5 0.885), so these are genuine OOF, not in-sample. Script oof_structure.py."
+    },
+    {
+     "check": "(b) CV regeneration with the make_baselines.py spec",
+     "result": "Bit-for-bit for hgb_clock, oracle_risk+clock, edge_monitor_top3 and hgb_pairwise. The table models differ only by float32 table noise (see minor item 2). Output in /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/audit/thresholds/out/regen_cv/"
+    },
+    {
+     "check": "(b) GNN/hybrid threshold files are the ones the team used for its val/test looks",
+     "result": "Confirmed: test_look.sh:10 TH line, RESULTS.md:268-270, LOOKS.md, git history (unchanged since 16:18 UTC, before both looks). At our thresholds the committed eval files reproduce RESULTS.md step 9 R@5%FPR exactly (0.372/0.417/0.250/0.288). They are proxies, not OOF of the frozen config (minor item 1)."
+    },
+    {
+     "check": "(c) vx_eval uses >= while the harness uses > with thr = k-th + 1e-12",
+     "result": "All 12 run_eval.sh strings keep exactly +1e-12. No training negative lies in (k-th, thr], so FPR(>=) = FPR(>) on the threshold rows for all 12, max 0.04977 (zs 0.04689 / 0.04740, clock 0.04884), always <= 5 %. Same on all night held-out splits: no split where >= and > differ. vx_eval.py is byte-identical to 4e6e998 (sha 6ff523e8...)."
+    },
+    {
+     "check": "(c) End-to-end parse in vx_eval.py: allowed dry run with RANDOM scores on the real keys, exact --thr strings, boot 3, output deleted unread",
+     "result": "PASS, about 4 s. Parsed thresholds dict equals float(strings) exactly, and all 12 names appear in h4_false_alarms for enf and id. Pred names equal thr names in both calls; enf has 14 rep0 runs and id has 14 rep0 + 14 rep1 (keys only). A synthetic unit test of false_alarms confirms that a score of exactly 0.88 does not alarm at 0.88+1e-12 but does at 0.88. Script /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/audit/thresholds/dry/dry_run.py"
+    },
+    {
+     "check": "(d) FPR(>=) at the thresholds on night held-out negatives, using the exact vx prediction files (night rows only); columns val / test_id / ood_family / ood_seed / branch / test pooled",
+     "result": "clock .033/.030/.028/.022/.035/.029; struct .057/.051/.080/.045/.075/.063; feat_pairwise .045/.061/.032/.083/.086/.062; bag .042/.052/.022/.061/.079/.052; bag+graph .055/.051/.026/.058/.061/.048; tab_mem .060/.056/.022/.051/.061/.048; edge .024/.040/.049/.054/.055/.048; gnn .054/.069/.022/.051/.057/.052; hybrid .052/.080/.024/.058/.071/.061; zs:pairwise .060/.039/.058/.026/.053/.045; zs:global_full .042/.015/.054/.061/.018/.032 (zs val is in-sample for the threshold); oracle .082/.057/.017/.233/.155/.094 (reference only). vx_eval quantities on test pooled (48 untipped runs), untipped-row FPR / false-alarm run share: gnn .040/.27, hybrid .050/.29, zs:pairwise .046/.21, zs:global_full .043/.23, bag+graph .048/.42, clock .034/1.00. All monitors are plausibly near 5 % given config clustering. Script heldout_fpr.py, output out/heldout_fpr.json."
+    },
+    {
+     "check": "Hybrid formula and file consistency",
+     "result": "preds/hybrid.csv equals the logit-0.5 blend of preds/gnn.csv and preds/tab_mem.csv on 6624/6624 rows (max diff 0). The proxy hybrid CV equals the per-fold blend of its components (max diff 1.8e-15), so threshold and predictions use the same formula."
+    },
+    {
+     "check": "Rule compliance",
+     "result": "No score was related to any vx label. On vx only label-free statistics were computed (NaN, range, distinct values, distance to thr, values exactly at the k-th value). No alarm counts. No vx_eval results exist. Nothing was written to apart_vx or vxpred: their __pycache__ files predate this audit, and harness code ran from copies in /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/audit/thresholds/code. No state-changing git commands."
+    }
+   ]
+  },
+  {
+   "lens": "baselines-hybrid",
+   "verdict": "ok",
+   "blocking": [],
+   "minor": [
+    {
+     "title": "The heldout_full.md §1.2 evidence for the float32 table-noise explanation does not show the mechanism. The explanation is plausible but not verified.",
+     "evidence": "heldout_full.md:64 cites a rebuild of table.csv from graphs.npz that differs at 2e-5 in 47 of 227 columns. That rebuild only re-represents the same values: in all 228 columns the CSV and in-memory values keep the same order and ties, and refits of struct, bag, bag+graph and tab_mem on the in-memory table are bit-identical on all 3720 night non-train rows (audit/baselines-hybrid/repr_test.json). So that check cannot explain the differences from the team. What does support the explanation: (i) The pattern. The models without float32 group sums or means in their inputs (clock, pairwise, oracle, edge) are exact against the committed files, on night_val (720 rows) and on all 17,908 CV rows. The four models whose inputs contain sum_/mean_/nmean_ columns differ (CV exact share at most 0.099). (ii) Code and raw data are identical. gnn_opt code and the committed preds have been unchanged since f5803c22, and the night graph and label files since 8eff2276. (iii) Sensitivity test. I recomputed the 21 sum_ columns with float64 accumulation, which changes 1 ulp in about 3.4 % of entries. This moves night_val predictions by max 0.051, 0.066, 0.106 and 0.083 (Spearman 0.994 to 0.999) for struct, bag, bag+graph and tab_mem. Random 1-ulp flips move them by max 0.078 to 0.247 (Spearman 0.988 to 0.996). The observed team-vs-local differences fall in that range: max 0.076, 0.127, 0.104 and 0.172, Spearman 0.995 to 0.997 (audit/baselines-hybrid/noise_sens.json). The team's table.csv is not available, so the exact mechanism cannot be confirmed. The same unverified wording appears in the manifest.json note on hybrid_vs_team_predict_check_120.",
+     "suggested_fix": "Reword §1.2 and the manifest note to say: 'plausible, not verified; table models are sensitive to 1-ulp, order-changing differences in float32 group sums and means, which another platform or library version can produce; models without such inputs reproduce bit for bit, including all 17,908 CV rows'. Drop the 'sits on bin edges' inference from the rebuild check. No change to any prediction is needed. The vx refits are internally consistent because the night and vx tables were built in the same environment."
+    },
+    {
+     "title": "Thresholds for struct, bag, bag+graph and tab_mem come from the team's CV on their table but are applied to the local refits",
+     "evidence": "assemble.py:121-125 takes the thresholds from the committed gnn_opt/preds/cv files, which were built on the team's table. A harness CV on the local table gives struct 0.1524 (used: 0.1515), bag 0.1590 (0.1619), bag+graph 0.1411 (0.1363) and tab_mem 0.1385 (0.1363). At the thresholds actually used, the local refits' night_train ID-OOF false positive rate is 5.07 %, 4.91 %, 5.07 % and 5.04 % against the 5 % target (audit/baselines-hybrid/f_checks.json). The clock, pairwise, oracle and edge thresholds are identical either way. Nachtrag 2 item 6 pre-registers the CV-file thresholds, so this is not a deviation.",
+     "suggested_fix": "Add one sentence to Nachtrag 2 item 6 or to the paper caveats, stating that the false positive rate is 4.9 to 5.1 %. Change nothing."
+    },
+    {
+     "title": "vx tab_mem and hybrid are not the instances used in heldout.md, and vx_gnn15_heldout.py credits the whole hybrid difference to the 15 stored states",
+     "evidence": "In heldout.md the primary tab_mem was the team's hgb_bag+graph+mem__allsplits.csv and the primary hybrid was the team's cloud_final.csv (heldout_full.md:39,42). The refit tab_mem appeared only as a sensitivity. For vx, tab_mem is the local refit and the hybrid is the 15-state GNN plus the local tab_mem. Nachtrag 2 item 4 ('wie im Held-out-Vergleich neu gefittet', ANALYSIS_PLAN.md:187-189) is true for the procedure, but not for which file was primary. vx_gnn15_heldout.py:3-6 and :80/:85 label hybrid15 - hybrid40 as the effect of the stored states. On the 3720 night non-train rows (score level only, no labels): changing only tab_mem to the local refit moves the hybrid by max 0.124 (Spearman 0.9989). Changing only the GNN states moves it by max 0.057 (Spearman 0.9995). Both together: max 0.127, Spearman 0.9984 (audit/baselines-hybrid/hybrid_decomp.py).",
+     "suggested_fix": "In vx_gnn15_heldout.py, add a column hybrid40_refit = logit-blend 0.5 of cloud_final_gnn.csv and preds/tab_mem.csv, or relabel the hybrid row as 'vx version (15 states + local tab_mem refit) vs team hybrid'. In Nachtrag 2 item 4, add that the vx tab_mem and hybrid differ from the held-out primary instances. The tab_mem refit has held-out AUROC 0.8134 against 0.8112 for the team's file (check_regen.json)."
+    },
+    {
+     "title": "External sender nodes are in the graph from round 1, so features can see a scheduled external injection 5 to 6 rounds before it happens (design leak, not a label leak)",
+     "evidence": "features.py:306 and :328-330 write a node row for every node, including ext: senders, in every round. The data.py:120 comment 'externals: only once they have appeared' is not implemented: data.py:121 has no filter. 32 of 252 night runs and 19 of 94 vx runs have an ext: node that is present a median 5 (night) or 6 (vx) rounds before its first readable message (audit/baselines-hybrid/ext_check.py). These rows feed nn_, nmax_ and nmean_role_external (struct, bag, bag+graph, tab_mem), n_nodes and through it g_density_direct, and the GNN node set. The leak comes from scenario design, not from any label. External presence is the same for every run of a Part A base (ext_arms.py), and the night training data has the same property, so Δ_shift is not biased.",
+     "suggested_fix": "Document it as a caveat. Do not fix it now: a fix would mean rebuilding features and retraining the frozen models."
+    },
+    {
+     "title": "Cosmetic: assemble.py hard-codes the blend weight instead of reading it from the model file",
+     "evidence": "assemble.py:64 uses `--blend-w` with default 0.5. Nachtrag 2 item 4 says the weight comes 'aus der Modelldatei'. Checked with torch: cloud_final_gnn.pt (sha256 70a930...) has blend_w = 0.5, w_gnn = 0.5 and 15 states, so the value is correct.",
+     "suggested_fix": "Optionally have assemble.py read blend_w from the .pt file, or record the checked value in manifest.json."
+    }
+   ],
+   "checks": [
+    {
+     "check": "Archived GNN repo is unchanged against origin/gnn-opt-torch f7194430",
+     "result": "316 tracked blobs in gnn_opt and gnn_opt_torch: 0 missing, 0 differing. The only extra files are preds/new/runs_{night,vx}__cloud_final_gnn.csv. The harness code is identical to the held-out ref aebf0e1f (gnn_opt has no diff)."
+    },
+    {
+     "title_note": "provenance",
+     "check": "Code and data provenance",
+     "result": "gnn_opt code (tabular, data, baselines, harness, build_dataset, folds) and the committed gnn_opt preds have been unchanged since f5803c22. Night graph_edges, graph_nodes and labels have been unchanged since 8eff2276. The feature, jury and label code was last changed in c11ff117 (7 Nov). All 346 runs (night and vx) have catalog v1.1, rubric catalog-v1-2026-11-07, merged jury with coverage 1.0, and one identical edge CSV header. The night and vx datasets are byte-identical to stat/data (5 files each)."
+    },
+    {
+     "check": "(a) make_baselines.py compared with baselines.py",
+     "result": "Same specs (BL.specs), same HGB settings (depth 3, 250 iterations, lr 0.05, random_state 0) and the same EdgeMonitor (top-3). Train rows come from H.train_rows: 3370 rows, 135 positives, 128 runs, 64 configs, night_train only. Each model is fitted once and predicts the night non-train rows (3720) and vx (2904) through m.predict(TV), which is what baselines.py --apply does, or through edge_apply. The vx dataset has no night_train split and no run overlap with night. Prediction files contain no night_train key. Output is written at full precision, where baselines.py writes %.5g, which is harmless."
+    },
+    {
+     "check": "(b) Independent minimal refit (own code, no harness imports) of hgb_clock, hgb_bag+graph and edge_monitor_top3",
+     "result": "Bit-identical to preds/{clock,bag+graph,edge}.csv on all 2904 vx rows and all 3720 night rows, with the same row order. My own derivation of the bag+graph columns (154) equals tabular.feature_sets, including order. Scripts: audit/baselines-hybrid/indep_refit.py, indep/compare.json."
+    },
+    {
+     "check": "(c) Edge monitor transfer",
+     "result": "edge_apply matches EdgeMonitor.predict with G swapped. ecols are identical, in the same order (21 columns), in both npz files, and data.build selects columns by name. My own implementation reproduces the vx scores exactly. The 322 vx snapshots without edges get exactly 0.0, which is the night_train empty-snapshot base rate (359 such train snapshots, none positive). No snapshot with edges scores 0.0. 89 and 65 vx snapshots have 1 and 2 edges and get the top-3 mean over fewer edges, as in EdgeMonitor. NaN shares and ranges of the 18 E_GEN columns are comparable between night and vx. HGB early stopping is active for the edge model (185,412 train edges, 10 % held out) but never stops early (n_iter 250); this is the harness behaviour."
+    },
+    {
+     "check": "(d) Hybrid",
+     "result": "Recomputing sigmoid(0.5·logit(clip(gnn)) + 0.5·logit(clip(tab_mem))) from preds/gnn.csv and preds/tab_mem.csv reproduces preds/hybrid.csv bit for bit (6624 rows). The model file has blend_w = 0.5, w_gnn = 0.5 and 15 states. The formula reproduces the team's eval/cloud_final.csv (max 5.1e-8) and cv/cloud_final.csv (1.8e-15). In the team's predict.py check (120 rows), their GNN equals ours (1.19e-7). The team's tab_mem implied by their hybrid equals their committed gnn_opt tab_mem (4.0e-6), so the 0.057 hybrid difference comes entirely from tab_mem. gnn.csv equals the raw GNN outputs, and the hybrid and GNN thresholds reproduce exactly from night_train-only rows."
+    },
+    {
+     "check": "(e) Leakage",
+     "result": "Feature sets: clock [t]; struct 24, pairwise 23, bag 106, bag+graph 154 and tab_mem 189 columns (35 mem_); oracle [risk, t]; edge uses the 18 E_GEN columns. No label-like column name appears outside the oracle. risk is not in table.csv; it is only assigned for the oracle. No used column has |corr| > 0.9 with risk on night_train. tabular.py uses only edge features, node features, node names, n_edges, n_nodes, t and run_i. mem_ (cummax, EWM, shift(3)) and d3_ (shift(3) within a run) are causal. The jury sees only the message and the message it replies to. Run lengths are fixed (30, or 36 in the time arm), so whether a row exists does not depend on the outcome. Lexicon and tool columns are excluded. The only finding is the external-node lookahead listed under minor."
+    },
+    {
+     "check": "(f) Held-out refits and night_val comparison",
+     "result": "All 5 regen files (clock, bag+graph, tab_mem, oracle, edge) match the make_baselines night rows string for string at %.5g on all 3720 rows. Full precision is unknowable from %.5g files, but my own refit is bit-identical for 3 of them. The night_val comparison reproduces make_baselines.json exactly: exact for clock, pairwise, oracle and edge; struct max 0.076, bag 0.127, bag+graph 0.104, tab_mem 0.172, Spearman 0.995 to 0.997. A harness CV on the local table is exact against the committed CV on all 17,908 rows for clock, pairwise, oracle and edge, and differs for the four table-aggregate models. The explanation is plausible but unproven (see minor 1)."
+    },
+    {
+     "check": "Label-free sanity of the lens files on vx",
+     "result": "For clock, struct, feat_pairwise, bag, bag+graph, tab_mem, edge, gnn and hybrid: the vx keys are exactly the 2904 snapshots and the night keys exactly the 3720 non-train snapshots, with 0 NaN and all scores in [0, 1]. The clock trains on t ≤ 30, so the 84 time-arm rows with t = 31-36 get the t = 30 score. That is inherent and covered by H2."
+    },
+    {
+     "check": "Rule compliance",
+     "result": "No vx label or outcome was read, except the keys and split. Nothing was evaluated on vx. Harness modules were imported from my own copy with -B, and a find -newer check shows no file created or changed in vxpred, apart_vx/analysis or ANALYSIS_PLAN.md. Scratch files are only in /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/audit/baselines-hybrid/."
+    }
+   ]
+  },
+  {
+   "lens": "gnn-provenance",
+   "verdict": "issues",
+   "blocking": [
+    {
+     "title": "Nachtrag 2 item 3 gets the freeze timing wrong: cloud_final_gnn.pt was changed after the test look (metadata only)",
+     "evidence": "/Users/mauricio/sim_local/apart_vx/ANALYSIS_PLAN.md:179 says \"die Datei ist seit 17:12 UTC unverändert, also seit vor dem Test-Blick\". The git history of origin/gnn-opt-torch is linear and says otherwise. b87b2afb (16:53:19Z) adds models/final_gnn.pt (sha256 825f7a87…, 26684817 B). In the same commit LOOKS.md is auto-stamped \"night_val look #1 Sun Nov 8 16:52:58 UTC 2026\". 599ae4e8 (16:58:13Z) adds test_look.sh. b86efb62 (17:02:35Z) writes the LOOKS.md 'test 1' row. f7aa3324 (17:06:28Z) is the commit 'TEST LOOK 1 (of 2)'. After that, a35c6d96 (17:11:50Z) MODIFIES the blob (to sha256 70a93054…, 26684881 B, +64 B), and 63123a27 (17:12:21Z) only renames it (R100) to cloud_final_gnn.pt. f7aa3324 is an ancestor of a35c6d96. So 17:12 UTC is after the test look. The hand-written '~17:20' and '~17:45' in LOOKS.md:10/12 and '17:30 UTC' in STATUS.md:34/37 contradict git and the auto-stamp. In substance the freeze holds. I loaded both blobs (scripts/inspect_pt.py). The only difference is a new key blend_w=0.5. cfg, norm, w_gnn=0.5 and all 15 state tensors are identical (per-state SHA hashes 15/15 equal). The predictions are therefore unaffected. The sentence is still verifiably false, and it sits in the pre-registration that has to be committed before run_eval.sh.",
+     "suggested_fix": "Before committing Nachtrag 2, replace the parenthesis with git facts. Weights, cfg and normalisation have been bit-identical since b87b2afb (16:53:19 UTC). The test look came after that: test_look.sh 16:58, LOOKS row 17:02, commit f7aa3324 17:06 UTC. After the test look, a35c6d96 (17:11:50 UTC) only added the key blend_w = 0.5 (w_gnn = 0.5 was already stored, 15/15 states checked), and 63123a27 (17:12:21 UTC) is a pure rename. The ~17:20/~17:45 times in LOOKS.md do not match git. No rerun is needed. Ask the GNN team to correct the times in LOOKS.md and STATUS.md on their branch."
+    }
+   ],
+   "minor": [
+    {
+     "title": "Effect of the 15-of-40-state substitution, measured now on night data (allowed): small and negative",
+     "evidence": "Night batch only, held-out rows of heldout.md (2338 rows, 156 positives), scripts/night_15v40.py and night_hybrid_cmp.py. Pooled AUROC: stored 15-state model 0.8127 vs committed 40-state file 0.8165, Δ −0.0038, CI [−0.008, −0.0002] from 500 config-bootstrap draws. By split: test_id 0.917/0.921, ood_family 0.792/0.794, ood_seed 0.745/0.744, branch 0.725/0.731. At thr 0.314: R 0.397 vs 0.417, FPR 0.052 vs 0.054, 9 of 2338 alarms flip. Spearman on eval rows per split is 0.9873–0.9985, which confirms the Nachtrag figure. The largest score difference is 0.112 over all rows and 0.077 over eval rows, not the 0.05 in RESULTS.md:358 (that value covers only the 120-row check). The vx hybrid (15-state gnn + refit tab_mem) has held-out AUROC 0.8323, the same as the committed cloud_final.csv (0.8323).",
+     "suggested_fix": "Put these night numbers into Nachtrag 2 item 3 now, or run analysis/vx_gnn15_heldout.py now (night data only). Then the promised 'after the evaluation' sensitivity is fixed before the vx run. Quote the max |diff| as 0.11 over all night rows."
+    },
+    {
+     "title": "Look-ahead: external-sender nodes exist from round 1, before their first message (seed type is visible early)",
+     "evidence": "features.py:306 builds `nodes` from every message of the whole run. graph_nodes.csv therefore has ext:* rows with role_external=1 (features.py:347) from round 1. gnn_opt/data.py:120 has the comment 'externals: only once they have appeared', but no filter implements it (lines 114-122 take every graph_nodes row of round t). This happens in 32 of 252 night runs and 19 of 94 vx runs. The first external message comes at rounds 4–10 (night) and 4–8 (vx), so information from the scenario's seed type enters before it happens. In vx it is constant within each base across arms (K2-266, K4-056, K4-302, Part B night_test_id-K4-001). Night test (scripts/ext_leak*.py): removing the pre-arrival ext nodes changes frozen-GNN scores by at most 0.0058 on pre-arrival rows and at most 0.038 later. Held-out AUROC moves by ≤0.0006 per split; pooled stays 0.8127 → 0.8127.",
+     "suggested_fix": "The model is frozen, so nothing can change before the run. Document it as a limitation of the feature pipeline (it also concerns the feature-based baselines) and note that its measured effect on the GNN is negligible."
+    },
+    {
+     "title": "vx has one single-judge message (m158), night has none",
+     "evidence": "scripts/jury_cov.py, all runs. Night: 21605/21605 judgeable messages have 2 judges; the 37 rate-limit errors and 1 unparseable Haiku reply were all re-judged. vx: 8608/8609 have 2 judges. m158 in core-night_vx-K2-266-time/rep0 (round 27, #sprint broadcast by a17) has 5 Haiku attempts, all 'unparseable', and a valid DeepSeek row. jury.py:178-179 then sets mean = DeepSeek scores and absdiff = None, and features.py:216 sets disagree = NaN. Result: 23 edge rows (round 29, a17 to everyone) have jury_disagreement NaN, against 0 of 407840 in night and 23 of 190126 in vx. tdata.py:28,77-80 turns this NaN into 0 with no missing flag. I simulated the same case on 6 night runs: the broadcast message with the largest DeepSeek–Haiku gap was made DeepSeek-only. Frozen-GNN scores change by at most 0.0004–0.033, and only from that round on.",
+     "suggested_fix": "Add one sentence to Nachtrag 2 item 5. 'Code unchanged' is correct, but the vx jury contains one DeepSeek-only message, with bounded effect on all feature-based predictors and none on the LLM monitors."
+    },
+    {
+     "title": "Bitwise reproduction of the GNN files depends on the torch thread count",
+     "evidence": "With default threads, my independent run (code and .pt via git show f7194430, own builds) reproduces raw sha256 259130f9… (vx) and a43834c9… (night) exactly. With OMP_NUM_THREADS=1 the largest difference is 2e-8 (score) and 2e-6 (count). The team's cross-platform runs_check agrees to 1.2e-7.",
+     "suggested_fix": "Record the thread setting (default torch threads, CPU) in GNN_SOURCE.txt / manifest.json so the SHA can be re-verified."
+    },
+    {
+     "title": "Hybrid weight is hard-coded rather than read from the model file",
+     "evidence": "assemble.py:64 sets the --blend-w default to 0.5. Nachtrag 2 item 4 (ANALYSIS_PLAN.md:187) says 'Gewicht 0,5 aus der Modelldatei'. The value matches: w_gnn=0.5 has been stored since b87b2afb, and blend_w=0.5 was added only after the test look.",
+     "suggested_fix": "Cite w_gnn (the key that existed before the test look), or read it from the .pt in assemble.py."
+    },
+    {
+     "title": "The 15-state structure is attributed to RESULTS.md but can now be stated as verified",
+     "evidence": "The .pt has no 'members' key and holds 15 states. They form 5 triplets: L2 within a triplet ≤0.04, across triplets ≥69.4. This matches final.py@e7305905:64-66 (keep i % 8 ≥ 5, i.e. epochs 27–29 of each seed). Fitting the committed 40-state eval by least squares on the 5 stored per-seed predictions gives weights 0.178–0.228 (sum 0.999). The 5-seed mean has Spearman 0.9976 with the eval file, while single seeds agree with each other at only 0.85–0.91. The eval file therefore comes from the same 5 seed trainings. The stored normalisation equals a fresh fit_norm on the current night build's 128 night_train runs (max diff ≤6e-8), so the training inputs equal today's night features.",
+     "suggested_fix": "Optional: replace 'Laut RESULTS.md' with 'geprüft' and cite these checks."
+    },
+    {
+     "title": "The headline inputs include a generic lexicon and a population-derived flag",
+     "evidence": "Edge inputs (18): volume, direct_volume, bcast_volume, responsiveness, reciprocity, new_contact, the 9 jury dimensions, legitimization_trend, jury_disagreement, escalation_lex. Node inputs (5): unanswered_share, role_external, bcast_legitimization, stance_drift, frustration_own. On top come 5 NaN flags and the relation one-hot (direct/broadcast/both, plus reverse). cfg.clock=False. The task lexicon (mech_ref, mech_ref_ema, pressure_lex, bcast_mech_ref, exposure_breadth), the tool features, role_lead/auditor and n_deps are excluded. escalation_lex, however, is a regex lexicon (features.py:121-126).",
+     "suggested_fix": "If the paper says 'no lexicon', write 'no task lexicon (escalation lexicon included)'. This is consistent with VALIDATION.md:193."
+    },
+    {
+     "title": "Outside this lens: vx tab_mem/hybrid are not the held-out files",
+     "evidence": "On held-out rows, the refit tab_mem differs from the committed hgb_bag+graph+mem__allsplits.csv by up to 0.236 (Spearman 0.9955). The pooled AUROC is about the same (0.813 vs 0.811). The manifest explains the 120-row hybrid gap of 0.057 as 'float32 table noise', but the local table.csv does not depend on which runs are built together: a 4-run build equals the full build on all 227 columns. So the gap comes from the GBM refit, or from the cloud's own table, which I cannot check.",
+     "suggested_fix": "Hand this to the baselines/hybrid lens and reword the manifest note."
+    }
+   ],
+   "checks": [
+    {
+     "check": "(a) Byte identity of the model",
+     "result": "PASS. vxpred/repo/gnn_opt_torch/models/cloud_final_gnn.pt sha256 70a930540e99… equals the blob 3444de4d at origin/gnn-opt-torch (f7194430), and also at 63123a27 and a35c6d96."
+    },
+    {
+     "check": "(a) Model history",
+     "result": "States were added at b87b2afb (16:53:19Z) and are unchanged since. a35c6d96 (17:11:50Z, after the test-look commit f7aa3324 17:06:28Z) added blend_w only, and 63123a27 renamed the file. No later change up to f7194430. See BLOCKING item."
+    },
+    {
+     "check": "(a) Prediction code after the freeze",
+     "result": "PASS. git diff --stat b87b2afb f7194430 over predict.py, tdata.py, train.py, model.py, blend.py and gnn_opt/ is empty. The f70a6f61 changes (16:34Z, before the freeze) only add multi-member support and a training control. Every file in vxpred/repo/gnn_opt{,_torch} equals its f7194430 blob; the only extra files are the 2 outputs."
+    },
+    {
+     "check": "(a) Eval/CV files from the test look",
+     "result": "PASS. Identical to the b87b2afb versions: eval/cloud_final_gnn.csv (3efc72d5), eval/cloud_final.csv (2c19a215), cv/cloud_final_gnn.csv = e_ngru_4runs.csv (ff662799), cv/cloud_final.csv = h_ngru4_hgb_logit55.csv (89eec61c)."
+    },
+    {
+     "check": "(b) .pt structure",
+     "result": "PASS. Keys cfg, states, norm, w_gnn, blend_w; no members; 15 states. cfg: feat=headline, clock=False, seeds=5, swa=0, swa_last=8, epochs=30, tmem=gru, gtemp=none, judge_aug=0.5. w_gnn=0.5, blend_w=0.5. The RESULTS.md:357-359 caveat is confirmed: 15 of 40 states."
+    },
+    {
+     "check": "(c) Independent rebuild",
+     "result": "PASS. Own builds of night and vx (code via git show) are byte-identical to vxpred/repo/gnn_opt_data and scratchpad/stat/data in all 5 files, including graphs.npz."
+    },
+    {
+     "check": "(c) Independent prediction",
+     "result": "PASS. predict.py --no-eval --blend '' run from a fresh copy gives files sha-identical to analysis/vx_preds/raw: vx 259130f9…, night a43834c9…."
+    },
+    {
+     "check": "(c) preds/gnn.csv",
+     "result": "PASS. All 2904 vx rows and all 3720 night non-train rows equal the raw files exactly; the night keys are exactly the non-train keys."
+    },
+    {
+     "check": "(c) Team runs_check (120 rows)",
+     "result": "PASS. 120/120 rows match; max |Δ| 1.19e-7 against my full-night run and 1.21e-7 against my own 4-run rebuild, Spearman 1.0."
+    },
+    {
+     "check": "(d) No fitting or labels at prediction time",
+     "result": "PASS. predict_states only loads state dicts, runs eval() under no_grad and takes the normalisation from the file. model.forward reads only x, src, dst, ef, rel, ngraph, G, ntab. Scramble test: replacing all label, outcome and config columns and node_lab/node_ext with random values gives byte-identical vx predictions."
+    },
+    {
+     "check": "(e) Runner code between batches",
+     "result": "PASS. The diff 8eff2276..origin/night-vx-validation touches only llm.py, orchestrator.py and run.py (fine-tune endpoint / omit_params / env model ids). features.py, jury.py and labels.py are identical blobs. Since 8eff2276, runs_night only gained monitor_*.jsonl files."
+    },
+    {
+     "check": "(e) Recomputation of the feature chain",
+     "result": "PASS. Recomputed on copies for all 252 night and 94 vx runs: graph_edges/graph_nodes, jury_merged.jsonl and labels.json are byte-identical in every run. Judge tags and catalog/rubric versions are identical in both batches."
+    },
+    {
+     "check": "(e) Single-judge messages",
+     "result": "Night 0 of 21605; vx 1 of 8609 (m158, Haiku unparseable 5 times). Bounded effect, see MINOR."
+    },
+    {
+     "check": "Hard rules",
+     "result": "No vx score was related to any label. analysis/results/vx_eval* does not exist. All writes went only to scratchpad/audit/gnn-provenance (Python with -B). git was used read-only (show, log, diff, ls-tree, rev-parse, status; hash-object without -w; check-ignore). analysis/vx_gnn15_heldout.py and analysis/vx_verdicts.py appeared at 22:48/22:50 from another process, not from this audit."
+    }
+   ]
+  },
+  {
+   "lens": "plan-conformance",
+   "verdict": "issues",
+   "blocking": [
+    {
+     "title": "The pre-registration package is not committed yet, and two new scripts are not mentioned in Nachtrag 2",
+     "evidence": "git -C /Users/mauricio/sim_local/apart_vx status at HEAD fd8193d: ANALYSIS_PLAN.md is modified (Nachtrag 2, uncommitted, sha256 2bd225f6..., mtime 22:44:55). The following are untracked: analysis/vx_preds/** (preds, thresholds.json, manifest.json, run_eval.sh, snap/, raw/), analysis/vx_jury_ks.py, and two files created after this audit started: analysis/vx_verdicts.py (22:48) and analysis/vx_gnn15_heldout.py (22:50). ANALYSIS_PLAN.md:3-4 says 'Er gilt, sobald er committet ist. Danach ändern wir ihn nur über einen datierten Nachtrag'. The vx_verdicts.py:3 docstring already claims 'Written and committed BEFORE the evaluation ran'. Nachtrag 2 (l.167-169) lists only analysis/vx_preds/ as inputs. It does not mention vx_verdicts.py (which applies the H1-H5 rules mechanically) or vx_gnn15_heldout.py. run_eval.sh calls neither vx_verdicts.py nor vx_jury_ks.py.",
+     "suggested_fix": "Apply the two text fixes below. Then commit Nachtrag 2, analysis/vx_preds/**, vx_jury_ks.py, vx_verdicts.py and vx_gnn15_heldout.py in one commit and push it. The commit message should state that no vx score has been compared with labels and that the dry runs used random scores only. Run analysis/vx_preds/run_eval.sh only after that. Name the two new scripts in Nachtrag 2. Ideally append the exact vx_verdicts.py and vx_jury_ks.py calls to run_eval.sh, so that the one evaluation is a single committed command."
+    },
+    {
+     "title": "Nachtrag 2.3 makes a false timeline claim about when the GNN was frozen",
+     "evidence": "ANALYSIS_PLAN.md:179 says 'die Datei ist seit 17:12 UTC unverändert, also seit vor dem Test-Blick'. The git history shows the team's test look happened before 17:12. LOOKS.md records test 1 in b86efb62 at 17:02:35Z. The results were committed in f7aa3324 'TEST LOOK 1 (of 2)' at 17:06:28Z. The val look carries the machine stamp '16:52:58 UTC' in LOOKS.md@b87b2afb, so the '~17:20/~17:45 UTC' times in LOOKS.md are wrong. The bytes of the model file changed after the test look: in a35c6d96 (17:11:50Z, 26684817 -> 26684881 B), and it was renamed in 63123a27 (17:12:21Z). My comparison (audit/plan-conformance/cmp_pt.py) of blob 8ed172a0 (b87b2afb, 16:53:19Z) against blob 3444de4d (the current file) found: 15 states in both, 1797 leaves, 0 differing (max abs diff 0.0), identical cfg, w_gnn 0.5 in both. The only change is a new key, blend_w = 0.5. The eval files preds/eval/cloud_final_gnn.csv and cloud_final.csv, and the CV threshold files preds/cv/cloud_final_gnn.csv and cloud_final.csv, are byte-identical to the b87b2afb versions that test_look.sh used. So the weights do predate the test look, but the reason the Nachtrag gives is false. A reviewer who checks git log would find that the file changed after the test look.",
+     "suggested_fix": "Replace the sentence with something like: 'Gewichte, Normierung, cfg und w_gnn = 0,5 sind seit b87b2afb (16:53 UTC) unverändert, also vor dem Test-Blick (f7aa3324, 17:06 UTC; die Uhrzeiten in LOOKS.md sind ungenau). a35c6d96 (17:11 UTC) fügte nur das Feld blend_w = 0,5 hinzu (alle 1797 Tensoren bitgleich geprüft), 63123a27 (17:12 UTC) benannte final_gnn.pt in cloud_final_gnn.pt um. Die Eval- und Schwellen-Dateien sind bytegleich mit denen des Test-Blicks.' This is a text-only fix and needs no rerun."
+    },
+    {
+     "title": "H4 (ii) changes the committed false-alarm definition without saying so",
+     "evidence": "The committed plan v2 §6.4 (ANALYSIS_PLAN.md:110-112, 4e6e998) defines the H4 false alarm as 'Fehlalarm heißt: Anteil der nicht gekippten Läufe mit mindestens einem Alarm (Score ≥ Trainingsschwelle), enf gegen id rep0 auf denselben Basen. Dazu kommt die Zeilen-FPR auf nicht gekippten Läufen.' Nachtrag 2 (l.205-206) makes the row FPR the deciding quantity instead ('(ii) die Zeilen-FPR ... höchstens doppelt so hoch'). vx_verdicts.py:14-15 and :97-102 implement the row FPR and only report the run share. The Nachtrag does not say this is a change from §6.4. VALIDATION.md:226 ('FPR on non-tipped enf runs at the frozen threshold ≤ 2× the id FPR') supports either reading. Both quantities come out of vx_eval.false_alarms (vx_eval.py:232-246). The choice was made after the vx score files existed (22:38-22:45), although no labels had been compared.",
+     "suggested_fix": "Fix this before the run. Option (a): state explicitly 'Abweichung von §6.4: Entscheidungsgröße für H4 (ii) ist die Zeilen-FPR, weil VALIDATION von FPR spricht und der Lauf-Anteil bei 8-9 ungekippten Läufen je Arm nur Stufen von etwa 0,11 hat; der Lauf-Anteil aus §6.4 wird daneben berichtet'. Option (b): keep the run-level share from §6.4 as the deciding quantity. Then make vx_verdicts.py match whichever option you choose."
+    }
+   ],
+   "minor": [
+    {
+     "title": "Reading of 'pairwise' (H1, ordering row): feat_pairwise is the most defensible primary reading, but edge should be pre-declared alongside",
+     "evidence": "For feat_pairwise: (1) The order in VALIDATION.md:184-188 (clock, structure only, pairwise, bag-of-edges, bag + graph) equals the key order of tabular.feature_sets (gnn_opt/tabular.py:156). The harness was committed in f5803c22 at 12:03, six minutes before VALIDATION v1.7 (2fb1074c, 12:09, a different session). (2) The ordering row (VALIDATION.md:229) 'pairwise < bag ≤ bag+graph ≤ GNN' is a nested ladder: pairwise has 23 features, contained in bag (106), contained in bag+graph (154), which I verified. (3) In the CV files that existed at 12:03, the ID-OOF AUROCs are hgb_pairwise 0.801 < hgb_bag 0.833 < hgb_bag+graph 0.854, but edge_monitor_top3 is 0.877. So under the edge reading the expected order was already false when it was written. (4) llm_monitor/refbase.py:6-7 (cf80eaf3, 15:50) uses the VALIDATION wording 'max / top-3 ... (\"feature pairwise monitor\")' for the feature set and lists edge_monitor separately. The team table in README_a6c1d8a.md:98 maps the §3.2 list one to one. (5) origin/gnn-opt gnn_opt/predict.py:8-10,57 (38d1f527, harness session) names 'edge monitor, pairwise' as two baselines and runs hgb_pairwise. zs:pairwise is ruled out by dates: the first llm_monitor commit is at 15:50, after VALIDATION at 12:09, and §3.2 lists the LLM monitor as its own bullet. Against: gnn_opt_torch/RESULTS.md:11,45 (24066795, 14:42, another session) calls edge_monitor_top3 'pairwise edge monitor', and baselines.py:11 says 'max/top-3-pooled'. Because edge is the much stronger comparator, the feat_pairwise reading makes H1's '≥ pairwise' easier to meet. A reviewer can see that as a forking path.",
+     "suggested_fix": "Keep feat_pairwise as the primary reading. In Nachtrag 2.2, add one sentence that names the RESULTS.md label and the reasons above. Pre-declare that H1's second clause and the ordering row are also reported against `edge`, descriptively and without a verdict. vx_eval already outputs the edge numbers, so nothing extra has to be computed."
+    },
+    {
+     "title": "H2: 'both must hold' and the role of the censored clock are not in the Nachtrag text",
+     "evidence": "Nachtrag l.201-202 gives two separate conditions. Only vx_verdicts.py:12 and :111 say 'Both must hold'. The censored clock ('Dazu kommt die Uhr ohne die letzten 3 Runden') is not marked as either deciding or supplementary. The censored check also uses fresh rng draws (vx_eval.py:290-292 runs after all other parts), not 'dieselben Ziehungen' as plan §6.3 (l.103) says.",
+     "suggested_fix": "Add: 'H2 gilt nur, wenn beides gilt; die Uhr ohne die letzten 3 Runden ist Sensitivität (eigene Bootstrap-Ziehungen)'."
+    },
+    {
+     "title": "The ordering row from VALIDATION §3.5 has no reading, and some promised CIs have no defined source",
+     "evidence": "VALIDATION.md:229 asks for the ordering 'per block; with CI'. Nachtrag 2.7 covers only H1-H5. vx_verdicts.py:116-121 checks point estimates in the Part A arms only. vx_eval.py computes no CI for differences in level between predictors, so 'with CI' cannot be met. Nachtrag l.208-209 promises to say 'ob die zugehörige CI die Grenze ausschließt', but no such CI exists for: H2-GNN (|Δ_shift| ≤ |Δ_noise|), H4 (i), H4 (ii) (FPR ratio), and H1's '≥ feat_pairwise' (no paired Part B difference). vx_verdicts.py:84 labels the H2_stable 'ci_vs_0' with the shift_minus_noise CI, which is not the CI of that rule.",
+     "suggested_fix": "Add one line on the ordering row (points per Part A arm, no CI available, whether Part B is included). For each rule, name the vx_eval.json field reported as its CI, or write 'keine CI'."
+    },
+    {
+     "title": "H4 (i) and H1 are interpretations of the VALIDATION wording and should be flagged as such",
+     "evidence": "VALIDATION.md:226 says 'AUROC on enf ≥ id − Δ_noise', which is signed. Nachtrag l.205 uses −|Δ_noise|. The two give different verdicts when Δ_noise < 0, where the literal rule would require enf to beat id rep0. The H1 block is 'B (+ A id pairs)' (VALIDATION.md:223). The Nachtrag lets only B decide and reports the id pairs alongside. vx_eval.py has no pooled B+id statistic.",
+     "suggested_fix": "Say in the Nachtrag that both are interpretations, and give the reason for each."
+    },
+    {
+     "title": "GNN and hybrid thresholds come from proxy OOF files",
+     "evidence": "preds/cv/cloud_final_gnn.csv is identical to e_ngru_4runs.csv (sha c5852975), and cloud_final.csv is identical to h_ngru4_hgb_logit55.csv (sha 1441a2c9), from 31272d59 (16:18Z). These are the 4-run node-GRU proxies (RESULTS.md:268-270), not the OOF of the frozen 5-seed judge-aug model. That model's exact CV (cloud_final_gnn_cv5.csv) was made at 20:59Z, after the test look. Plan §4 says thresholds come 'aus deren OOF'. Nachtrag 2.6 is correct that these are the files from before the test look, but it does not say they are proxies. The operating point is fine: on held-out night negatives the row FPR is gnn15 5.3 %, gnn40 5.5 %, hybrid15 5.9 %, hybrid40 6.2 %.",
+     "suggested_fix": "Add: 'Proxy-OOF (e_ngru_4runs / h_ngru4_hgb_logit55), wie im Held-out-Vergleich; die exakte CV entstand nach dem Test-Blick und wird nicht genutzt.'"
+    },
+    {
+     "title": "tab_mem and hybrid on vx are not the versions in the main held-out rows",
+     "evidence": "Nachtrag l.188-189 says 'Alle Tabellen-Baselines sind wie im Held-out-Vergleich auf night_train neu gefittet'. In heldout_full.md:39-40,48, however, the main tab_mem and edge rows used the GNN team's files, and the tab_mem refit was 'sensitivity only'. On held-out night rows (eval==1): our tab_mem against the team's __allsplits file has max abs difference 0.236 (Spearman 0.996). Our hybrid against the committed cloud_final.csv has max abs difference 0.095 (0.998). manifest.json hybrid_vs_team_predict_check_120 has max 0.057. The Nachtrag reports only the 5e-8 formula check.",
+     "suggested_fix": "Disclose this. Mention that vx_gnn15_heldout.py also reports hybrid15 against hybrid40."
+    },
+    {
+     "title": "The check announced to the user passed only in its narrow form",
+     "evidence": "The plan the user approved said: compare the team's committed night predictions 'Zeile für Zeile ... bis auf Rundungsrauschen', otherwise abort. Against the 7560-row committed eval file, the stored 15-state model differs per split by max 0.064-0.112 (Spearman 0.9873-0.9985 on eval rows), as documented in the caveat at RESULTS.md:357-359. Only the team's 120-row predict.py check (night_val K2-000/K4-002) matches, with max abs difference 1.19e-7. The vx GNN run (raw/gnn_vx.log, 22:38) went ahead on that substitute criterion.",
+     "suggested_fix": "Report this openly in Nachtrag 2.3 and to the user as the outcome of the announced check: substituted by the 120-row check, for the documented reason. Also give the max abs difference (≤ 0.11), not only the Spearman range."
+    },
+    {
+     "title": "The 'nicht gerechnet' list (Nachtrag 2.9) is incomplete",
+     "evidence": "VALIDATION.md:197-205 and :212-213 also ask for: recall at the frozen 5 % FPR, Brier, risk_count MAE, the slices 'before first announcement' and 'by channel', pooled run-level AUROC at cut−6, and violators per arm. None of these is in vx_eval.py.",
+     "suggested_fix": "List them all, so that the 'not computed afterwards' commitment is complete."
+    },
+    {
+     "title": "Wording and accuracy details in Nachtrag 2",
+     "evidence": "(a) '5 Seeds × die letzten 3 Snapshots': these are the last 3 of 8 epoch states per seed, not data snapshots. (b) 'Gewicht 0,5 aus der Modelldatei': blend_w was added only after the test look (a35c6d96); w_gnn = 0.5 has been in the file since b87b2afb; assemble.py:64 hard-codes 0.5. (c) 'Die 9 Schwellen ... exakt': assemble.py:133 checks only 4 significant digits. I matched all 9 to the 6 digits in analysis/heldout/out/analysis.log:16-26, with identical training FPRs. (d) The 'identical' refits match after %.5g rounding on 3720/3720 rows. (e) The other §3 secondaries (zs:agent, zs:global_window, stacked heads, final_hybrid.pkl, final.pt) are not on vx and the Nachtrag does not say so. (f) VALIDATION §3.3 asks for 1000 draws; vx_eval uses 2000. (g) Nachtrag 1 is dated 19:35 but was committed at 19:33:54 (36b246f).",
+     "suggested_fix": "Fix the wording in passing. None of this changes the evaluation."
+    },
+    {
+     "title": "Repo bookkeeping",
+     "evidence": "FINDINGS.md:165 still says 'Für night_vx gibt es noch keinen einzigen Monitor-Score', but scores exist since f8cf5d9 and 22:4x. The vx look is not counted anywhere, and gnn_opt_torch/LOOKS.md is on the team's branch. vx_jury_ks.py:29 reads sim_dataset/runs_vx live and filters the arms only by vx_arm, so it would pick up later rep1+ runs if tools/vx_night2.sh were ever started (it has not started: _logs/DONE is present). One vx message has only one judge (core-night_vx-K2-266-time/rep0 m158; in the night batch 0 of 21,605). The jury code and the rubric (catalog-v1-2026-11-07) are unchanged.",
+     "suggested_fix": "Update FINDINGS.md. Record 'night_vx: 1 look' in this branch. Pin vx_jury_ks.py to the committed runs (rep0 for the arms), or run it now (it reads no labels) and commit the output."
+    }
+   ],
+   "checks": [
+    {
+     "check": "(a) Files read in full",
+     "result": "Read ANALYSIS_PLAN.md (§0-11, Nachtrag 1, Nachtrag 2; unchanged during the audit, sha 2bd225f6), VALIDATION.md §3 and its earlier versions (2fb1074c, 98495cc2, 4e56fb60), vx_eval.py, run_eval.sh, assemble.py, make_baselines.py and vx_jury_ks.py. Also read the new vx_verdicts.py and vx_gnn15_heldout.py, plus the GNN branch files RESULTS.md, LOOKS.md (all versions), predict.py, blend.py, final.py, test_look.sh and harness/tabular/baselines/metrics."
+    },
+    {
+     "check": "(d) Do the bootstrap draws depend on --ref or on which predictors are passed?",
+     "result": "PASS. One Generator is seeded at vx_eval.py:261. Draws are taken only through rng.choice(bases|groups, len, replace=True) at :131 and :195, in a fixed order: part_a (time, glm, enf, topo), then id_pairs, then part_b, then the H2 clock. How many numbers are drawn depends only on the number of bases or groups and on n_boot. --ref only adds the shift_minus_shift_* fields. Test with my own random scores and B=30 (audit/plan-conformance/rng_check.py): --ref bag+graph vs --ref bag gave 1472 of 1472 shared fields identical. A reordered 5-predictor subset matched both runs on 674 of 674 fields. Runtime about 25 s per call."
+    },
+    {
+     "check": "(e) Order of commits",
+     "result": "PASS. 4e6e998 at 19:25:23, then 5ea7874 at 19:25:43, then f8cf5d9 at 20:44:37 (all +01:00). The vx tip counts were already in FINDINGS.md at 4e6e998, as plan §0 states. index.csv was last changed in 4e56fb60 (12:44)."
+    },
+    {
+     "check": "(e) vx_eval.py unchanged",
+     "result": "PASS. Blob 60081519 is the same at 4e6e998, at HEAD and in the working tree. 4e6e998 is the only commit that touches it, on every ref."
+    },
+    {
+     "check": "(e) No night_vx monitor performance anywhere",
+     "result": "PASS. There are no analysis/results/vx_eval* files. Nothing relevant turned up in FINDINGS.md, results/llm_monitor, logs/llm_monitor/vx, analysis/review, the other origin branches, or the vxpred logs (predict.py was run with --no-eval; no gnn_opt/preds/apply). The random-score dry runs in scratch (vxtest at 19:07-19:24, vxtest2 at 22:49) used files uncorrelated with the real ones (|Spearman| < 0.01)."
+    },
+    {
+     "check": "runs_vx contents and §11",
+     "result": "94 run dirs on disk, equal to the 94 tracked in git. tools/vx_night2.sh has not been started (DONE is present, no DONE.day), which is consistent with §11."
+    },
+    {
+     "check": "GNN model file and test-look files",
+     "result": "The sha256 70a93054... matches GNN_SOURCE.txt and f7194430. The weights are identical since b87b2afb. The eval and CV files are byte-identical to the versions test_look.sh used. All files in the gnn branch that matter here are unchanged between aebf0e1f (the held-out reference) and f7194430."
+    },
+    {
+     "check": "Claim: 120-row reproduction",
+     "result": "VERIFIED. 120 of 120 rows match, with max abs difference 1.19e-7."
+    },
+    {
+     "check": "Claim: Spearman 0,987-0,998 per split",
+     "result": "VERIFIED on eval==1 rows: ood_seed 0.9873, test_id 0.9957, train 0.9959, ood_family 0.9967, val 0.9977, branch 0.9985. Max abs difference per split is 0.064-0.112, which the Nachtrag does not state."
+    },
+    {
+     "check": "Claim: datasets byte-identical",
+     "result": "VERIFIED. All 5 files of the night and vx builds match stat/data. The snap/ copies match manifest.json."
+    },
+    {
+     "check": "Prediction file integrity",
+     "result": "OK. The sha256 of all 12 preds files matches the manifest. gnn.csv equals the raw output. The hybrid recomputes exactly (logit mean 0.5). The baseline files equal the make_baselines output. Key sets are night non-train plus all vx. The zs files equal data/llm_monitor zs_tip, and their night part equals the apart_ana copy. The 30 NaN rows are only in the night_vx_ft canary, which is excluded. Coverage is OK."
+    },
+    {
+     "check": "Claim: the 9 thresholds are reproduced exactly",
+     "result": "VERIFIED to 6 significant digits, with identical training FPR, against analysis/heldout/out/analysis.log. thr_at_fpr adds 1e-12, so >= in vx_eval behaves like > in the harness."
+    },
+    {
+     "check": "Claim: GNN and hybrid thresholds are the pre-test-look files",
+     "result": "VERIFIED byte-identical. They are proxy OOF files (see the minor finding)."
+    },
+    {
+     "check": "Claim: hybrid formula checked to 5e-8",
+     "result": "VERIFIED: max abs difference 5.09e-8 on 3720 rows. The weight 0.5 is in w_gnn and blend_w."
+    },
+    {
+     "check": "Claim: the five refits are identical to the held-out refits",
+     "result": "VERIFIED after %.5g rounding on 3720 of 3720 rows (make_baselines.json)."
+    },
+    {
+     "check": "Claim: Python 3.11 / torch 2.11 and sklearn 1.9.1",
+     "result": "VERIFIED."
+    },
+    {
+     "check": "Claim: feature, label and jury code unchanged",
+     "result": "VERIFIED. runner/features.py, labels.py and jury.py were last changed on Nov 7. The gnn_opt harness is unchanged since f5803c22. predict.py, tdata.py and model.py all predate the model. Same rubric in night and vx."
+    },
+    {
+     "check": "Claim: no frozen K0 or mean-aggregation model",
+     "result": "VERIFIED. The only models are cloud_final_gnn.pt and final.pt; the GNN uses sum, mean and max aggregation together."
+    },
+    {
+     "check": "Claim: 'seit 17:12 UTC ... also seit vor dem Test-Blick'",
+     "result": "FALSE as stated (blocking finding 2). The weights do predate the test look."
+    },
+    {
+     "check": "(c) H1-H5 against VALIDATION §3.5",
+     "result": "H1, H2 and H3/H5 are faithful. H4 (ii) changes the committed definition (blocking). H4 (i) and H1 are interpretations. 'Both must hold' for H2 and the ordering row are missing. H1-H5 can all be evaluated from the outputs of the two vx_eval calls plus vx_jury_ks. The ordering row 'with CI' and the H5 mean-aggregation fallback cannot be."
+    },
+    {
+     "check": "(f) Still to do before the evaluation",
+     "result": "Fix the two text items. Then commit and push Nachtrag 2 together with all inputs and the scripts vx_verdicts.py, vx_jury_ks.py and vx_gnn15_heldout.py. Only then run run_eval.sh. The §6.1 steps (dry run, excluded splits, aggregate) and §6.2 (predict.py with cloud_final_gnn.pt, night_train refits) are done."
+    },
+    {
+     "check": "Hard rules",
+     "result": "No vx score was compared with labels. I only read vxpred and the repo; all files I wrote are in /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/audit/plan-conformance/. I used only read-only git commands, and no network."
+    }
+   ]
+  },
+  {
+   "lens": "vx-eval-code",
+   "verdict": "issues",
+   "blocking": [],
+   "minor": [
+    {
+     "title": "The id-pairs run-level within-config AUROC rests on a single tipped x untipped pair, so its CI is degenerate",
+     "evidence": "Only 1 of 14 id bases has one replicate tipped and the other not at cut-6 (label-only check; vx_eval prints pairs=1). So run_within_auroc can only be 0, 0.5 or 1. Draws without that base are NaN and dropped silently by ci() (vx_eval.py:97): replaying the seed-20261108 generator gives 726 of 2000 NaN draws. The remaining 1274 draws all have the same value, so the CI is [v, v]. With random scores every one of the 12 predictors got 0.0 [0.0, 0.0] or 1.0 [1.0, 1.0] (out/full_refbg.json), and 0/12 CIs covered 0.5. vx_verdicts.py:132 (new, uncommitted) prints this as 'id-Paare 1.000 [1.000, 1.000]' without the pair count. This contradicts Nachtrag 2 item 7 ('CI = 2.5/97.5 % of 2000 draws'). The H1 decision itself uses Part B only (29 pairs, 0 NaN draws), so no rule is affected.",
+     "suggested_fix": "Documentation only, no change to vx_eval.py. In the uncommitted Nachtrag 2 (item 7, H1), state before the run that the id-pair run-level value is one paired comparison: report it as win/tie/loss without a CI and not as evidence for H1. Optionally make vx_verdicts.py print 'pairs' next to the id-pair value and drop its CI."
+    },
+    {
+     "title": "The percentile bootstrap over 7-14 bases and 8 groups is anti-conservative (about 2x the nominal error rate)",
+     "evidence": "Null simulation: 2000 random predictors on the real label structure (no monitor scores), 2000 draws each, using exact vectorised replicas of the vx_eval estimators. The replicas reproduce vx_eval's random-run CIs with 0 difference (scripts/calib.py validate, scripts/calib_fast.py). Nominal 95 % CIs exclude the true null value as follows. Part A AUROC with i.i.d. row noise: shift/noise/shift-noise 8.9-11.4 % for time/glm/enf, 14.0-19.9 % for topo (7 bases); tm_auroc 7-10 %. With a run-level random effect: 6-8 % for time/glm/enf, 9-12 % for topo. One-sided 'shift - noise CI entirely below 0' (the H2 clock rule): 3.4-4.6 %, nominal 2.5 %. Part B run-level 'lower bound > 0.5' (the H1 CI condition): 5.2-5.7 %, nominal 2.5 %; two-sided 11-12 %; row-level 13-14 %. Monte-Carlo SE is about 0.5 %. Concrete case: the random file in the 'oracle' slot got Part B run-level 0.690 [0.56, 0.86]. This is a property of the pre-registered method, not a code bug.",
+     "suggested_fix": "Document it before the run in Nachtrag 2: the CIs are nominal and with 7-14 clusters under-cover by about 2x in error rate; 'CI excludes the bound' is a descriptive statement, not a test at 5 %. Optional, and only before the run since it would be a new analysis: pre-specify a calibrated companion for H1, e.g. a within-config permutation of tipped labels. Do not change vx_eval.py."
+    },
+    {
+     "title": "NaN bootstrap draws are dropped silently, and valid_draws_auroc under-reports them",
+     "evidence": "ci() drops NaN draws (vx_eval.py:97). valid_draws_auroc (line 149) counts only the arm-part AUROC of the first predictor. On the real label structure, draws whose arm, id rep0 or id rep1 part has no positive row number time 1, glm 1, enf 6, topo 33 of 2000; shift, noise and shift-noise are NaN there. The JSON nevertheless reports valid_draws_auroc = 2000 / 2000 / 1995 / 2000 (confirmed in out/full_refbg.json). The CIs are therefore conditional on draws with positives. The effect on the percentiles is small (at most 1.7 % of draws). No None values occur anywhere in the output.",
+     "suggested_fix": "Note in the results that CIs use only draws in which all three parts have positives, and give the topo count (33 of 2000 dropped). No code change."
+    },
+    {
+     "title": "H4(ii) edge case: id rep0 row FPR = 0, plus a ratio driven by very few runs",
+     "evidence": "false_alarms (vx_eval.py:232-246) reports raw FPRs. vx_verdicts.py:99 applies 'fpr_enf <= 2*fpr_id' literally, so with id FPR = 0, enf must also be exactly 0. Night data only (60 untipped non-train runs): gnn alarms at the training threshold fall in only 25 % of untipped runs, and 8 random untipped runs have zero gnn alarm rows with p = 0.088 (zs:pairwise 0.092, oracle 0.105, edge 0.086). Each vx arm has fewer than 10 untipped runs, so the row-FPR ratio is decided by 1-3 runs and has no CI. Checked as well: the 15-state and 40-state GNN behave alike at the 40-state-derived threshold on night untipped runs (row FPR 3.7 % vs 3.8 %), so the threshold carries over.",
+     "suggested_fix": "Add one sentence to Nachtrag 2 item 7 (H4) before the run: if id rep0 FPR = 0, (ii) holds only if enf FPR = 0; (ii) is a point comparison over fewer than 10 runs per arm. Report the alarm-run shares next to it."
+    },
+    {
+     "title": "Markdown output omits the H2 censoring check, the ref name and the valid-draw counts",
+     "evidence": "h2_clock_without_last3 is written to JSON only (vx_eval.py:290-293). The markdown writer (lines 295-314) has no H2 section ('grep -c h2' on the md gives 0). The Part A header (line 298) says 'shift − shift(ref)' without naming --ref; only the file name vx_eval_refbag tells the calls apart. valid_draws_auroc is not in the md. vx_verdicts.py puts clock_without_last3 into its JSON but not its md.",
+     "suggested_fix": "When writing up, read H2 (clock without the last 3 rounds) from vx_eval.json. No change to vx_eval.py; vx_verdicts.py could also print it in its md."
+    },
+    {
+     "title": "The H2 block uses separate bootstrap draws and recomputes all four arms",
+     "evidence": "part_a(T, {clock}, 'none', ...) at vx_eval.py:292 continues the same generator after Part B, so its time-arm CIs use different draws from the main time-arm CIs and are not paired with them. It also computes glm/enf/topo, which are thrown away (.get('time')). The docstring (lines 17-18) says the draws are shared by all parts; that holds within Part A only. Results stay deterministic and identical across --ref (verified).",
+     "suggested_fix": "Cosmetic. Mention that the H2 sensitivity has its own draws."
+    },
+    {
+     "title": "The outcome description in VALIDATION.md 3.4 (violators per arm) is not produced",
+     "evidence": "VALIDATION.md 3.4 asks to report the tipping rate and violators per arm next to the shift effect. vx_eval reports only tipped counts (mcnemar, lines 209-229); Nachtrag 2 item 9 lists the metrics not computed but does not mention this descriptive.",
+     "suggested_fix": "Take violators per arm from tools/vx_summary.py (label-only, already visible), or list it in Nachtrag 2 item 9."
+    }
+   ],
+   "checks": [
+    {
+     "check": "vx_eval.py unchanged since the pre-registration commit 4e6e998",
+     "result": "PASS: git show 4e6e9986:analysis/vx_eval.py | diff gives no difference; sha256 6ff523e8... for the commit, the working file and my copy"
+    },
+    {
+     "check": "No vx_eval output exists yet in analysis/results",
+     "result": "PASS: the directory listing has only contagion*, heldout*, sensitivity.md (no file opened)"
+    },
+    {
+     "check": "Snapshot inputs identical to the harness builds",
+     "result": "PASS: vx_preds/snap/runs_vx_snapshots.csv = vxpred/repo/gnn_opt_data/runs_vx = stat/data/vx (c7ca5225...); night_snapshots.csv = night builds (5de70817...)"
+    },
+    {
+     "check": "load_snaps mapping (split, vx_base, vx_arm, deadline, R)",
+     "result": "PASS: index.csv has 2018 unique scenario_ids. vx_base is identical across the arms of a base. night_vx_rep vx_base equals the night source cfg exactly, and the copies' deadline_round and rounds equal the source's. Scenario JSON deadline_round and rounds match the index for all 113 night_vx files (time arm: deadline 29, R 36; only the unused params.rounds differs). T equals index rounds for all 94 + 252 runs."
+    },
+    {
+     "check": "Run structure and filters",
+     "result": "PASS: 94 vx runs; the split filter removes the single ft4 canary. time/glm/enf/topo have only rep0 (14/14/14/7), id has rep0 and rep1 (14 + 14). Every run has eval rows. Part B has 8 groups: 21 night runs (all control, no branch prefix, dup = 0) plus 16 rep runs = 37 runs. No run in the id pairs or Part B is lost at cut-6."
+    },
+    {
+     "check": "Rounds-to-cut bins vs the plan wording",
+     "result": "PASS: rtc = round - deadline_round, the same convention as llm_monitor/aggregate.py:55 and analysis/heldout/hlib.py:35/68. pd.cut edges (-99,-9,-5,-1,3,99] give <=-9, -8..-5, -4..-1, 0..3, >3. tm_auroc and within_rows are pairs-weighted exactly like llm_monitor.evaluate.stratified_auroc."
+    },
+    {
+     "check": "Formulas vs VALIDATION.md 3.4 and Nachtrag 2",
+     "result": "PASS: shift = M(A) - M(id0), noise = M(id1) - M(id0), shift_minus_noise = M(A) - M(id1); ref difference is (A - id0)_n - (A - id0)_ref. One rng.choice with replacement per draw is shared by arm/id0/id1 and all predictors. grouped_boot relabels drawn copies as separate strata. run_scores takes the score at deadline-6, and eval==1 excludes runs already at theta. McNemar is an exact two-sided binomial with Holm step-down over 4 arms. H2 keeps round <= R-3 (drops 34-36 in time, 28-30 in id)."
+    },
+    {
+     "check": "Predictor merge and coverage on the real files (key/NaN level only, no labels)",
+     "result": "PASS: all 12 files have (run, round, score) as int64/float64 with no duplicate keys. On all 2933 scored keys (2389 vx + 960 Part B): 0 missing, 0 NaN, 0 inf. The 30 NaN rows in both zs files are the excluded ft4 canary run. No predictor name collides with a column. The real run will not abort at the coverage check."
+    },
+    {
+     "check": "Threshold convention for H4",
+     "result": "PASS: the harness threshold is neg[k] + 1e-12 with alarm on score > thr (gnn_opt/metrics.py:26,31); vx_eval's score >= thr is equivalent. The 12 thresholds in run_eval.sh equal thresholds.json."
+    },
+    {
+     "check": "Label consistency (pass/fail only)",
+     "result": "PASS: no untipped run has a positive y3 row, and every tipped run has at least one."
+    },
+    {
+     "check": "Independent re-implementation vs vx_eval on random scores (50 draws)",
+     "result": "PASS: scripts/independent.py uses its own loader, a rank-based AUROC, scipy binomtest and its own replay of the generator. Max |diff| = 0 for Part A (points, CIs, ref differences), id pairs and Part B (run- and row-level, CIs, pair counts), McNemar/Holm, H4 and H2."
+    },
+    {
+     "check": "Label-leak pipeline check (score = y3, score = tipped)",
+     "result": "PASS"
+    },
+    {
+     "check": "Random-score sanity, 2000 draws, 12 predictors",
+     "result": "PASS, except the degenerate id pairs: no errors or warnings; Part A AUROC/tm mean 0.499-0.504 per arm; 272/288 shift/noise CIs cover 0; Part B run-level mean 0.54 (10/12 CIs cover 0.5), row-level mean 0.47; id-pair run-level values 0.0 or 1.0 with CI [v, v]; no None anywhere."
+    },
+    {
+     "check": "Runtime",
+     "result": "About 0.70 s per draw with 12 predictors (5 draws 6.8 s, 50 draws 38.4 s). Measured for 2000 draws: 1527 s and 1536 s wall per call (3 jobs in parallel); the 4-predictor subset took 481 s. run_eval.sh runs its two calls one after the other, about 50 min in total; they could run in parallel because the draws are identical."
+    },
+    {
+     "check": "(c) Identity across --ref and predictor subsets",
+     "result": "PASS: --ref bag+graph vs --ref bag: 1130 shared values, 0 differences. Subset {oracle, gnn, bag, zs:pairwise} (different first predictor, no clock, so no H2) vs full: 416 shared values incl. 48 shift_minus_shift_bag, 0 differences; every one-sided value comes from a dropped predictor or H2. The md is identical apart from the ref column. A copy of vx_verdicts.py reports call2 identical: True, and False on a perturbed copy."
+    },
+    {
+     "check": "(d) NaN and degenerate outputs on the real label structure",
+     "result": "Part A NaN draws: time 1, glm 1, enf 6, topo 33 of 2000; id pairs run-level 726 of 2000 NaN and a degenerate CI; Part B 0 NaN draws (29 pairs); all point estimates defined; the H4 denominators are below 10 untipped runs per arm (see minor findings)."
+    },
+    {
+     "check": "Null calibration of the bootstrap CIs",
+     "result": "Anti-conservative: about 2x the nominal error rate (minor finding 2). Scripts are in /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/audit/vx-eval-code/scripts/ (calib.py, calib_fast.py); outputs are calib_iid.txt and calib_run.txt in .../audit/vx-eval-code/out/"
+    },
+    {
+     "check": "Hard-rule compliance",
+     "result": "PASS: no label-related metric was computed with real scores on vx; real prediction files were read only for keys, NaN and inf. Nothing was written to apart_vx or vxpred (find -newer finds none), and no state-changing git command was used. All scratch is in /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/audit/vx-eval-code/. Note: untracked analysis/vx_verdicts.py (22:48) and analysis/vx_gnn15_heldout.py (22:50) appeared during this audit; they were not created by it."
+    }
+   ]
+  },
+  {
+   "lens": "coverage-splits",
+   "verdict": "ok",
+   "blocking": [],
+   "minor": [
+    {
+     "title": "rows.night_vx (2389) also counts the 416 Part B replicate rows",
+     "evidence": "analysis/vx_eval.py:271 keeps every split that starts with night_vx except ft/ft_base/pop_bal, so night_vx_rep (vx_arm 'rep') stays in. vx_eval.py:282 then reports rows.night_vx = 2389 and night_vx_positives over that frame. Part A only uses id plus the 4 arms: 1973 rows = id 737 + time 407 + glm 296 + enf 366 + topo 167. Part A, McNemar and H4 all filter on vx_arm, so no statistic is affected. Only the header count mixes the two parts.",
+     "suggested_fix": "Leave vx_eval.py unchanged. In FINDINGS and the paper, take Part A rows from part_a[arm].rows and Part B rows from rows.part_b (960), or write 'night_vx = 1973 Part A + 416 Part B replicate rows'."
+    },
+    {
+     "title": "The coverage checks catch NaN but not +-inf",
+     "evidence": "vx_eval.py:276-278 only counts isna(). assemble.py:150 counts missing scores via NaN after the merge, and its nan_or_inf count (line 149) is over the whole file. An inf on a scored row would pass both checks; sklearn would then raise mid-run (a crash, not a silent bias). Measured: 0 inf, 0 NaN and 0 values outside [0, 1] on all 3349 scored keys (2389 night_vx + 960 Part B) in all 12 preds files.",
+     "suggested_fix": "Nothing is needed for this run. Optionally add an np.isfinite check to the coverage block of assemble.py. Do not touch the committed vx_eval.py."
+    },
+    {
+     "title": "manifest.json does not say what the 30 NaN rows in the zs files are",
+     "evidence": "The manifest coverage for zs:pairwise and zs:global_full says nan_or_inf = 30 and nothing more. All 30 rows belong to core-night_vx-K2-002-ft4/rep0, the ft4 canary. Plan section 6.1 says it is not scored, and the run has no monitor_*.jsonl. vx_eval.py:271 excludes the rows via split night_vx_ft, so 0 scored rows are affected.",
+     "suggested_fix": "Add one line to the manifest or to Nachtrag 2: '30 NaN rows in the zs files = ft4 canary, not scored by design, excluded from vx_eval'."
+    },
+    {
+     "title": "Part B night-run scores of tab_mem, hybrid and gnn are not the numbers from heldout.md",
+     "evidence": "Rows: the 544 Part B night rows. Reference: the held-out primary files in /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/heldout/preds/eval. Max |diff| and Spearman against analysis/vx_preds/preds/*.csv: tab_mem (hgb_bag+graph+mem__allsplits.csv) 0.236 / 0.9935; hybrid (cloud_final.csv) 0.095 / 0.9952; gnn (cloud_final_gnn.csv) 0.065 / 0.9877; edge <= 5e-6. Within vx_eval this is consistent: night and vx rows come from the same models (checked exactly). But Nachtrag 2 item 4 says the tabular baselines are refit 'wie im Held-out-Vergleich'. In the held-out primary analysis, tab_mem (and the tab_mem inside hybrid) was the team's committed file. The refit there was only the sensitivity row 'tab_mem (refit here)', which preds/tab_mem.csv reproduces exactly after %.5g rounding.",
+     "suggested_fix": "Add to Nachtrag 2: 'vx tab_mem = the held-out sensitivity refit; therefore the Part B night-run scores of tab_mem, hybrid and gnn differ from heldout.md (max |diff| 0.24 / 0.10 / 0.07, Spearman >= 0.988)'. No file needs to change."
+    }
+   ],
+   "checks": [
+    {
+     "check": "(f) Are the snap copies identical to the harness builds?",
+     "result": "PASS. analysis/vx_preds/snap/runs_vx_snapshots.csv and night_snapshots.csv are byte-identical (cmp; sha256 c7ca5225... and 5de70817...) to vxpred/repo/gnn_opt_data/{runs_vx,night}/snapshots.csv and to scratchpad/stat/data/{vx,night}/snapshots.csv. All 5 dataset files (graphs.npz, runs.csv, schema.json, snapshots.csv, table.csv) are identical between the vxpred and stat builds. The manifest sha256 of all 12 preds files, both snap files and both raw GNN files match."
+    },
+    {
+     "check": "(a) Row selection of vx_eval.load_snaps replicated with keys only (usecols without y3, tipped or risk)",
+     "result": "PASS. night_vx block: 2389 eval rows in 93 runs: id rep0 359 (14 runs), id rep1 378 (14), time 407 (14), glm/night_vx_pop 296 (14), enf 366 (14), topo 167 (7), night_vx_rep rep0 205 (8), night_vx_rep rep1 211 (8). Excluded: night_vx_ft, 30 rows (1 ft4 run); ft_base and pop_bal have no runs. Part A rows (arm/id0/id1): time 407/359/378 (14 bases), glm 296/359/378 (14), enf 366/359/378 (14), topo 167/187/191 (7). H2 frame (round <= R-3), time arm: 389/335/353. Part B: 960 rows, 37 runs, 8 groups. night_vx_rep 416 rows (16 runs); night_test_id 214 (9 runs: rep0 81, rep1 67, rep2 66); night_test_ood_family 166 (6 runs: 54/60/52); night_test_ood_seed 164 (6 runs: 88/76). Rows per group: 134, 105, 132, 150, 123, 120, 114, 82. Each group has 2 new runs plus 3 night runs (test_id, ood_family) or 2 (ood_seed). All snapshots: vx 2904 (94 runs), night 7560 (252 runs). These counts equal manifest.json (2389 and 960)."
+    },
+    {
+     "check": "(a) Coverage of all 12 preds/*.csv on the scored rows",
+     "result": "PASS. Every one of the 2389 + 960 scored keys has a finite score in [0, 1]: 0 missing, 0 NaN, 0 inf, 0 duplicate keys, round int64. Checked twice: pandas merge (audit/coverage-splits/a_coverage.py) and an independent csv-module recheck. The 10 trained-model files have identical key sets: 3720 non-train night + 2904 vx = 6624 rows. The zs files hold all 10464 snapshots; 30 NaN = ft4. No two files are identical on the vx rows. Global label-free stats are non-degenerate: distinct values on vx rows are clock 20, zs:pairwise 28, oracle 156, zs:global_full 162, all others 1546-2178."
+    },
+    {
+     "check": "(a) End-to-end dry run of analysis/vx_eval.py with random scores (allowed by rule 1)",
+     "result": "PASS. Setup: random scores on exactly the real keys and NaN pattern (randpreds/), all 12 predictors, the run_eval.sh thresholds, seed 20261108, 2000 draws. Exit 0, runtime 1456 s with OMP_NUM_THREADS=1, so the two real calls take about 50 min. Negative controls abort as intended: removing one scored vx key, or setting one Part B night score to NaN, both end in SystemExit 'rows without a score'. From the output I read only row, base and group counts (identical to the above)."
+    },
+    {
+     "check": "(b) Are the 8 Part B source configs held-out test configs?",
+     "result": "PASS. They are night_test_id K2-008, K4-001, K4-009; night_test_ood_family K2-000, K2-006; and night_test_ood_seed K2-001, K2-005, K4-002. vx_source_split equals the index split of each source. None is in folds.json train_cfgs (64) or in any id/lodo fold. None is an LLM prompt-dev run (dev_runs.json lists 8 night_train runs). None has a night_train row in the snapshot table. The vx_rep scenarios equal their sources on rounds, deadline, seed, category, family, channels, topology and model_mix. They use new replicate seeds (...3 and ...4 vs night ...0/1/2), and their messages differ from the night runs. Per VALIDATION.md section 2.4, the configs were chosen from their night outcomes (6 mixed, 2 near misses). That choice is documented and does not depend on any monitor."
+    },
+    {
+     "check": "(b) Are the Part B night rows out-of-sample predictions?",
+     "result": "PASS. The baselines are refit on H.train_rows (3370 night_train eval rows). Their night non-train predictions equal the held-out regen files exactly after %.5g rounding (clock, bag+graph, tab_mem, oracle, edge). GNN: the norm stored in cloud_final_gnn.pt equals tdata.fit_norm over exactly the 128 night_train runs (max diff 6e-8). With night_val or the 8 source configs added, the difference would be 0.031 or 0.033. The .pt sha256 70a93054... equals origin/gnn-opt-torch; the file last changed 17:12 UTC, before the test look at about 17:45 UTC. hybrid = blend of the two. The 10 CV files behind the thresholds contain only night_train rows (17908 each, 0 rows of the source configs). The zero-shot LLMs are not trained."
+    },
+    {
+     "check": "(c) Key conventions and duplicates across sources",
+     "result": "PASS. Harness: run = cfg/rep, round = t, contiguous 1..T, no duplicates; the snapshot split equals the index split on every row. Raw GNN files: same keys and row order as the harness; preds/gnn.csv equals the raw files on all 6624 rows. Baseline preds are byte-identical to vxpred/baselines/*.csv. hybrid.csv equals blend.py logit 0.5 of preds/gnn and preds/tab_mem exactly; blend merges on keys, and a shuffled input gives the same result. LLM tables: episode_id = group_id/rep, t is int 1..R, and the key set equals the harness key set (10464). Every jsonl row's run field matches its directory (18544 vx and 45779 night rows), and t is always within 1..R. In _base, R equals the harness T, cut equals the index deadline, and rounds_to_cut = t - cut on every row. Label-vs-label alignment, count only, no score involved: harness y3 equals LLM _base tip on all 6388 night and 2419 vx eval rows, with identical definedness on all rows."
+    },
+    {
+     "check": "(d) LLM score column and provenance",
+     "result": "PASS. heldout/hlib.py:78 reads usecols zs_tip; assemble.py:99 renames zs_tip to score. runs_vx: 93 global_full + 93 pairwise files (all runs except ft4). All rows carry prompt_version lm1-2026-11-08/{global_full,pairwise}-r0 and model claude-haiku-5-5. global_full has exactly 3 ok samples for each of the 2874 snapshots; pairwise is k = 1 with 1 unparseable call out of 9922. The night batch matches: 3 samples x 7560 snapshots; pairwise k = 1 with 6 unparseable out of 23099. llm_monitor/{prompts,units,render,client,aggregate,common}.py are unchanged since cf80eaf3 (15:50). The vx jsonl files date from 20:01-20:43, after the plan commit. zs_tip recomputed from the jsonl with aggregate.global_features/unit_features matches data/llm_monitor: pairwise exact, global_full within 3.3e-7 (%.6g formatting). The night zs rows are identical to apart_ana/data/llm_monitor, the held-out source (7560/7560)."
+    },
+    {
+     "check": "(e) index.csv vs scenario JSON vs meta.json vs harness rounds",
+     "result": "PASS, 0 problems. For all 94 vx runs and the 21 Part B night runs, index rounds = scenario rounds = meta.json rounds = harness T, and index deadline_round = scenario spec.budget_time.deadline_round. meta scenario_id and replicate match. time arm: 14 scenarios with R 36 and cut 29. id, glm, enf and topo: R 30, with the base's deadline (17/20/23/26), identical to its id arm. Part B: one deadline per group, shared by night and vx_rep runs, R 30. vx_eval.py:52-54 uses deadline_round (rtc bins) and rounds (R); :291 uses R - 3 for H2. index.csv is unchanged since 4e56fb60 and vx_eval.py since 4e6e998; both equal HEAD."
+    },
+    {
+     "check": "Robustness of the selection code",
+     "result": "PASS. Under pandas 3.1.1, astype(str) keeps NaN, so night rows carry vx_base/vx_arm = NaN instead of 'nan'. This has no effect: src only comes from night_vx_rep rows, arms are compared by equality, and every cfg is in the index. vx cfgs never collide with night cfgs. Branch runs have their own cfgs (core-night_branch-*), so cfg.isin(src) only picks the 21 control runs."
+    },
+    {
+     "check": "Hard-rule compliance of this audit",
+     "result": "OK. No analysis/results/vx_eval* files exist. The vxpred checkout has no gnn_opt/preds/apply directory and no GNN eval output, so --blend '' and --no-eval worked. I wrote only to /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/audit/coverage-splits (scripts a_coverage.py, c_keys.py, b_gnn_norm.py, d_llm.py, e_rounds.py, make_random_preds.py, plus their outputs), and all Python ran with -B. Nothing in apart_vx or vxpred changed because of me. analysis/vx_verdicts.py and analysis/vx_gnn15_heldout.py appeared during the audit, written by someone else; they are outside this lens. On vx, labels were used only for label-vs-label equality counts and for len(per_round), never together with a score."
+    }
+   ]
+  }
+ ],
+ "critic": {
+  "missing_checks": [
+   {
+    "what": "Does the post-audit assemble.py (changed 23:23:46, after all six lenses) still produce exactly the package the lenses audited?",
+    "why": "The main session plans to re-run assemble.py to regenerate run_eval.sh. That run also rewrites all 12 preds files, thresholds.json, manifest.json and snap/. No lens has seen this version.",
+    "how": "DONE. I ran a copy with the original inputs and wrote the output to /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/audit/critic/reassemble/analysis/vx_preds. With cmp, all 12 preds/*.csv, both snap/*.csv, thresholds.json and manifest.json are byte-identical to analysis/vx_preds. Only run_eval.sh differs (the new template). Its --pred, --thr, --snap and --boot lines are identical to the audited ones (24 --pred). The audited sha256 list is in /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/audit/critic/audited_hashes_now.txt (gnn.csv b8e1be0e…, hybrid.csv 90c098a8…, thresholds.json ab7611a5…, manifest.json d49765c1…). STILL TO DO: after regenerating in place, re-hash and confirm that only run_eval.sh changed."
+   },
+   {
+    "what": "End-to-end run of the NEW run_eval.sh. It adds the run-once guard, both vx_eval calls in the background, vx_jury_ks.py, vx_verdicts.py, git show of the 40-state files and vx_gnn15_heldout.py.",
+    "why": "Lenses and vxtest2 only ran the old two-call script. With the guard and set -e, a crash after vx_eval.json exists cannot be fixed by re-running the script.",
+    "how": "DONE with RANDOM scores only: uniform scores on the real keys and NaN pattern, |Spearman| vs real < 0.025, --boot 5. Mirror is /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/audit/critic/smoke (index.csv and runs_vx symlinked, GIT_DIR set to the repo). Result: exit 0, 90 s wall, 'call2 identical: True', all 10 outputs written. vx_jury_ks produced 4 arms × 9 dims = 288 values, all finite; I checked only that and deleted the files unread. The only warning is scipy ks_2samp 'exact → asymp', which is harmless because only the statistic is used. Expect about 25–30 min with 2000 draws. Log: /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/audit/critic/smoke_run.log"
+   },
+   {
+    "what": "Committed vx_gnn15_heldout.py on real night data (no lens ran the script itself)",
+    "why": "It runs at the end of the pipeline and could crash there. Nachtrag 2 item 3 also promises its numbers 'nach der Auswertung'.",
+    "how": "DONE, night only. 2338 rows, 156 positives, 36 configs. AUROC gnn40 0.817 vs gnn15 0.813, diff −0.004 [−0.009, −0.000]. Time-matched diff −0.007 [−0.012, −0.000]. hybrid40 0.832 = hybrid15 0.832, diff +0.000 [−0.003, +0.003]. Spearman 0.996 (gnn) / 0.998 (hybrid). File: /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/audit/critic/gnn15/out.md. This sensitivity is therefore already known (the gnn-provenance lens found the same). Nachtrag 2 should report it now and say the stored model is slightly but measurably weaker, rather than promise it for after the run."
+   },
+   {
+    "what": "Is make_baselines.py deterministic for all 8 baselines?",
+    "why": "Independent refits existed only for clock, bag+graph and edge; struct, pairwise and bag on vx had never been reproduced.",
+    "how": "DONE. I re-ran the committed script (harness copy, -B, OMP_NUM_THREADS=1). All 8 CSVs are byte-identical to vxpred/baselines. Output: /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/audit/critic/rebase"
+   },
+   {
+    "what": "Independent check of the facts in the rewritten Nachtrag 2 item 3 (written after the lenses ran)",
+    "why": "The text was rewritten at 23:22, after the lenses. It cites '1.835 Einträge' and 'blob-gleich mit denen des Test-Blicks'.",
+    "how": "DONE. I loaded both blobs with torch (/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/audit/critic/pt/cmp.py): 1835 shared leaves (cfg 37, states 1770, norm 27, w_gnn 1), 0 differing, and only blend_w was added. test_look.sh at f7aa3324 used preds/{eval,cv}/final*.csv, which are the same blobs as today's cloud_final*.csv (3efc72d5, 2c19a215, ff662799, 89eec61c). The LOOKS row 'test 1 ~17:45' was itself committed at 17:02:35Z (b86efb62), so the hand-written time cannot be right. Suggested addition: the weights (16:53 UTC) also predate the push of runs_vx (5ea7874, 18:25:43 UTC)."
+   },
+   {
+    "what": "Input format for vx_jury_ks.py and state of runs_vx",
+    "why": "No lens ran vx_jury_ks.py, and it reads runs_vx live.",
+    "how": "DONE. 94 jury_merged.jsonl files, 8609 lines, all 9 dimensions float, none missing. `git status --porcelain --ignored sim_dataset/runs_vx` is empty. Repeat this check right before the run, since vx_night2.sh runs would be picked up."
+   },
+   {
+    "what": ".gitignore and commit completeness",
+    "why": "If a prediction file were silently ignored, the commit would not prove the predictions came before the evaluation.",
+    "how": "DONE. With git check-ignore --no-index, none of the files to be committed (and none of the planned analysis/results/vx_* files) is ignored. However, .gitignore:6 'data/' ignores data/llm_monitor, so the source of preds/zs_*.csv is untracked. It can be reproduced only from the committed monitor_*.jsonl via llm_monitor.aggregate. Say so in the manifest or Nachtrag."
+   },
+   {
+    "what": "Can the external-node look-ahead bias within-config (H1) or arm-vs-id (Δ_shift) comparisons?",
+    "why": "Two lenses flagged it, but neither checked whether ext presence varies within a group, which is the case that could correlate with outcomes.",
+    "how": "DONE, label-free (/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/audit/critic/ext_presence.py). Ext nodes appear in 4 groups (night_test_id-K4-001, K2-266, K4-056, K4-302), in all runs of each group. 0 groups have mixed presence. So the look-ahead cannot create within-group differences."
+   },
+   {
+    "what": "Can H4(ii) degenerate, or be flipped by rounding?",
+    "why": "The decisive quantity changed to the run share after the lenses ran.",
+    "how": "DONE, labels only (counts already public in FINDINGS §9). id rep0 has 6/14 tipped (8 untipped), enf 5/14 (9 untipped); also glm 13/14, time 8/14, topo 5/7, Part B rep 7/16. With shares k/9 vs j/8, the 4-decimal rounding cannot flip (ii): j/8 is exact, and the smallest nonzero gap is 1/36. Still open: an id rep0 share of 0 (P ≈ 0.04–0.09 for gnn, from the thresholds lens's night estimates). vx_verdicts.py:101 then requires enf = 0, and Nachtrag 2 does not say so."
+   },
+   {
+    "what": "How blind is Part B (the H1 block)?",
+    "why": "Plan §0 calls night_vx the only blind part, but Part B mixes new runs with night test runs that have already been looked at.",
+    "how": "DONE, labels only (/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/audit/critic/partb_pairs.py). All 37 runs are scored at cut−6. Of the 29 within-config pairs, 10 are night–night, 16 night–new and 3 new–new. The 10 night–night pairs involve only test-split runs whose 40-state GNN scores and labels were already seen. This is not a break of the plan (§6.3 fixes the design), but say it, or pre-declare now a descriptive H1 number on pairs that contain at least one new run."
+   },
+   {
+    "what": "Temporal causality of the GNN and feature pipeline",
+    "why": "No lens checked it explicitly. A look-ahead would inflate H1 (within-config at cut−6).",
+    "how": "DONE by reading the code. features.py:264-354 computes every edge and node value from windows ending at t (responsiveness, reciprocity, new_contact, NLI premises, EMA and escalated_unresolved are all causal). model.py temporal blocks are causal (unidirectional nn.GRU). tdata.fit_norm uses night_train only. The only whole-run element is the node list (ext senders, see above)."
+   },
+   {
+    "what": "Evaluation environment",
+    "why": "The final outputs of vx_eval do not record versions.",
+    "how": "DONE. sim_dataset/.venv is a symlink to /Users/mauricio/sim_local/apart/sim_dataset/.venv, another repo's venv: Python 3.12.4, numpy 2.5.4, pandas 3.1.1, sklearn 1.9.1, scipy 1.18.1, last package change 13:32. Write these versions into analysis/results (e.g. a line in run_eval.sh) and tee the full stdout. Today the stdout of vx_jury_ks, vx_verdicts and gnn15 is not saved."
+   },
+   {
+    "what": "Has vx been looked at elsewhere (GNN team, other refs)?",
+    "why": "Any earlier look would break the 'once' claim.",
+    "how": "DONE. No runs_vx or night_vx mention and no vx file on origin/gnn-opt-torch f7194430, origin/gnn-opt or any other local ref. LOOKS.md lists only val 1 and test 1. analysis/results has no vx_* file. This audit wrote nothing to the repo (checked with find -newer and git status)."
+   },
+   {
+    "what": "NOT DONE, must happen before the run: push, exact regeneration commands, pre-run guard checks",
+    "why": "The proof of ordering rests on a single actor. The GNN team was promised they could re-derive the vx predictions without labels.",
+    "how": "(a) Confirm `git push` succeeded before starting. (b) Commit the exact command lines: build_dataset for night and vx; GNN_DEVICE=cpu predict.py --no-eval --blend '' --model …cloud_final_gnn.pt with default torch threads; make_baselines; assemble. None of these is committed verbatim today. (c) Immediately before the run, check vx_eval.py sha 6ff523e8…, that no analysis/results/vx_* exists, and that runs_vx is clean including ignored files."
+   }
+  ],
+  "cross_cutting_risks": [
+   "Post-audit edits. ANALYSIS_PLAN.md (23:22:57), assemble.py (23:23:46) and vx_verdicts.py (23:23:20) changed after all six lenses; only this critic has audited the final versions. run_eval.sh on disk (22:43) is stale and contradicts Nachtrag 2 item 8 ('Alle Schritte stehen in run_eval.sh'). From here: freeze, regenerate, hash-check against /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/audit/critic/audited_hashes_now.txt, commit. Any later edit is unaudited.",
+   "User-approved stop rule. The check announced to the user was row-by-row against the committed night predictions, with 'sonst breche ich ab'. Against the 7,560-row 40-state file it failed (max |Δ| 0.11, Spearman 0.987–0.998). The GNN was nevertheless run on vx at 22:38, on the narrower 120-row predict.py check (1.2e-7). Technically this is sound: no one can reproduce the 40-state file from the 15-state .pt, and committed plan §6.2 names exactly this .pt. It is still a deviation from what the user approved. It must go plainly into Nachtrag 2 item 3 and the morning message; today item 3 reports only the 120-row match.",
+   "Evidence of ordering. One actor did every step. The main-session state file allows the run to go ahead after a failed push. Local commit times are self-reported, so the push is the only external timestamp. Push before the run. If the push is refused, record the commit hash and preds hashes in the Nachtrag and the morning message, or wait for the user.",
+   "Mixed model instances, each documented by a different lens. Jointly: vx GNN = 15-state version (held-out AUROC 0.813 vs 0.817 reported); vx tab_mem = local refit (row max |Δ| 0.24 vs the team's file); vx hybrid = 15-state + local tab_mem; GNN/hybrid thresholds from a 4-run proxy CV; table-model thresholds from the team's table build. Do not read vx-vs-heldout differences as shift effects.",
+   "Verdicts are computed from rounded numbers. vx_eval writes values rounded to 4 decimals, and vx_verdicts compares those. Ties count as support, and round(-0.00004, 4) = -0.0 >= 0 is True in Python, so H3/H5 are 'gestützt' whenever diff ≥ −0.00005. Unlikely to matter, but state it before the run.",
+   "Small-sample degenerate cases that no single lens covers together: H4(ii) with an id rep0 share of 0 (P ≈ 4–9 % for gnn); the id-pair run-level AUROC rests on 1 discordant base (pairs = 1, CI [v, v]); glm has 13/14 tipped, so AUROC in glm mostly measures timing inside tipping runs (interpretation caveat for H3); topo has 7 bases with 33/2000 NaN draws; the cluster bootstrap is anti-conservative. None is a bug. Each needs one sentence before the run so it cannot be read post hoc.",
+   "Failure and recovery. The run-once guard plus set -e plus background jobs means that if vx_jury_ks, vx_verdicts, gnn15 or one vx_eval call fails, the script cannot be re-run. Nothing says what happens if call2_identical is False. Pre-declare: repeat only the failed step with identical arguments; call 1 is primary; take H3/H5 from call 2 only if the two calls are identical.",
+   "Wrong LOOKS.md times are spreading. Besides the main Nachtrag, the coverage-splits and thresholds lenses repeated '~17:20/~17:45'. Any audit text reused in the paper must use git times: val stamp 16:52:58Z, test look 17:02–17:06Z, .pt metadata change 17:11:50Z.",
+   "Reproducibility rests on /private/tmp. vxpred/repo builds, vxpred/baselines and stat/data live there (macOS clears it on reboot), and data/llm_monitor is gitignored. The committed preds files are the only durable record, so the exact commands and the default torch-thread setting must be committed.",
+   "Part B is only partly blind: 10 of its 29 pairs are night–night pairs of runs already seen. Plan §0 ('einziger blinder Teil') and the paper should qualify this.",
+   "Shared environment. The venv belongs to another repo (/Users/mauricio/sim_local/apart), and another session could change its packages. vx_eval records no versions.",
+   "Stale and incomplete documents. FINDINGS.md:165 still says no vx score exists. The Nachtrag 2 header says 22:45, but the text was revised until at least 23:22. The pre-run internal audit (6 lenses + critic; on vx only random scores or label-only counts) is not mentioned. A one-line audit note, optionally with the audit JSON, would help against the single-actor criticism."
+  ],
+  "disputed_findings": [
+   {
+    "finding": "coverage-splits, check (b): 'the file last changed 17:12 UTC, before the test look at about 17:45 UTC'",
+    "assessment": "Wrong. It repeats the hand-written LOOKS.md time. By git, the test look happened by 17:02:35Z (LOOKS row b86efb62, which itself already says '~17:45') and 17:06:28Z (results commit f7aa3324). The .pt blob changed after that, at 17:11:50Z (a35c6d96, blend_w only). The substance still holds: the states have been unchanged since b87b2afb (16:53:19Z), and I verified 1835 of 1835 leaves equal."
+   },
+   {
+    "finding": "thresholds, minor 1: 'renamed … (17:12 UTC), so it predates the val look (~17:20) and the test look (~17:45)'; it also quotes test_look.sh:10 as 'TH=$C/cloud_final.csv …'",
+    "assessment": "The times are wrong: the val stamp is 16:52:58Z and the test look 17:02–17:06Z. At the test-look commit, test_look.sh used $C/final.csv and $C/final_gnn.csv. The substance holds: those are the same blobs (89eec61c, ff662799) as today's cloud_final*.csv, and their content dates from 31272d59 (16:18:33Z), before both looks."
+   },
+   {
+    "finding": "plan-conformance B2: '1797 leaves, 0 differing'",
+    "assessment": "This is a leaf-counting convention, not an error. I count 1835 shared leaves (cfg 37, states 1770, norm 27, w_gnn 1), 0 differing, plus blend_w. That matches the '1.835' now in Nachtrag 2 item 3. The blocking item itself is confirmed, and the current text (23:22) fixes it."
+   },
+   {
+    "finding": "plan-conformance B3: H4(ii) silently changed to row FPR",
+    "assessment": "Confirmed as blocking at the time. Now resolved: Nachtrag 2 item 7 makes the §6.4 run share decisive and reports row FPR alongside. vx_verdicts.py:101 implements this, and I exercised it on the random-score run."
+   },
+   {
+    "finding": "plan-conformance B1: package uncommitted, scripts not named",
+    "assessment": "Still open, but narrower. Item 8 now names vx_jury_ks, vx_verdicts and vx_gnn15_heldout, and the assemble.py template contains all steps. The run_eval.sh on disk is the old 22:43 version, and nothing is committed. It stays blocking until regeneration and commit."
+   },
+   {
+    "finding": "plan-conformance minor: 'the check announced to the user passed only in its narrow form'",
+    "assessment": "Understated. This is the abort criterion the user approved, not a wording issue. It needs explicit disclosure to the user and in item 3. It does not break the pre-registration, because §6.2 names this .pt, and the substitute check fully serves the check's purpose of catching pipeline errors."
+   },
+   {
+    "finding": "thresholds, minor 4: H4(ii) with zero or missing id rep0 FPR",
+    "assessment": "Partly superseded, still open. With the run share decisive, the critical event is 'no alarm in any of the 8 untipped id rep0 runs', which is the same event as row FPR = 0; P ≈ 0.04–0.09 for gnn. The 'no untipped runs → None' branch cannot happen (8 and 9 untipped). vx_verdicts applies the literal rule (enf must also be 0); Nachtrag 2 does not state it."
+   },
+   {
+    "finding": "gnn-provenance, minor: 15-state effect on night is 'small and negative'",
+    "assessment": "Confirmed independently with the committed script: Δ −0.004 [−0.009, −0.000] AUROC and −0.007 [−0.012, −0.000] time-matched. The CI just excludes 0, so the vx GNN is measurably (slightly) weaker than the heldout.md GNN. Report this now; it is already known, so not 'nach der Auswertung'."
+   },
+   {
+    "finding": "baselines-hybrid / coverage-splits: vx_gnn15_heldout.py attributes the hybrid difference to the stored states",
+    "assessment": "Confirmed as a labelling issue. In AUROC the net effect is nil (hybrid15 0.832 = hybrid40 0.832). Row-level, the tab_mem swap dominates (0.124 vs 0.057). Relabel the row; no number changes."
+   },
+   {
+    "finding": "vx-eval-code, minor 2: CIs anti-conservative by 'about 2x'",
+    "assessment": "Plausible; I did not re-simulate. Their own numbers are worse for topo (14–20 % vs nominal 5 %, about 3–4×). It matters for the rules that use CI bounds: H1 (about 2×) and the H2 clock rule (about 1.4–1.8×). H3–H5 decide on point estimates."
+   }
+  ],
+  "go_no_go": "GO for analysis/vx_preds/run_eval.sh, but only after these steps, in this order. (1) Regenerate run_eval.sh in place with the current assemble.py and the same inputs. Re-hash and confirm that the 12 preds files, 2 snap files, thresholds.json and manifest.json match /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/audit/critic/audited_hashes_now.txt and that only run_eval.sh changed. I showed in scratch that this holds, and that the new pipeline runs end to end on random scores. (2) Text fixes in Nachtrag 2; no code or number changes. (a) Item 3: state that the announced row-by-row check against the committed 7,560-row file failed (max |Δ| 0.11), why, and that the 120-row check plus sha-identical reruns replaced it. Report the already computed night sensitivity (gnn15 0.813 vs gnn40 0.817, Δ −0.004 [−0.009, −0.000]; hybrid 0.832 = 0.832) instead of promising it 'nach der Auswertung'. (b) Item 6: GNN and hybrid thresholds come from the team's proxy-CV files (e_ngru_4runs / h_ngru4_hgb_logit55), a deviation from §4 'aus deren OOF'; the exact-CV alternatives 0.3354 / 0.1511 are not used. (c) Item 7 H4: convention for an id rep0 run share of 0. vx_verdicts already applies the literal rule: (ii) holds only if enf is also 0. (d) Item 7 H2: 'Beides muss gelten'; the clock without the last 3 rounds is reported only, with its own draws. (e) Item 4: vx tab_mem and hybrid are local refits, not the held-out primary files. (f) Item 8: if a step fails, only that step is repeated with identical arguments; call 1 is primary if the two calls are not identical. (3) One commit with explicit paths: ANALYSIS_PLAN.md, analysis/vx_preds/** (including raw/ and snap/), vx_jury_ks.py, vx_verdicts.py, vx_gnn15_heldout.py. Do not include vx_night2.sh or index.parquet. Push and confirm the push before starting. (4) Immediately before the run: vx_eval.py sha 6ff523e8…, no analysis/results/vx_* files, sim_dataset/runs_vx clean including ignored files. Nothing I found would bias the single evaluation. The lenses' blocking text items (freeze timeline, H4 definition) are fixed in the current text; only the commit is still missing. Caveat for the orchestrator: the abort rule the user approved was literally triggered. Following that rule strictly means holding the run until the user confirms the substitute check; the cost is hours, with no risk to the data. Technically the run is sound and conforms to plan §6.2. If it goes ahead, report the deviation prominently. These should be documented in the same commit but do not gate the run: id-pair result rests on a single pair; CIs are anti-conservative; ties and rounding in the verdicts; Part B has 10 of 29 night–night pairs; external nodes; single-judge message m158; feat_pairwise vs edge reading and the ordering row; incomplete 'nicht gerechnet' list; environment versions and exact commands; data/llm_monitor gitignored; FINDINGS.md:165; Nachtrag header time; note on the internal audit."
+ }
+}

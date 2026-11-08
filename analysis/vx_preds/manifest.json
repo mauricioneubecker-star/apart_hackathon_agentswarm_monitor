@@ -1,0 +1,197 @@
+{
+ "preds": {
+  "clock": {
+   "source": "make_baselines.py hgb_clock (refit on night_train)",
+   "file": "preds/clock.csv",
+   "sha256": "488ab9b23e1f661bc07c8416f04de506def8cdd2bb1a5c18eec3651a6cef11e3",
+   "rows": 6624
+  },
+  "struct": {
+   "source": "make_baselines.py hgb_struct (refit on night_train)",
+   "file": "preds/struct.csv",
+   "sha256": "8d511fd11480e4df769f2097b18e872886a31e2f4a4b0f674fae33f6c39403a8",
+   "rows": 6624
+  },
+  "feat_pairwise": {
+   "source": "make_baselines.py hgb_pairwise (refit on night_train)",
+   "file": "preds/feat_pairwise.csv",
+   "sha256": "ac3e63daa2d23eda0eecac2ed4e39354cb8c31eb9f0582ac2a53155a48116419",
+   "rows": 6624
+  },
+  "bag": {
+   "source": "make_baselines.py hgb_bag (refit on night_train)",
+   "file": "preds/bag.csv",
+   "sha256": "c95004c1ddb9d9803184ddfe61bb6cc7b734a80c22ce433c1a74a06e5bcb51cc",
+   "rows": 6624
+  },
+  "bag+graph": {
+   "source": "make_baselines.py hgb_bag+graph (refit on night_train)",
+   "file": "preds/bag+graph.csv",
+   "sha256": "6e064738e3412910481fed5df52710549631ed1f2f39fbba8f4110496c052d1a",
+   "rows": 6624
+  },
+  "tab_mem": {
+   "source": "make_baselines.py hgb_bag+graph+mem (refit on night_train)",
+   "file": "preds/tab_mem.csv",
+   "sha256": "cd3a8f3f5f4a525550b0dbef124905cff3803679fda024413fbc6d65ebd2175e",
+   "rows": 6624
+  },
+  "edge": {
+   "source": "make_baselines.py edge_monitor_top3 (refit on night_train)",
+   "file": "preds/edge.csv",
+   "sha256": "bbe7ee2efd8316d3f1aa6e1013b467dd9951734948ca95d1e6b76f8e43a58f05",
+   "rows": 6624
+  },
+  "oracle": {
+   "source": "make_baselines.py oracle_risk+clock (refit on night_train)",
+   "file": "preds/oracle.csv",
+   "sha256": "4ea2faf04198302319ffd9a2868ea359ac40c2b192faa455ee41feaf016df48f",
+   "rows": 6624
+  },
+  "gnn": {
+   "source": "gnn_opt_torch/predict.py --no-eval --blend '' --model models/cloud_final_gnn.pt (15 stored states = 5 seeds x last 3 snapshots)",
+   "gnn_night_sha256": "a43834c9a8023984ee9b1d95d84bca567f63108ab5d2928a8af9958e1c6b1633",
+   "gnn_vx_sha256": "259130f94c1532174460b18d8a0dca4f6f370969b977c074f5d938c8b0d91af3",
+   "file": "preds/gnn.csv",
+   "sha256": "b8e1be0e50b4a45e6ac50b5df9f3728be683ea67a3197fa8e8fbdd06c8318958",
+   "rows": 6624
+  },
+  "hybrid": {
+   "source": "blend.py logit, GNN weight 0.5, gnn + tab_mem (refit)",
+   "file": "preds/hybrid.csv",
+   "sha256": "90c098a8e863b6856701cf4d3247407f1541a43397f99abab16b50dfb59d0780",
+   "rows": 6624
+  },
+  "zs:pairwise": {
+   "source": "data/llm_monitor/pairwise/snapshots.csv zs_tip (zero-shot, prompt lm1-2026-11-08)",
+   "file": "preds/zs_pairwise.csv",
+   "sha256": "be3a1e502915d0ff22b159f1881a430c812c645e5f8f26e669730b08d83efbc4",
+   "rows": 10464
+  },
+  "zs:global_full": {
+   "source": "data/llm_monitor/global_full/snapshots.csv zs_tip (zero-shot, prompt lm1-2026-11-08)",
+   "file": "preds/zs_global_full.csv",
+   "sha256": "1fc8bb2cccdaa12bc77f20038463e670fc3d95aa14e969eeffbbd8dabef0466f",
+   "rows": 10464
+  }
+ },
+ "checks": {
+  "hybrid_formula_on_committed_files": {
+   "rows": 3720,
+   "max_abs_diff": 5.0930675010718574e-08
+  },
+  "hybrid_vs_team_predict_check_120": {
+   "rows": 120,
+   "max_abs_diff": 0.056597772117688405,
+   "spearman": 0.9978053574281012,
+   "note": "team GBM refit on its own table.csv; differences = float32 table noise of tab_mem"
+  },
+  "coverage": {
+   "night_vx_rows": 2389,
+   "part_b_rows": 960,
+   "part_b_source_cfgs": [
+    "core-night_test_id-K2-008",
+    "core-night_test_id-K4-001",
+    "core-night_test_id-K4-009",
+    "core-night_test_ood_family-K2-000",
+    "core-night_test_ood_family-K2-006",
+    "core-night_test_ood_seed-K2-001",
+    "core-night_test_ood_seed-K2-005",
+    "core-night_test_ood_seed-K4-002"
+   ],
+   "clock": {
+    "nan_or_inf": 0,
+    "out_of_01": 0,
+    "missing_night_vx": 0,
+    "missing_part_b": 0,
+    "rows_in_file": 6624
+   },
+   "struct": {
+    "nan_or_inf": 0,
+    "out_of_01": 0,
+    "missing_night_vx": 0,
+    "missing_part_b": 0,
+    "rows_in_file": 6624
+   },
+   "feat_pairwise": {
+    "nan_or_inf": 0,
+    "out_of_01": 0,
+    "missing_night_vx": 0,
+    "missing_part_b": 0,
+    "rows_in_file": 6624
+   },
+   "bag": {
+    "nan_or_inf": 0,
+    "out_of_01": 0,
+    "missing_night_vx": 0,
+    "missing_part_b": 0,
+    "rows_in_file": 6624
+   },
+   "bag+graph": {
+    "nan_or_inf": 0,
+    "out_of_01": 0,
+    "missing_night_vx": 0,
+    "missing_part_b": 0,
+    "rows_in_file": 6624
+   },
+   "tab_mem": {
+    "nan_or_inf": 0,
+    "out_of_01": 0,
+    "missing_night_vx": 0,
+    "missing_part_b": 0,
+    "rows_in_file": 6624
+   },
+   "edge": {
+    "nan_or_inf": 0,
+    "out_of_01": 0,
+    "missing_night_vx": 0,
+    "missing_part_b": 0,
+    "rows_in_file": 6624
+   },
+   "gnn": {
+    "nan_or_inf": 0,
+    "out_of_01": 0,
+    "missing_night_vx": 0,
+    "missing_part_b": 0,
+    "rows_in_file": 6624
+   },
+   "hybrid": {
+    "nan_or_inf": 0,
+    "out_of_01": 0,
+    "missing_night_vx": 0,
+    "missing_part_b": 0,
+    "rows_in_file": 6624
+   },
+   "zs:pairwise": {
+    "nan_or_inf": 30,
+    "out_of_01": 0,
+    "missing_night_vx": 0,
+    "missing_part_b": 0,
+    "rows_in_file": 10464,
+    "nonfinite_runs": [
+     "core-night_vx-K2-002-ft4/rep0"
+    ]
+   },
+   "zs:global_full": {
+    "nan_or_inf": 30,
+    "out_of_01": 0,
+    "missing_night_vx": 0,
+    "missing_part_b": 0,
+    "rows_in_file": 10464,
+    "nonfinite_runs": [
+     "core-night_vx-K2-002-ft4/rep0"
+    ]
+   },
+   "oracle": {
+    "nan_or_inf": 0,
+    "out_of_01": 0,
+    "missing_night_vx": 0,
+    "missing_part_b": 0,
+    "rows_in_file": 6624
+   }
+  },
+  "snap_runs_vx_sha256": "c7ca522520541af1c2f1be2fc84527f0ad969b90719acf18763eff29652db01b",
+  "snap_night_sha256": "5de70817a5e17446dcc26075c0b14217c14c3de2a729b16e5b4e8f832efb8829"
+ },
+ "coverage_ok": true
+}

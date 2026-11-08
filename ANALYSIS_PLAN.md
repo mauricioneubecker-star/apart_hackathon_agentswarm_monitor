@@ -163,3 +163,98 @@ siehe `analysis/review/stats-factors/`.
 - Nachträgliche Sensitivität (`analysis/heldout/doubletm.py`): Zeitabgleich innerhalb Deadline × Bin, also absolute
   Runde und Abstand zur Deadline gleichzeitig fest. Anlass: Das Urteil zu RQ2 hängt von der Definition ab. Das ist
   explorativ und ändert die primäre Regel nicht.
+
+**2 (8. Nov., Entwurf 22:45, nach interner Prüfung überarbeitet bis 23:55, vor jeder Auswertung von `night_vx`).**
+Festgelegt, bevor ein Monitor-Score auf `runs_vx` mit Labels verglichen wurde. Alle Eingaben liegen in
+`analysis/vx_preds/`: Vorhersagen, Schwellen, Prüfprotokoll `manifest.json`, die genauen Befehle in `README.md` und der
+Aufruf `run_eval.sh`. Vor dem Commit haben sechs unabhängige Agenten und ein Kritiker die Eingaben geprüft (Berichte in
+`analysis/review/vx-preeval/`). Auf vx arbeiteten sie nur mit Zufalls-Scores oder mit schon bekannten Label-Zählungen.
+
+1. **Vorhersager.** Das Hauptset aus §3. Dazu kommen die Baselines, die H1–H5 nennen (VALIDATION.md §3.2): `struct`
+   (hgb_struct), `feat_pairwise` (hgb_pairwise) und `bag` (hgb_bag), außerdem `oracle` als Referenz. Sekundär wie in §3
+   sind `tab_mem` und `edge` (Kanten-Monitor, top-3). Es fehlen K0 (GNN ohne Message Passing) und die
+   Mean-Aggregations-Variante aus H5, weil es von beiden kein eingefrorenes Modell gibt.
+2. **Benennung.** „pairwise monitor (max / top-3 over single edges)“ in VALIDATION.md ist die Merkmals-Baseline
+   `feat_pairwise` (Merkmalsgruppe `pairwise` in `gnn_opt/tabular.py`). Mit dem LLM-Monitor `zs:pairwise` hat sie
+   nichts zu tun. Den Kanten-Monitor `edge` berichten wir bei H1 und bei der Reihenfolge (Punkt 7) daneben.
+3. **GNN.** `gnn_opt_torch/predict.py --no-eval --blend ''` mit `models/cloud_final_gnn.pt` (origin/gnn-opt-torch
+   `f7194430`). Gewichte, Normierung, cfg und `w_gnn = 0,5` sind seit `b87b2afb` (16:53 UTC) unverändert, also seit vor
+   dem Test-Blick des Teams (`f7aa3324`, 17:06 UTC; die Uhrzeiten in LOOKS.md und STATUS.md stimmen nicht mit git
+   überein). Nach dem Test-Blick kam in `a35c6d96` (17:11 UTC) nur das Feld `blend_w = 0,5` hinzu. Alle 1.835 übrigen
+   Einträge sind bitgleich, geprüft von uns und zwei Prüfern unabhängig. `63123a27` (17:12 UTC) benannte
+   `final_gnn.pt` in `cloud_final_gnn.pt` um. Die eval- und Schwellen-Dateien `preds/{eval,cv}/cloud_final*.csv` sind
+   blob-gleich mit denen des Test-Blicks. Die Datei enthält nur 15 der 40 Zustände (5 Seeds × die letzten 3
+   Snapshots, laut RESULTS.md; ein Prüfer hat das an den Gewichten bestätigt). Die Held-out-Zahlen des Teams mitteln
+   alle 40. Die angekündigte Gegenprobe Zeile für Zeile gegen die committete eval-Datei (7.560 Zeilen) ist deshalb
+   **nicht bestanden**: Spearman 0,987–0,998 pro Split, größte Abweichung 0,11. An ihre Stelle treten der
+   `predict.py`-Check des GNN-Teams, den unser Lauf auf 120 von 120 Zeilen reproduziert (Abweichung ≤ 1,2·10⁻⁷), und
+   eine unabhängige Wiederholung durch einen Prüfer mit gleichem sha256. Auf den Held-out-Zeilen von heldout.md (nur
+   Nacht-Daten, vor der Auswertung gerechnet, `analysis/results/vx_gnn15_heldout.md`) ist die gespeicherte Fassung
+   leicht, aber messbar schwächer: AUROC 0,813 statt 0,817 (Δ −0,004 [−0,009; −0,000]), zeitgematcht −0,007
+   [−0,013; −0,000]. Damit Teil B in sich vergleichbar ist, bekommen auch die Nacht-Läufe seiner
+   Quellkonfigurationen Scores aus der gespeicherten Datei.
+4. **Hybrid und Baselines.** `predict.py` würde das Tabellenmodell in derselben Umgebung wie das GNN neu fitten. Hier
+   fehlt dort scikit-learn, deshalb läuft dieser Schritt getrennt mit derselben Formel und denselben Trainingszeilen:
+   Hybrid = Logit-Mittel aus `gnn` und `tab_mem`, Gewicht 0,5 aus der Modelldatei (`w_gnn`, schon vor dem Test-Blick
+   gespeichert; Formel gegen `cloud_final.csv` geprüft, Abweichung 5·10⁻⁸). Alle Tabellen-Baselines sind wie im
+   Held-out-Vergleich auf night_train neu gefittet (`make_baselines.py`). Die fünf, die dort schon neu gefittet wurden,
+   sind auf den Nacht-Zeilen identisch. `tab_mem` und damit der Hybrid sind auf vx andere Instanzen als die Dateien des
+   Teams in heldout.md. Auf den Held-out-Zeilen hat der vx-Hybrid trotzdem dieselbe AUROC (0,832). Unterschiede
+   zwischen vx und heldout.md lesen wir deshalb nicht als Verschiebung. Verglichen wird nur innerhalb von vx.
+5. **Umgebung und Merkmale.** Das GNN läuft mit Python 3.11 und torch 2.11 auf der CPU, mit Standard-Threads (mit
+   1 Thread weichen Scores um ≤ 2·10⁻⁸ ab). Alles andere läuft mit `sim_dataset/.venv` (Python 3.12, scikit-learn
+   1.9.1). Die Datensätze aus `gnn_opt/build_dataset.py` sind byte-gleich mit denen des Held-out-Vergleichs. Merkmals-,
+   Label- und Jury-Code sind zwischen Nacht-Batch und vx-Lauf unverändert. Zwei Eigenheiten betreffen alle Modelle auf
+   Merkmalen, nicht die LLM-Monitore. Erstens hat eine vx-Nachricht nur einen Richter (m158 in
+   `core-night_vx-K2-266-time/rep0`, Haiku fünfmal unlesbar; im Nacht-Batch kommt das nicht vor), betroffen sind 23
+   von 190.126 Kanten-Zeilen. Zweitens stehen externe Absender ab Runde 1 als Knoten im Graphen, also vor ihrer ersten
+   Nachricht. Das war schon im Training so, ist innerhalb jeder vx-Basis in allen Armen gleich und verschiebt die
+   Held-out-AUROC des GNN um höchstens 0,0006. `data/llm_monitor` ist nicht im Repo. Die zs-Dateien lassen sich aus
+   den committeten `monitor_*.jsonl` mit `llm_monitor.aggregate` neu bauen.
+6. **Schwellen für H4.** 5 % FPR mit `metrics.thr_at_fpr`, Alarm bei Score ≥ Schwelle. Die +10⁻¹² aus `thr_at_fpr`
+   stehen mit in `run_eval.sh`. Sie zählen, weil viele zero-shot-Scores genau auf dem Schwellwert liegen.
+   Zero-shot-LLMs: aus night_train + night_val. Tabellenmodelle: aus ihrer ID-OOF auf night_train. Diese CV-Dateien
+   stammen aus dem `table.csv`-Build des Teams und werden auf unsere Neu-Fits angewandt. GNN und Hybrid: die Dateien,
+   mit denen das Team vor dem Test-Blick seine Schwellen gesetzt hat (`preds/cv/cloud_final*.csv`). Das sind
+   Proxy-CVs (`e_ngru_4runs`, `h_ngru4_hgb_logit55`), nicht die OOF der eingefrorenen Konfiguration. Das weicht von §4
+   ab. Wir behalten sie, damit vx dieselben Schwellen hat wie der Test-Blick. Die Schwellen aus der exakten
+   5-Seed-CV (laut Prüfer 0,3354 und 0,1511) nutzen wir nicht. Die 9 Schwellen aus dem Held-out-Vergleich werden exakt
+   reproduziert.
+7. **Lesart von H1–H5.** Punkt = Schätzer auf allen Basen, CI = 2,5/97,5 % von 2000 Bootstrap-Ziehungen. Metrik ist
+   die AUROC, die zeitgematchte AUROC steht daneben. Die Regeln vergleichen die auf 4 Stellen gerundeten Werte aus
+   `vx_eval.json`, Gleichstand zählt als gestützt. H1 und H4 (i) sind unsere Lesart des VALIDATION-Wortlauts.
+   - H1: `gnn` in Teil B (Lauf-Ebene innerhalb der Konfiguration) hat eine untere CI-Grenze > 0,5 und einen Punkt
+     ≥ `feat_pairwise`. Teil B ist nur teilweise blind: 10 der 29 Paare sind Nacht-Nacht-Paare schon gesehener
+     Test-Läufe. Die id-Paare aus Teil A berichten wir daneben. Sie beruhen auf einem einzigen gemischten Paar, ihre
+     CI ist entartet.
+   - H2: Die Uhr bricht ein, wenn die CI von M(time) − M(id rep1) ganz unter 0 liegt. Das GNN hält, wenn
+     |Δ_shift| ≤ |Δ_noise|. Beides muss gelten. Die Uhr ohne die letzten 3 Runden berichten wir nur, mit eigenen
+     Ziehungen.
+   - H3: Δ_shift(`gnn`) ≥ Δ_shift(`bag`), die CI der Differenz kommt aus Aufruf 2. Dazu `analysis/vx_jury_ks.py`:
+     KS-Abstand jeder Jury-Dimension, glm gegen id rep0, neben id rep1 gegen id rep0. In glm kippen 13 von 14 Läufen,
+     die AUROC misst dort vor allem das Timing innerhalb kippender Läufe.
+   - H4: (i) Δ_shift ≥ −|Δ_noise| und (ii) der Fehlalarm aus §6.4, also der Anteil nicht gekippter Läufe mit
+     mindestens einem Alarm bei der Trainingsschwelle, ist auf enf höchstens doppelt so hoch wie auf id rep0 (dieselben
+     Basen). Beides muss gelten. Ist der Anteil auf id rep0 null, gilt (ii) nur, wenn er auch auf enf null ist. Die
+     Zeilen-FPR berichten wir daneben, wie in §6.4.
+   - H5: Δ_shift(`gnn`) ≥ Δ_shift(`bag`), die CI der Differenz kommt aus Aufruf 2.
+   - Reihenfolge feat_pairwise < bag ≤ bag+graph ≤ GNN (VALIDATION §3.5): beschreibend an den Punkten der AUROC pro
+     Arm. `vx_eval.py` liefert dafür keine CIs.
+   - Jede Regel ergibt „gestützt“ oder „nicht gestützt“. Daneben sagen wir, ob die zugehörige CI die Grenze
+     ausschließt. Mit 14 Basen ist das oft nicht der Fall (§6.6). Die Perzentil-CIs über 7–14 Basen und 8 Gruppen sind
+     antikonservativ (in Simulationen der Prüfer etwa doppelte Fehlerrate, bei topo mehr). Ziehungen ohne beide
+     Klassen fallen weg.
+   - Für LLM-Monitore, Hybrid und Baselines berichten wir dieselben Größen beschreibend. Mit Holm getestet wird nur die
+     Kipprate (§6.5).
+8. **Ablauf.** Zwei Aufrufe von `analysis/vx_eval.py` (seit `4e6e998` unverändert, Seed 20261108, 2000 Ziehungen).
+   Aufruf 1 nutzt `--ref bag+graph` wie geplant, Aufruf 2 `--ref bag`, nur für H3 und H5. Die Ziehungen hängen weder
+   von der Referenz noch von der Zahl der Vorhersager ab. Deshalb müssen alle anderen Zahlen gleich sein. Danach laufen
+   `analysis/vx_jury_ks.py` (H3) und `analysis/vx_verdicts.py`, das die Regeln aus Punkt 7 mechanisch anwendet und die
+   Gleichheit der beiden Aufrufe prüft. Alle Schritte stehen in `analysis/vx_preds/run_eval.sh`, das einmal läuft;
+   eine Sperre verhindert einen zweiten Lauf. Schlägt ein Schritt fehl, wiederholen wir nur diesen mit identischen
+   Argumenten. Sind die beiden Aufrufe nicht identisch, gilt Aufruf 1, und H3 und H5 bleiben offen. Getestet wurde
+   vorher nur mit Zufalls-Scores.
+9. **Nicht gerechnet.** Alles aus VALIDATION.md §3.3, was nicht in `vx_eval.py` steht: AUPRC, Recall bei 5 % FPR
+   (außer den Fehlalarmen für H4), Brier, MAE von risk_count, Knoten-Ebene, Lauf-Ebene ab der ersten
+   Mechanismus-Nachricht, Vorwarnzeit und die Slices vor der ersten Ankündigung und nach Kanal. Wir rechnen sie nicht
+   nachträglich. Kipprate und Verstöße pro Arm stehen beschreibend in `sim_dataset/runs_vx/_logs/vx_summary.md`.

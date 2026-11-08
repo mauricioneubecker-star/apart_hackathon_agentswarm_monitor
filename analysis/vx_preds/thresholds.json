@@ -1,0 +1,92 @@
+{
+ "clock": {
+  "thr": 0.120745000001,
+  "from": "night_train ID-OOF of gnn_opt/preds/cv/hgb_clock.csv (harness id_oof, repeat mean)",
+  "rows": 3370,
+  "fpr_on_that_data": 0.04884080370942813,
+  "heldout_value": 0.1207,
+  "matches_heldout_4sig": true
+ },
+ "struct": {
+  "thr": 0.151485000001,
+  "from": "night_train ID-OOF of gnn_opt/preds/cv/hgb_struct.csv (harness id_oof, repeat mean)",
+  "rows": 3370,
+  "fpr_on_that_data": 0.04976816074188563
+ },
+ "feat_pairwise": {
+  "thr": 0.186390000001,
+  "from": "night_train ID-OOF of gnn_opt/preds/cv/hgb_pairwise.csv (harness id_oof, repeat mean)",
+  "rows": 3370,
+  "fpr_on_that_data": 0.04976816074188563
+ },
+ "bag": {
+  "thr": 0.161865000001,
+  "from": "night_train ID-OOF of gnn_opt/preds/cv/hgb_bag.csv (harness id_oof, repeat mean)",
+  "rows": 3370,
+  "fpr_on_that_data": 0.04976816074188563
+ },
+ "bag+graph": {
+  "thr": 0.136285000001,
+  "from": "night_train ID-OOF of gnn_opt/preds/cv/hgb_bag+graph.csv (harness id_oof, repeat mean)",
+  "rows": 3370,
+  "fpr_on_that_data": 0.04976816074188563,
+  "heldout_value": 0.1363,
+  "matches_heldout_4sig": true
+ },
+ "tab_mem": {
+  "thr": 0.13630500000100002,
+  "from": "night_train ID-OOF of gnn_opt/preds/cv/hgb_bag+graph+mem.csv (harness id_oof, repeat mean)",
+  "rows": 3370,
+  "fpr_on_that_data": 0.04976816074188563,
+  "heldout_value": 0.1363,
+  "matches_heldout_4sig": true
+ },
+ "edge": {
+  "thr": 0.326340000001,
+  "from": "night_train ID-OOF of gnn_opt/preds/cv/edge_monitor_top3.csv (harness id_oof, repeat mean)",
+  "rows": 3370,
+  "fpr_on_that_data": 0.04976816074188563,
+  "heldout_value": 0.3263,
+  "matches_heldout_4sig": true
+ },
+ "gnn": {
+  "thr": 0.313991081096,
+  "from": "night_train ID-OOF of gnn_opt_torch/preds/cv/cloud_final_gnn.csv (harness id_oof, repeat mean)",
+  "rows": 3370,
+  "fpr_on_that_data": 0.04976816074188563,
+  "heldout_value": 0.314,
+  "matches_heldout_4sig": true
+ },
+ "hybrid": {
+  "thr": 0.14310457898354048,
+  "from": "night_train ID-OOF of gnn_opt_torch/preds/cv/cloud_final.csv (harness id_oof, repeat mean)",
+  "rows": 3370,
+  "fpr_on_that_data": 0.04976816074188563,
+  "heldout_value": 0.1431,
+  "matches_heldout_4sig": true
+ },
+ "oracle": {
+  "thr": 0.116228000001,
+  "from": "night_train ID-OOF of gnn_opt/preds/cv/oracle_risk+clock.csv (harness id_oof, repeat mean)",
+  "rows": 3370,
+  "fpr_on_that_data": 0.04976816074188563,
+  "heldout_value": 0.1162,
+  "matches_heldout_4sig": true
+ },
+ "zs:pairwise": {
+  "thr": 0.880000000001,
+  "from": "night_train + night_val eval rows (raw zero-shot score)",
+  "rows": 4050,
+  "fpr_on_that_data": 0.04688700999231361,
+  "heldout_value": 0.88,
+  "matches_heldout_4sig": true
+ },
+ "zs:global_full": {
+  "thr": 0.650000000001,
+  "from": "night_train + night_val eval rows (raw zero-shot score)",
+  "rows": 4050,
+  "fpr_on_that_data": 0.04739943633102742,
+  "heldout_value": 0.65,
+  "matches_heldout_4sig": true
+ }
+}

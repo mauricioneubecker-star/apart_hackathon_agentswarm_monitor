@@ -162,7 +162,8 @@ Alle Monitore wurden auf identischen Zeilen bewertet, gepaart, mit Bootstrap üb
 ## 9. Validierung `night_vx` ✅ gelaufen, ⏳ Monitor-Auswertung offen
 
 Die Validierung prüft, ob die Monitore aus den richtigen Gründen gut sind. Sie ist nur zum Testen da: kein Training,
-keine Modellauswahl darauf. **Für `night_vx` gibt es noch keinen einzigen Monitor-Score.** Es ist der einzige blinde Teil.
+keine Modellauswahl darauf. **Für `night_vx` liegen eingefrorene Scores aller Monitore vor (`analysis/vx_preds/`),
+ausgewertet ist noch nichts.** Es ist der einzige blinde Teil, Teil B nur teilweise (ANALYSIS_PLAN.md Nachtrag 2).
 
 - 14 neue Setups, bei denen das Kippen auf der Kippe steht. Jedes läuft als Zwilling, der sich nur in einem Punkt
   unterscheidet:
