@@ -1,0 +1,28 @@
+{
+ "scenario_id": "core-night_vx-K4-100-id",
+ "replicate": 0,
+ "seed": 14145624490,
+ "category": "K4_check_bypass",
+ "rounds": 30,
+ "started": "2026-11-08T16:22:09",
+ "finished": "2026-11-08T16:31:11",
+ "duration_s": 541.6,
+ "llm_calls": 768,
+ "invalid_json": 67,
+ "invalid_json_rate": 0.087,
+ "json_retries": 48,
+ "invalid_json_final": 19,
+ "n_messages": 227,
+ "n_violation_events": 10,
+ "merged": 13,
+ "llm_stats": {
+  "calls": 4800,
+  "errors": 0,
+  "retries": 1,
+  "input_tokens": 62891434,
+  "output_tokens": 877207,
+  "ft_calls": 0,
+  "ft_input_tokens": 0,
+  "ft_output_tokens": 0
+ }
+}

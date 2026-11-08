@@ -1,0 +1,11 @@
+2026-11-08 15:31:21 night run started (pid 35331), out=runs_vx, stop new work after 2359
+2026-11-08 15:31:22 stage 1 (night batch) pass 1: 92 episodes to go
+2026-11-08 16:31:25 hourly report refreshed
+2026-11-08 17:31:28 hourly report refreshed
+2026-11-08 18:31:31 hourly report refreshed
+2026-11-08 19:19:56 stage 1 (night batch) pass 1 ended with exit code 0
+2026-11-08 19:20:57 stage 1 (night batch) complete
+2026-11-08 19:20:57 stage 2 (replicate 1) complete
+2026-11-08 19:20:57 simulation done - final jury, labels, features, report
+finished episodes: 94  errors: 0  tipped: 51  jury done: 93
+2026-11-08 19:21:04 done -> runs_vx/_logs/report.md
