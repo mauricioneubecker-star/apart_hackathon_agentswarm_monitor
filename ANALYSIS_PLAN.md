@@ -153,4 +153,13 @@ siehe `analysis/review/stats-factors/`.
 
 ## Nachträge
 
-(noch keine)
+**1 (8. Nov., 19:35).**
+- Die gemeinsame Auswertung auf den Testzeilen (§4–§5) lief von 19:00 bis 19:16, also vor dem Commit dieses Plans
+  (`4e6e998`, 19:25). Gelesen habe ich die Ergebnisse erst danach. Ergebnis: [analysis/results/heldout.md](analysis/results/heldout.md).
+  Nach Holm ist keiner der 11 Tests signifikant.
+- Die committeten Baseline-Dateien `hgb_bag+graph`, `hgb_clock` und `oracle_risk+clock` in `gnn_opt/preds/eval`
+  decken nur night_val ab. Für die Testzeilen wurden sie mit den Harness-Einstellungen auf night_train neu gefittet
+  (`analysis/heldout/regen_baselines.py`).
+- Nachträgliche Sensitivität (`analysis/heldout/doubletm.py`): Zeitabgleich innerhalb Deadline × Bin, also absolute
+  Runde und Abstand zur Deadline gleichzeitig fest. Anlass: Das Urteil zu RQ2 hängt von der Definition ab. Das ist
+  explorativ und ändert die primäre Regel nicht.

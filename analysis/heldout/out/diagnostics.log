@@ -1,0 +1,23 @@
+rows / positives per rounds-to-cut bin and split:
+          size                                sum                            
+split   branch ood_family ood_seed test_id branch ood_family ood_seed test_id
+rtc_bin                                                                      
+-4..-1      77         60       48     127      9          0       16      37
+-8..-5      86         66       55     143      8          6        4       8
+0..3        65         59       29      82      7          5        6       8
+<=-9       214        283      197     450      6         21        6       0
+>3          82        101       20      94      3          1        4       1
+  bin <=-9    clock AUROC 0.753593541172299  pos rate by cut {17: 0.0, 20: 0.0, 23: 0.05732484076433121, 26: 0.0379746835443038}  rows by cut {17: 180, 20: 255, 23: 314, 26: 395}  pairs 36663
+  bin -8..-5  clock AUROC 0.847400284900285  pos rate by cut {17: 0.0, 20: 0.01, 23: 0.12, 26: 0.21333333333333335}  rows by cut {17: 100, 20: 100, 23: 75, 26: 75}  pairs 8424
+  bin -4..-1  clock AUROC 0.6088064516129033  pos rate by cut {17: 0.1111111111111111, 20: 0.25, 23: 0.36666666666666664, 26: 0.08771929824561403}  rows by cut {17: 99, 20: 96, 23: 60, 26: 57}  pairs 15500
+  bin 0..3    clock AUROC 0.5813397129186603  pos rate by cut {17: 0.14285714285714285, 20: 0.13846153846153847, 23: 0.14705882352941177, 26: 0.0}  rows by cut {17: 84, 20: 65, 23: 34, 26: 52}  pairs 5434
+  bin >3      clock AUROC 0.6896219135802468  pos rate by cut {17: 0.024390243902439025, 20: 0.021505376344086023, 23: 0.1111111111111111, 26: 0.0}  rows by cut {17: 164, 20: 93, 23: 27, 26: 13}  pairs 2592
+harness round bins (0 = rounds 1-5, ..., 5 = 26-30): {0: {'rows': 420, 'pos': 0, 'clock_auroc': None}, 1: {'rows': 498, 'pos': 9, 'clock_auroc': 0.5}, 2: {'rows': 476, 'pos': 29, 'clock_auroc': 0.5439713029391345}, 3: {'rows': 416, 'pos': 82, 'clock_auroc': 0.525558638819921}, 4: {'rows': 283, 'pos': 31, 'clock_auroc': 0.5030721966205838}, 5: {'rows': 245, 'pos': 5, 'clock_auroc': 0.74}}
+clock on night_train CV (ID-OOF): AUROC 0.753, plan time-matched 0.635, harness tAUROC 0.401
+night_train (CV OOF / zero-shot) time-matched, for context: {'bag+graph': {'tm_plan': 0.813, 'tm_harness': 0.779}, 'hybrid': {'tm_plan': 0.876, 'tm_harness': 0.849}, 'gnn5': {'tm_plan': 0.872, 'tm_harness': 0.842}, 'zs:pairwise': {'tm_plan': 0.894, 'tm_harness': 0.886}, 'zs:global_full': {'tm_plan': 0.835, 'tm_harness': 0.811}}
+seed 20261108: p 0.0998 0.0082 0.0216 0.2992 0.0200 0.8336 0.1116 0.0976 0.2270 0.3794 0.8516 | min Holm 0.090
+seed 1: p 0.0992 0.0084 0.0204 0.3006 0.0238 0.8412 0.1138 0.0990 0.2216 0.3668 0.8596 | min Holm 0.092
+seed 2: p 0.0910 0.0074 0.0246 0.3020 0.0172 0.8320 0.1060 0.1004 0.2348 0.3760 0.8610 | min Holm 0.081
+seed 3: p 0.0918 0.0084 0.0266 0.2856 0.0170 0.8228 0.1128 0.1104 0.2370 0.3836 0.8562 | min Holm 0.092
+Spearman(score, round) on held-out rows [all / negatives only]: {'clock': (0.73, 0.75), 'bag+graph': (0.67, 0.68), 'tab_mem': (0.7, 0.72), 'edge': (0.7, 0.73), 'gnn5': (0.5, 0.5), 'hybrid': (0.69, 0.7), 'zs:pairwise': (0.72, 0.74), 'zs:global_full': (0.83, 0.84), 'zs:global_window': (0.75, 0.76), 'zs:agent': (0.77, 0.79), 'oracle': (0.53, 0.53)}
+before-announcement rows: {'rows': 1786, 'pos': 42, 'cfgs': 36}

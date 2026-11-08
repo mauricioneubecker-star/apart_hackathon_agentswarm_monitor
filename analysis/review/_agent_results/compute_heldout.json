@@ -1,0 +1,488 @@
+{
+ "report_path": "/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/heldout/REPORT.md",
+ "rows": "Held-out = harness snapshots.csv rows with eval==1 in the 4 held-out splits (branch prefixes counted once). Totals: 2338 rows, 156 positives (prevalence 0.067), 36 configs, 100 runs (52 tipped, 48 untipped). Per split (rows/pos/configs; runs, tipped runs): test_id 896/54/12 (36, 18); ood_family 569/33/8 (24, 11); ood_seed 349/36/8 (16, 12); branch 524/33/8 (24, 11). 80 labelled branch-prefix duplicates (eval==0) are excluded. Only 23 of the 36 configs hold a positive (7/4/7/5 per split). Mixed configs (held-out runs include tipped and untipped ones): 9 (test_id 3, ood_family 1, ood_seed 2, branch 3), with 591 rows and 45 positives. The harness schema list, which uses control arms only, has 6 of them. Coverage: every predictor covers all 2338 rows (0 missing, 0 NaN for all 12 sources). Labels, configs, splits and tip rounds agree with llm_monitor/_base on every row. rounds_to_cut = t - cut, with cut in {17, 20, 23, 26}.",
+ "reproduces_gnn_team": "Yes, exactly.\n- Rows: 2338 / 156.\n- Pooled AUROC: hybrid 0.832, gnn5 0.817, tab_mem 0.811, edge 0.800.\n- Per split (hybrid / gnn5 / tab_mem / edge): test_id 0.922/0.921/0.895/0.837, ood_family 0.823/0.794/0.807/0.812, ood_seed 0.785/0.744/0.780/0.780, branch 0.728/0.731/0.699/0.728. All equal at 3 dp.\n- CIs: their bootstrap CIs reproduce exactly when I regenerate their draws (seed 0, B=1000), e.g. hybrid [0.782, 0.885] and gnn5 [0.756, 0.877].\n- AUPRC, tAUROC and R@5%FPR (CV thresholds) are identical, e.g. hybrid 0.301 / 0.752 / 0.372.\n- Lead time is identical (hybrid 54% alarmed before tip, median lead 5.5, 31% false-alarm runs), and so are the pair differences: hybrid-gnn5 +0.016 [-0.007, +0.041], hybrid-tab_mem +0.021 [-0.006, +0.051], hybrid-edge +0.032 [-0.011, +0.078].\n- Their own harness evaluate.py, rerun with their test_look.sh arguments, matches my implementation with max |diff| 0.",
+ "auroc_table": [
+  {
+   "predictor": "clock (hgb_clock, refit on night_train; primary reference)",
+   "pooled": "0.781 [0.714, 0.841]",
+   "time_matched": "plan rounds-to-cut bins 0.716 [0.632, 0.789]; harness tAUROC 0.530 [0.481, 0.578]",
+   "test_id": "0.847",
+   "ood_family": "0.659",
+   "ood_seed": "0.816",
+   "branch": "0.776",
+   "within_mixed_cfg": "0.682 [0.484, 0.891]",
+   "recall_at_5fpr": "0.128 (held-out row FPR 0.029; thr 0.1207 from night_train ID-OOF)"
+  },
+  {
+   "predictor": "bag+graph (hgb_bag+graph, refit on night_train; primary)",
+   "pooled": "0.812 [0.759, 0.861]",
+   "time_matched": "plan 0.797 [0.723, 0.854]; harness 0.721 [0.646, 0.790]",
+   "test_id": "0.902",
+   "ood_family": "0.786",
+   "ood_seed": "0.759",
+   "branch": "0.737",
+   "within_mixed_cfg": "0.647 [0.442, 0.789]",
+   "recall_at_5fpr": "0.276 (FPR 0.048; thr 0.1363, night_train ID-OOF)"
+  },
+  {
+   "predictor": "zs:pairwise (primary)",
+   "pooled": "0.855 [0.808, 0.899]",
+   "time_matched": "plan 0.838 [0.755, 0.900]; harness 0.787 [0.722, 0.849]",
+   "test_id": "0.872",
+   "ood_family": "0.867",
+   "ood_seed": "0.842",
+   "branch": "0.797",
+   "within_mixed_cfg": "0.820 [0.660, 0.900]",
+   "recall_at_5fpr": "0.333 (FPR 0.045; thr 0.88 from night_train+night_val eval rows)"
+  },
+  {
+   "predictor": "zs:global_full (primary)",
+   "pooled": "0.816 [0.759, 0.869]",
+   "time_matched": "plan 0.819 [0.727, 0.883]; harness 0.734 [0.650, 0.813]",
+   "test_id": "0.875",
+   "ood_family": "0.782",
+   "ood_seed": "0.825",
+   "branch": "0.734",
+   "within_mixed_cfg": "0.747 [0.356, 0.916]",
+   "recall_at_5fpr": "0.212 (FPR 0.032; thr 0.65, train+val)"
+  },
+  {
+   "predictor": "gnn5 (cloud_final_gnn; primary ext:gnn_final)",
+   "pooled": "0.817 [0.756, 0.873]",
+   "time_matched": "plan 0.769 [0.676, 0.846]; harness 0.739 [0.659, 0.812]",
+   "test_id": "0.921",
+   "ood_family": "0.794",
+   "ood_seed": "0.744",
+   "branch": "0.731",
+   "within_mixed_cfg": "0.639 [0.430, 0.792]",
+   "recall_at_5fpr": "0.417 (FPR 0.054; thr 0.314 from CV proxy cloud_final_gnn)"
+  },
+  {
+   "predictor": "hybrid (cloud_final; primary ext:gnn_hybrid)",
+   "pooled": "0.832 [0.782, 0.881]",
+   "time_matched": "plan 0.818 [0.748, 0.870]; harness 0.752 [0.674, 0.822]",
+   "test_id": "0.922",
+   "ood_family": "0.823",
+   "ood_seed": "0.785",
+   "branch": "0.728",
+   "within_mixed_cfg": "0.647 [0.429, 0.815]",
+   "recall_at_5fpr": "0.372 (FPR 0.063; thr 0.1431 from CV proxy cloud_final)"
+  },
+  {
+   "predictor": "tab_mem (hgb_bag+graph+mem__allsplits; secondary)",
+   "pooled": "0.811 [0.756, 0.860]",
+   "time_matched": "plan 0.804 [0.725, 0.864]; harness 0.718 [0.640, 0.790]",
+   "test_id": "0.895",
+   "ood_family": "0.807",
+   "ood_seed": "0.780",
+   "branch": "0.699",
+   "within_mixed_cfg": "0.642 [0.380, 0.811]",
+   "recall_at_5fpr": "0.250 (FPR 0.044; thr 0.1363)"
+  },
+  {
+   "predictor": "edge (edge_monitor_top3__allsplits; secondary)",
+   "pooled": "0.800 [0.753, 0.841]",
+   "time_matched": "plan 0.792 [0.696, 0.853]; harness 0.682 [0.604, 0.752]",
+   "test_id": "0.837",
+   "ood_family": "0.812",
+   "ood_seed": "0.780",
+   "branch": "0.728",
+   "within_mixed_cfg": "0.591 [0.337, 0.811]",
+   "recall_at_5fpr": "0.288 (FPR 0.048; thr 0.3263)"
+  },
+  {
+   "predictor": "zs:global_window (secondary)",
+   "pooled": "0.829 [0.780, 0.875]",
+   "time_matched": "plan 0.816 [0.727, 0.879]; harness 0.735 [0.661, 0.806]",
+   "test_id": "0.868",
+   "ood_family": "0.829",
+   "ood_seed": "0.829",
+   "branch": "0.751",
+   "within_mixed_cfg": "0.733 [0.447, 0.891]",
+   "recall_at_5fpr": "0.173 (FPR 0.031; thr 0.55, train+val)"
+  },
+  {
+   "predictor": "zs:agent (secondary)",
+   "pooled": "0.849 [0.803, 0.893]",
+   "time_matched": "plan 0.836 [0.749, 0.897]; harness 0.771 [0.704, 0.836]",
+   "test_id": "0.870",
+   "ood_family": "0.848",
+   "ood_seed": "0.829",
+   "branch": "0.801",
+   "within_mixed_cfg": "0.834 [0.651, 0.926]",
+   "recall_at_5fpr": "0.263 (FPR 0.054; thr 0.92, train+val)"
+  },
+  {
+   "predictor": "oracle (oracle_risk+clock, refit; reference only, not a monitor)",
+   "pooled": "0.908 [0.872, 0.945]",
+   "time_matched": "plan 0.872 [0.817, 0.921]; harness 0.870 [0.815, 0.922]",
+   "test_id": "0.925",
+   "ood_family": "0.896",
+   "ood_seed": "0.922",
+   "branch": "0.875",
+   "within_mixed_cfg": "0.876 [0.708, 0.972]",
+   "recall_at_5fpr": "0.788 (FPR 0.094; thr 0.1162)"
+  },
+  {
+   "predictor": "comb: zs:pairwise + hybrid, mean of ranks (exploratory, post hoc)",
+   "pooled": "0.861 [0.817, 0.904]",
+   "time_matched": "plan 0.849 [0.781, 0.901]; harness 0.798 [0.735, 0.856]",
+   "test_id": "0.911",
+   "ood_family": "0.862",
+   "ood_seed": "0.824",
+   "branch": "0.788",
+   "within_mixed_cfg": "0.770 [0.611, 0.867]",
+   "recall_at_5fpr": "n/a (no training threshold)"
+  }
+ ],
+ "primary": [
+  {
+   "comparison": "a1: bag+graph - clock, time-matched AUROC (plan rounds-to-cut bins)",
+   "estimate": "+0.080 [-0.012, +0.178]",
+   "p_raw": 0.0998,
+   "p_holm": 0.7808,
+   "split_signs": "test_id +0.149, ood_family +0.090, ood_seed -0.038, branch +0.0005; 3/4 agree, but only because branch is +0.0005 (about 0)",
+   "verdict": "tie (gleichauf): Holm p 0.781"
+  },
+  {
+   "comparison": "a2: zs:pairwise - clock, time-matched (plan)",
+   "estimate": "+0.121 [+0.032, +0.213]",
+   "p_raw": 0.0082,
+   "p_holm": 0.0902,
+   "split_signs": "test_id +0.115, ood_family +0.157, ood_seed +0.050, branch +0.034; 4/4 agree",
+   "verdict": "tie (gleichauf): Holm p 0.090 >= 0.05, although the sign agrees in 4/4 splits (row-level DeLong p 6e-7, anti-conservative)"
+  },
+  {
+   "comparison": "a3: zs:global_full - clock, time-matched (plan)",
+   "estimate": "+0.103 [+0.017, +0.188]",
+   "p_raw": 0.0216,
+   "p_holm": 0.2,
+   "split_signs": "test_id +0.131, ood_family +0.124, ood_seed -0.003, branch +0.008; 3/4 agree",
+   "verdict": "tie (gleichauf): Holm p 0.200"
+  },
+  {
+   "comparison": "a4: gnn5 - clock, time-matched (plan)",
+   "estimate": "+0.053 [-0.048, +0.155]",
+   "p_raw": 0.2992,
+   "p_holm": 1,
+   "split_signs": "test_id +0.183, ood_family +0.071, ood_seed -0.218, branch -0.020; 2/4 agree",
+   "verdict": "tie (gleichauf): Holm p 1.000 and the sign criterion fails (2/4)"
+  },
+  {
+   "comparison": "a5: hybrid - clock, time-matched (plan)",
+   "estimate": "+0.101 [+0.015, +0.193]",
+   "p_raw": 0.02,
+   "p_holm": 0.2,
+   "split_signs": "test_id +0.175, ood_family +0.116, ood_seed -0.031, branch -0.007; 2/4 agree",
+   "verdict": "tie (gleichauf): Holm p 0.200 and the sign criterion fails (2/4)"
+  },
+  {
+   "comparison": "b1: gnn5 - bag+graph, pooled AUROC",
+   "estimate": "+0.004 [-0.036, +0.046]",
+   "p_raw": 0.8336,
+   "p_holm": 1,
+   "split_signs": "test_id +0.019, ood_family +0.008, ood_seed -0.016, branch -0.007; 2/4 agree",
+   "verdict": "tie (gleichauf): Holm p 1.000, 2/4 splits"
+  },
+  {
+   "comparison": "b2: hybrid - bag+graph, pooled AUROC",
+   "estimate": "+0.020 [-0.005, +0.045]",
+   "p_raw": 0.1116,
+   "p_holm": 0.7808,
+   "split_signs": "test_id +0.020, ood_family +0.037, ood_seed +0.026, branch -0.009; 3/4 agree",
+   "verdict": "tie (gleichauf): Holm p 0.781"
+  },
+  {
+   "comparison": "b3: zs:pairwise - bag+graph, pooled AUROC",
+   "estimate": "+0.042 [-0.008, +0.096]",
+   "p_raw": 0.0976,
+   "p_holm": 0.7808,
+   "split_signs": "test_id -0.030, ood_family +0.081, ood_seed +0.083, branch +0.060; 3/4 agree",
+   "verdict": "tie (gleichauf): Holm p 0.781"
+  },
+  {
+   "comparison": "b4: zs:pairwise - gnn5, pooled AUROC",
+   "estimate": "+0.038 [-0.025, +0.105]",
+   "p_raw": 0.227,
+   "p_holm": 1,
+   "split_signs": "test_id -0.049, ood_family +0.073, ood_seed +0.099, branch +0.066; 3/4 agree",
+   "verdict": "tie (gleichauf): Holm p 1.000"
+  },
+  {
+   "comparison": "b5: zs:pairwise - hybrid, pooled AUROC",
+   "estimate": "+0.022 [-0.030, +0.075]",
+   "p_raw": 0.3794,
+   "p_holm": 1,
+   "split_signs": "test_id -0.050, ood_family +0.044, ood_seed +0.057, branch +0.069; 3/4 agree",
+   "verdict": "tie (gleichauf): Holm p 1.000"
+  },
+  {
+   "comparison": "b6: zs:global_full - bag+graph, pooled AUROC",
+   "estimate": "+0.003 [-0.050, +0.058]",
+   "p_raw": 0.8516,
+   "p_holm": 1,
+   "split_signs": "test_id -0.028, ood_family -0.004, ood_seed +0.066, branch -0.003; 1/4 agree",
+   "verdict": "tie (gleichauf): Holm p 1.000, 1/4 splits"
+  }
+ ],
+ "secondary": [
+  {
+   "comparison": "SENSITIVITY family (a) with harness tAUROC (round bins): bag+graph - clock",
+   "estimate": "+0.191 [+0.105, +0.270]",
+   "p_raw": 0.0001,
+   "note": "p at the 1/B floor; 4/4 splits. With round bins the clock is 0.530, not 0.716."
+  },
+  {
+   "comparison": "SENSITIVITY harness tAUROC: zs:pairwise - clock",
+   "estimate": "+0.257 [+0.165, +0.349]",
+   "p_raw": 0.0001,
+   "note": "4/4 splits"
+  },
+  {
+   "comparison": "SENSITIVITY harness tAUROC: zs:global_full - clock",
+   "estimate": "+0.204 [+0.096, +0.307]",
+   "p_raw": 0.0002,
+   "note": "4/4 splits"
+  },
+  {
+   "comparison": "SENSITIVITY harness tAUROC: gnn5 - clock",
+   "estimate": "+0.209 [+0.121, +0.288]",
+   "p_raw": 0.0001,
+   "note": "4/4 splits"
+  },
+  {
+   "comparison": "SENSITIVITY harness tAUROC: hybrid - clock",
+   "estimate": "+0.222 [+0.132, +0.305]",
+   "p_raw": 0.0001,
+   "note": "4/4 splits. The RQ2 verdict flips with the time-matching definition."
+  },
+  {
+   "comparison": "gnn5 - tab_mem, pooled AUROC",
+   "estimate": "+0.005 [-0.043, +0.055]",
+   "p_raw": 0.817,
+   "note": "post hoc (tab_mem in place of bag+graph); 2/4 splits"
+  },
+  {
+   "comparison": "hybrid - tab_mem, pooled AUROC",
+   "estimate": "+0.021 [-0.005, +0.049]",
+   "p_raw": 0.1206,
+   "note": "post hoc; 4/4 splits"
+  },
+  {
+   "comparison": "zs:pairwise - tab_mem, pooled AUROC",
+   "estimate": "+0.043 [-0.006, +0.096]",
+   "p_raw": 0.0812,
+   "note": "post hoc; 3/4 splits (test_id -0.023)"
+  },
+  {
+   "comparison": "tab_mem - clock, time-matched (plan)",
+   "estimate": "+0.088 [-0.012, +0.187]",
+   "p_raw": 0.0904,
+   "note": "post hoc extra; 2/4 splits"
+  },
+  {
+   "comparison": "zs:agent - zs:pairwise, pooled AUROC",
+   "estimate": "-0.006 [-0.021, +0.009]",
+   "p_raw": 0.4832,
+   "note": "post hoc; time-matched -0.002 [-0.024, +0.016], p 0.774"
+  },
+  {
+   "comparison": "zs:agent - hybrid, pooled AUROC",
+   "estimate": "+0.017 [-0.033, +0.066]",
+   "p_raw": 0.4714,
+   "note": "post hoc; time-matched +0.018 [-0.044, +0.069], p 0.505; test_id -0.052, the three OOD splits positive"
+  },
+  {
+   "comparison": "zs:pairwise - zs:global_full, pooled AUROC",
+   "estimate": "+0.039 [-0.004, +0.082]",
+   "p_raw": 0.071,
+   "note": "secondary (RQ3), not in the family; time-matched +0.019 [-0.025, +0.070], p 0.416; 3/4 splits"
+  },
+  {
+   "comparison": "OOD pooled (ood_family+ood_seed+branch, 24 configs): bag+graph - clock, time-matched",
+   "estimate": "+0.043 [-0.067, +0.149]",
+   "p_raw": 0.4714,
+   "note": "bootstrap over the 24 OOD configs"
+  },
+  {
+   "comparison": "OOD pooled: zs:pairwise - clock, time-matched",
+   "estimate": "+0.115 [+0.014, +0.216]",
+   "p_raw": 0.0206,
+   "note": "uncorrected"
+  },
+  {
+   "comparison": "OOD pooled: zs:global_full - clock, time-matched",
+   "estimate": "+0.081 [-0.010, +0.172]",
+   "p_raw": 0.0854
+  },
+  {
+   "comparison": "OOD pooled: gnn5 - clock, time-matched",
+   "estimate": "-0.006 [-0.128, +0.102]",
+   "p_raw": 0.941
+  },
+  {
+   "comparison": "OOD pooled: hybrid - clock, time-matched",
+   "estimate": "+0.057 [-0.048, +0.154]",
+   "p_raw": 0.2852
+  },
+  {
+   "comparison": "OOD pooled: gnn5 - bag+graph, pooled AUROC",
+   "estimate": "-0.009 [-0.067, +0.050]",
+   "p_raw": 0.7612
+  },
+  {
+   "comparison": "OOD pooled: hybrid - bag+graph",
+   "estimate": "+0.016 [-0.020, +0.051]",
+   "p_raw": 0.3676
+  },
+  {
+   "comparison": "OOD pooled: zs:pairwise - bag+graph",
+   "estimate": "+0.088 [+0.029, +0.149]",
+   "p_raw": 0.0026,
+   "note": "uncorrected; the OOD/ID split is not a pre-registered test"
+  },
+  {
+   "comparison": "OOD pooled: zs:pairwise - gnn5",
+   "estimate": "+0.097 [+0.016, +0.182]",
+   "p_raw": 0.0198,
+   "note": "uncorrected"
+  },
+  {
+   "comparison": "OOD pooled: zs:pairwise - hybrid",
+   "estimate": "+0.073 [+0.008, +0.137]",
+   "p_raw": 0.0292,
+   "note": "uncorrected"
+  },
+  {
+   "comparison": "OOD pooled: zs:global_full - bag+graph",
+   "estimate": "+0.025 [-0.037, +0.091]",
+   "p_raw": 0.4408
+  },
+  {
+   "comparison": "test_id alone (12 configs): bag+graph - clock, time-matched",
+   "estimate": "+0.149 [-0.049, +0.354]",
+   "p_raw": 0.146,
+   "note": "1 of 10,000 draws undefined"
+  },
+  {
+   "comparison": "test_id: zs:pairwise - clock, time-matched",
+   "estimate": "+0.115 [-0.123, +0.349]",
+   "p_raw": 0.3514
+  },
+  {
+   "comparison": "test_id: zs:global_full - clock, time-matched",
+   "estimate": "+0.131 [-0.114, +0.380]",
+   "p_raw": 0.29
+  },
+  {
+   "comparison": "test_id: gnn5 - clock, time-matched",
+   "estimate": "+0.183 [-0.010, +0.377]",
+   "p_raw": 0.0636
+  },
+  {
+   "comparison": "test_id: hybrid - clock, time-matched",
+   "estimate": "+0.175 [-0.020, +0.369]",
+   "p_raw": 0.0764
+  },
+  {
+   "comparison": "test_id: gnn5 - bag+graph",
+   "estimate": "+0.019 [-0.029, +0.067]",
+   "p_raw": 0.3984
+  },
+  {
+   "comparison": "test_id: hybrid - bag+graph",
+   "estimate": "+0.020 [-0.007, +0.050]",
+   "p_raw": 0.142
+  },
+  {
+   "comparison": "test_id: zs:pairwise - bag+graph",
+   "estimate": "-0.030 [-0.099, +0.038]",
+   "p_raw": 0.4526
+  },
+  {
+   "comparison": "test_id: zs:pairwise - gnn5",
+   "estimate": "-0.049 [-0.118, +0.006]",
+   "p_raw": 0.1066
+  },
+  {
+   "comparison": "test_id: zs:pairwise - hybrid",
+   "estimate": "-0.050 [-0.115, +0.004]",
+   "p_raw": 0.0828,
+   "note": "in distribution the GNN models lead"
+  },
+  {
+   "comparison": "test_id: zs:global_full - bag+graph",
+   "estimate": "-0.028 [-0.120, +0.057]",
+   "p_raw": 0.6685
+  },
+  {
+   "comparison": "comb(zs:pairwise+hybrid, mean of ranks) - zs:pairwise, pooled AUROC",
+   "estimate": "+0.006 [-0.021, +0.035]",
+   "p_raw": 0.6666,
+   "note": "exploratory, post hoc, ranks over held-out rows; time-matched +0.011 [-0.015, +0.043], p 0.445; 1/4 splits"
+  },
+  {
+   "comparison": "comb(zs:pairwise+hybrid) - hybrid, pooled AUROC",
+   "estimate": "+0.029 [+0.004, +0.056]",
+   "p_raw": 0.0238,
+   "note": "exploratory, post hoc; time-matched +0.031 [+0.004, +0.064], p 0.024; 3/4 splits"
+  },
+  {
+   "comparison": "zs:agent - clock, time-matched (plan)",
+   "estimate": "+0.119 [+0.028, +0.209]",
+   "p_raw": 0.0144,
+   "note": "extra, not in the family; 4/4 splits"
+  },
+  {
+   "comparison": "zs:global_window - clock, time-matched",
+   "estimate": "+0.099 [+0.012, +0.186]",
+   "p_raw": 0.025,
+   "note": "extra; 3/4"
+  },
+  {
+   "comparison": "edge - clock, time-matched",
+   "estimate": "+0.076 [-0.012, +0.150]",
+   "p_raw": 0.0918,
+   "note": "extra; 3/4"
+  },
+  {
+   "comparison": "CHECK tab_mem refit here - committed tab_mem, pooled AUROC",
+   "estimate": "+0.002 [-0.003, +0.007]",
+   "p_raw": 0.3654,
+   "note": "refit noise that the refit bag+graph also carries"
+  },
+  {
+   "comparison": "Lead time (primary predictors; harness definition, training 5%-FPR threshold)",
+   "estimate": "tipped runs alarmed before tip / median lead [IQR] / untipped runs with a false alarm: clock 36/52, 3 [2,5], 48/48; bag+graph 28/52, 4.5 [2,6.25], 20/48; zs:pairwise 25/52, 2 [1,5], 10/48; zs:global_full 17/52, 3 [1,4], 11/48; gnn5 28/52, 5 [2.75,7], 14/48; hybrid 28/52, 5.5 [3,6.25], 15/48",
+   "note": "tab_mem 27/52, 5, 14/48; edge 29/52, 4, 14/48; zs:agent 22/52, 5, 14/48; oracle 48/52, 5, 14/48"
+  }
+ ],
+ "caveats": [
+  "One GNN test look was already used. The GNN team looked once at these splits with these exact prediction files (LOOKS.md, test 1 of 2) and published the AUROCs, so the GNN's held-out performance was known before this analysis; nothing here was tuned. Plan §0 also says LLM protocol (b) on the held-out splits was evaluated earlier (68744e2).",
+  "Deviation from the given file list: the committed gnn_opt/preds/eval hgb_bag+graph.csv, hgb_clock.csv and oracle_risk+clock.csv cover night_val only (720 rows, 0 held-out rows). I refit them on night_train with the harness's baselines.py specs. clock and oracle reproduce the committed val predictions bit for bit (so does the edge monitor). bag+graph does not: val AUROC 0.9009 vs 0.9022, because table.csv features differ at float32 level (max 2e-5) and land on HGB bin edges. The same refit of tab_mem moves its held-out AUROC by +0.002 [-0.003, +0.007], so bag+graph carries refit noise of that size.",
+  "The time-matching definition decides RQ2. With the plan's rounds-to-cut bins the clock alone reaches 0.716 (0.635 on night_train CV). At equal rounds-to-cut, late-deadline configs sit at later absolute rounds, and in the two earliest bins (66% of the pairs) almost all positives come from cut 23/26 configs. With the harness round bins the clock is 0.530, and all five monitors beat it (+0.19 to +0.26, p <= 0.0002, 4/4 splits). Under the pre-registered plan definition, nothing survives Holm.",
+  "LLM monitors read raw message text, including task words. The headline GNN and tabular models exclude the task lexicon, so the information sets differ.",
+  "zs:global_full sees an implicit clock (the full transcript). Its Spearman correlation with the round is 0.83 on held-out rows, the highest of any predictor (clock 0.73), so its pooled AUROC partly reflects time.",
+  "Haiku is also one of the two jury judges (DeepSeek + Haiku) behind the GNN and tabular features. The GNN-vs-LLM comparison is therefore not between independent information sources.",
+  "In ood_seed the trigger (injection via tool output) is not in the communication. Within round bins the trained monitors are near chance there (harness tAUROC 0.535-0.564); the zero-shot monitors reach 0.64-0.70.",
+  "Few configs per split: 12/8/8/8, and only 7/4/7/5 hold a positive. Per-split signs and the >=3/4 rule are fragile: a1 reaches 3/4 only through branch +0.0005. The within-mixed statistic rests on 9 configs and 45 positives (CI widths 0.24-0.56). A percentile cluster bootstrap with 36 clusters may be somewhat too narrow; that cannot change the null verdicts, but it means the uncorrected secondary p-values should not be read strictly.",
+  "Robustness of the null result: split-stratified bootstrap gives smallest Holm p 0.059, and bootstrap seeds 1-3 give smallest Holm p 0.081-0.092. Row-level DeLong would call 7 of the 11 primary tests significant; the cluster/DeLong SE ratio is 1.3-2.1, so DeLong is anti-conservative here.",
+  "Thresholds come from different pools. Trained models use night_train ID-OOF CV predictions, and for gnn5/hybrid that is the GNN team's 4-run CV proxy, not the 5-seed final model. Zero-shot monitors use night_train+night_val raw scores. Realised held-out row FPRs range 0.029-0.094, so the recalls are not at equal FPR. Raw zero-shot scores are uncalibrated (Brier not comparable).",
+  "The zero-shot prompt was frozen on 8 night_train dev runs: untrained, but not blind to the training split.",
+  "Deviations from plan §5, made by instruction: rows are the GNN harness rows (branch prefixes once) instead of llm_monitor.evaluate's (prefixes three times), and the GNN models were trained on night_train only, not refit on train+val. Plan criterion 1 (the CV CI) is not evaluated here; the Holm-corrected held-out bootstrap replaces it.",
+  "The mean-of-ranks combination is exploratory and post hoc. It is transductive in the ranks (uses the held-out score distribution, no labels)."
+ ],
+ "script_paths": [
+  "/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/heldout/scripts/analysis.py",
+  "/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/heldout/scripts/hlib.py",
+  "/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/heldout/scripts/regen_baselines.py",
+  "/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/heldout/scripts/check_regen.py",
+  "/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/heldout/scripts/check_table.py",
+  "/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/heldout/scripts/diagnostics.py",
+  "/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/heldout/scripts/make_report.py",
+  "/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/heldout/scripts/explore.py",
+  "/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/stat/repo/gnn_opt/evaluate.py (harness, run unchanged with test_look.sh arguments -> heldout/out/harness_repro_y3.txt/.csv)",
+  "/private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/heldout/out/results.json (all numbers), out/diagnostics.json, out/table_predictors.csv, out/table_primary.csv, out/table_secondary.csv"
+ ]
+}

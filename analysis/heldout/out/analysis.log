@@ -1,0 +1,106 @@
+held-out rows 2338, positives 156, prevalence 0.0667, configs 36, runs 100
+rows per split: {"test_id": {"rows": 896, "pos": 54, "prev": 0.060267857142857144, "cfgs": 12, "runs": 36, "tipped_runs": 18, "cfgs_with_pos": 7, "excluded_branch_prefix_rows_eval0_labelled": 0}, "ood_family": {"rows": 569, "pos": 33, "prev": 0.05799648506151142, "cfgs": 8, "runs": 24, "tipped_runs": 11, "cfgs_with_pos": 4, "excluded_branch_prefix_rows_eval0_labelled": 0}, "ood_seed": {"rows": 349, "pos": 36, "prev": 0.10315186246418338, "cfgs": 8, "runs": 16, "tipped_runs": 12, "cfgs_with_pos": 7, "excluded_branch_prefix_rows_eval0_labelled": 0}, "branch": {"rows": 524, "pos": 33, "prev": 0.06297709923664122, "cfgs": 8, "runs": 24, "tipped_runs": 11, "cfgs_with_pos": 5, "excluded_branch_prefix_rows_eval0_labelled": 80}, "pooled": {"rows": 2338, "pos": 156, "prev": 0.06672369546621043, "cfgs": 36, "runs": 100, "tipped_runs": 52, "cfgs_with_pos": 23, "excluded_branch_prefix_rows_eval0_labelled": 80}}
+mixed configs (held-out runs tipped and untipped): 9 -> {'test_id': 3, 'ood_family': 1, 'ood_seed': 2, 'branch': 3}; harness schema (control arms only): 6; llm _base: 9
+  clock                missing 0  NaN 0  distinct 20  <- /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/heldout/preds/regen/hgb_clock.csv
+  bag+graph            missing 0  NaN 0  distinct 2036  <- /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/heldout/preds/regen/hgb_bag+graph.csv
+  tab_mem              missing 0  NaN 0  distinct 2051  <- /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/heldout/preds/eval/hgb_bag+graph+mem__allsplits.csv
+  edge                 missing 0  NaN 0  distinct 1619  <- /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/heldout/preds/eval/edge_monitor_top3__allsplits.csv
+  gnn5                 missing 0  NaN 0  distinct 2149  <- /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/heldout/preds/eval/cloud_final_gnn.csv
+  hybrid               missing 0  NaN 0  distinct 2149  <- /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/heldout/preds/eval/cloud_final.csv
+  zs:pairwise          missing 0  NaN 0  distinct 32  <- /Users/mauricio/sim_local/apart_ana/data/llm_monitor/pairwise/snapshots.csv:zs_tip
+  zs:global_full       missing 0  NaN 0  distinct 150  <- /Users/mauricio/sim_local/apart_ana/data/llm_monitor/global_full/snapshots.csv:zs_tip
+  zs:global_window     missing 0  NaN 0  distinct 27  <- /Users/mauricio/sim_local/apart_ana/data/llm_monitor/global_window/snapshots.csv:zs_tip
+  zs:agent             missing 0  NaN 0  distinct 39  <- /Users/mauricio/sim_local/apart_ana/data/llm_monitor/agent/snapshots.csv:zs_tip
+  oracle               missing 0  NaN 0  distinct 157  <- /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/heldout/preds/regen/oracle_risk+clock.csv
+  tab_mem(refit here)  missing 0  NaN 0  distinct 2041  <- /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/heldout/preds/regen/hgb_bag+graph+mem.csv
+  thr clock                0.120745  from night_train ID-OOF (hgb_clock.csv, repeat mean)  (n=3370, train FPR 0.0488)
+  thr bag+graph            0.136285  from night_train ID-OOF (hgb_bag+graph.csv, repeat mean)  (n=3370, train FPR 0.0498)
+  thr tab_mem              0.136305  from night_train ID-OOF (hgb_bag+graph+mem.csv, repeat mean)  (n=3370, train FPR 0.0498)
+  thr edge                 0.32634  from night_train ID-OOF (edge_monitor_top3.csv, repeat mean)  (n=3370, train FPR 0.0498)
+  thr gnn5                 0.313991  from night_train ID-OOF (cloud_final_gnn.csv, repeat mean)  (n=3370, train FPR 0.0498)
+  thr hybrid               0.143105  from night_train ID-OOF (cloud_final.csv, repeat mean)  (n=3370, train FPR 0.0498)
+  thr zs:pairwise          0.88  from night_train + night_val eval rows (raw zero-shot score)  (n=4050, train FPR 0.0469)
+  thr zs:global_full       0.65  from night_train + night_val eval rows (raw zero-shot score)  (n=4050, train FPR 0.0474)
+  thr zs:global_window     0.55  from night_train + night_val eval rows (raw zero-shot score)  (n=4050, train FPR 0.0471)
+  thr zs:agent             0.92  from night_train + night_val eval rows (raw zero-shot score)  (n=4050, train FPR 0.0395)
+  thr oracle               0.116228  from night_train ID-OOF (oracle_risk+clock.csv, repeat mean)  (n=3370, train FPR 0.0498)
+  thr tab_mem(refit here)  0.136305  from night_train ID-OOF (hgb_bag+graph+mem.csv, repeat mean)  (n=3370, train FPR 0.0498)
+engine vs sklearn/harness/llm_monitor on the full sample: max |diff| 1.11e-16
+engine vs materialised resamples (AUROC, both time-matched, mixed, AUPRC): max |diff| 1.11e-16
+  repro hybrid   pooled+splits [0.832, 0.922, 0.823, 0.785, 0.728] vs [0.832, 0.922, 0.823, 0.785, 0.728]; CI(seed0,1000) [0.782, 0.885] vs (0.782, 0.885); AUPRC/tAUROC/R@5 [0.301, 0.752, 0.372] vs (0.301, 0.752, 0.372); lead [0.538, 5.5, 0.312] vs (0.54, 5.5, 0.31)
+  repro gnn5     pooled+splits [0.817, 0.921, 0.794, 0.744, 0.731] vs [0.817, 0.921, 0.794, 0.744, 0.731]; CI(seed0,1000) [0.756, 0.877] vs (0.756, 0.877); AUPRC/tAUROC/R@5 [0.309, 0.739, 0.417] vs (0.309, 0.739, 0.417); lead [0.538, 5.0, 0.292] vs (0.54, 5.0, 0.29)
+  repro tab_mem  pooled+splits [0.811, 0.895, 0.807, 0.78, 0.699] vs [0.811, 0.895, 0.807, 0.78, 0.699]; CI(seed0,1000) [0.760, 0.861] vs (0.76, 0.861); AUPRC/tAUROC/R@5 [0.252, 0.718, 0.25] vs (0.252, 0.718, 0.25); lead [0.519, 5.0, 0.292] vs (0.52, 5.0, 0.29)
+  repro edge     pooled+splits [0.8, 0.837, 0.812, 0.78, 0.728] vs [0.8, 0.837, 0.812, 0.78, 0.728]; CI(seed0,1000) [0.757, 0.847] vs (0.757, 0.847); AUPRC/tAUROC/R@5 [0.211, 0.682, 0.288] vs (0.211, 0.682, 0.288); lead [0.558, 4.0, 0.292] vs (0.56, 4.0, 0.29)
+  repro hybrid-gnn5: [-0.007, 0.016, 0.041] share>0 0.905 vs published (-0.007, 0.016, 0.041)
+  repro hybrid-tab_mem: [-0.006, 0.021, 0.051] share>0 0.932 vs published (-0.006, 0.021, 0.051)
+  repro hybrid-edge: [-0.011, 0.032, 0.078] share>0 0.934 vs published (-0.011, 0.032, 0.078)
+  my AUROC/AUPRC/tAUROC/R@5%FPR vs harness evaluate.py (pooled + 4 splits, 4 models): max |diff| 0.00e+00
+  clock                AUROC 0.781 [0.714,0.841]  tm_plan 0.716  tm_harness 0.530  mixed 0.682  AUPRC 0.176  test_id 0.847  ood_family 0.659  ood_seed 0.816  branch 0.776  R@5 0.128 (FPR 0.029)
+  bag+graph            AUROC 0.812 [0.759,0.861]  tm_plan 0.797  tm_harness 0.721  mixed 0.647  AUPRC 0.260  test_id 0.902  ood_family 0.786  ood_seed 0.759  branch 0.737  R@5 0.276 (FPR 0.048)
+  tab_mem              AUROC 0.811 [0.756,0.860]  tm_plan 0.804  tm_harness 0.718  mixed 0.642  AUPRC 0.252  test_id 0.895  ood_family 0.807  ood_seed 0.780  branch 0.699  R@5 0.250 (FPR 0.044)
+  edge                 AUROC 0.800 [0.753,0.841]  tm_plan 0.792  tm_harness 0.682  mixed 0.591  AUPRC 0.211  test_id 0.837  ood_family 0.812  ood_seed 0.780  branch 0.728  R@5 0.288 (FPR 0.048)
+  gnn5                 AUROC 0.817 [0.756,0.873]  tm_plan 0.769  tm_harness 0.739  mixed 0.639  AUPRC 0.309  test_id 0.921  ood_family 0.794  ood_seed 0.744  branch 0.731  R@5 0.417 (FPR 0.054)
+  hybrid               AUROC 0.832 [0.782,0.881]  tm_plan 0.818  tm_harness 0.752  mixed 0.647  AUPRC 0.301  test_id 0.922  ood_family 0.823  ood_seed 0.785  branch 0.728  R@5 0.372 (FPR 0.063)
+  zs:pairwise          AUROC 0.855 [0.808,0.899]  tm_plan 0.838  tm_harness 0.787  mixed 0.820  AUPRC 0.273  test_id 0.872  ood_family 0.867  ood_seed 0.842  branch 0.797  R@5 0.333 (FPR 0.045)
+  zs:global_full       AUROC 0.816 [0.759,0.869]  tm_plan 0.819  tm_harness 0.734  mixed 0.747  AUPRC 0.245  test_id 0.875  ood_family 0.782  ood_seed 0.825  branch 0.734  R@5 0.212 (FPR 0.032)
+  zs:global_window     AUROC 0.829 [0.780,0.875]  tm_plan 0.816  tm_harness 0.735  mixed 0.733  AUPRC 0.261  test_id 0.868  ood_family 0.829  ood_seed 0.829  branch 0.751  R@5 0.173 (FPR 0.031)
+  zs:agent             AUROC 0.849 [0.803,0.893]  tm_plan 0.836  tm_harness 0.771  mixed 0.834  AUPRC 0.234  test_id 0.870  ood_family 0.848  ood_seed 0.829  branch 0.801  R@5 0.263 (FPR 0.054)
+  oracle               AUROC 0.908 [0.872,0.945]  tm_plan 0.872  tm_harness 0.870  mixed 0.876  AUPRC 0.590  test_id 0.925  ood_family 0.896  ood_seed 0.922  branch 0.875  R@5 0.788 (FPR 0.094)
+  comb:pairwise+hybrid AUROC 0.861 [0.817,0.904]  tm_plan 0.849  tm_harness 0.798  mixed 0.770  AUPRC 0.328  test_id 0.911  ood_family 0.862  ood_seed 0.824  branch 0.788
+  tab_mem(refit here)  AUROC 0.813 [0.760,0.861]  tm_plan 0.807  tm_harness 0.721  mixed 0.621  AUPRC 0.255  test_id 0.897  ood_family 0.801  ood_seed 0.787  branch 0.704  R@5 0.256 (FPR 0.048)
+PRIMARY
+        bag+graph - clock      tm_plan  +0.080 [-0.012,+0.178] p 0.0998 Holm 0.7808 | strat-boot p 0.0840 | DeLong p 0.0035 | splits test_id:+0.149 ood_family:+0.090 ood_seed:-0.038 branch:+0.000 -> 3/4 | tie (gleichauf): Holm p = 0.781 >= 0.05; sign in 3/4 splits
+      zs:pairwise - clock      tm_plan  +0.121 [+0.032,+0.213] p 0.0082 Holm 0.0902 | strat-boot p 0.0054 | DeLong p 6.4e-07 | splits test_id:+0.115 ood_family:+0.157 ood_seed:+0.050 branch:+0.034 -> 4/4 | tie (gleichauf): Holm p = 0.090 >= 0.05; sign in 4/4 splits
+   zs:global_full - clock      tm_plan  +0.103 [+0.017,+0.188] p 0.0216 Holm 0.2000 | strat-boot p 0.0192 | DeLong p 9.5e-06 | splits test_id:+0.131 ood_family:+0.124 ood_seed:-0.003 branch:+0.008 -> 3/4 | tie (gleichauf): Holm p = 0.200 >= 0.05; sign in 3/4 splits
+             gnn5 - clock      tm_plan  +0.053 [-0.048,+0.155] p 0.2992 Holm 1.0000 | strat-boot p 0.2412 | DeLong p 0.082 | splits test_id:+0.183 ood_family:+0.071 ood_seed:-0.218 branch:-0.020 -> 2/4 | tie (gleichauf): Holm p = 1.000 >= 0.05; sign in 2/4 splits
+           hybrid - clock      tm_plan  +0.101 [+0.015,+0.193] p 0.0200 Holm 0.2000 | strat-boot p 0.0084 | DeLong p 4e-05 | splits test_id:+0.175 ood_family:+0.116 ood_seed:-0.031 branch:-0.007 -> 2/4 | tie (gleichauf): Holm p = 0.200 >= 0.05; sign in 2/4 splits
+             gnn5 - bag+graph  pooled   +0.004 [-0.036,+0.046] p 0.8336 Holm 1.0000 | strat-boot p 0.8326 | DeLong p 0.76 | splits test_id:+0.019 ood_family:+0.008 ood_seed:-0.016 branch:-0.007 -> 2/4 | tie (gleichauf): Holm p = 1.000 >= 0.05; sign in 2/4 splits
+           hybrid - bag+graph  pooled   +0.020 [-0.005,+0.045] p 0.1116 Holm 0.7808 | strat-boot p 0.1066 | DeLong p 0.039 | splits test_id:+0.020 ood_family:+0.037 ood_seed:+0.026 branch:-0.009 -> 3/4 | tie (gleichauf): Holm p = 0.781 >= 0.05; sign in 3/4 splits
+      zs:pairwise - bag+graph  pooled   +0.042 [-0.008,+0.096] p 0.0976 Holm 0.7808 | strat-boot p 0.0778 | DeLong p 0.0061 | splits test_id:-0.030 ood_family:+0.081 ood_seed:+0.083 branch:+0.060 -> 3/4 | tie (gleichauf): Holm p = 0.781 >= 0.05; sign in 3/4 splits
+      zs:pairwise - gnn5       pooled   +0.038 [-0.025,+0.105] p 0.2270 Holm 1.0000 | strat-boot p 0.2046 | DeLong p 0.015 | splits test_id:-0.049 ood_family:+0.073 ood_seed:+0.099 branch:+0.066 -> 3/4 | tie (gleichauf): Holm p = 1.000 >= 0.05; sign in 3/4 splits
+      zs:pairwise - hybrid     pooled   +0.022 [-0.030,+0.075] p 0.3794 Holm 1.0000 | strat-boot p 0.3378 | DeLong p 0.092 | splits test_id:-0.050 ood_family:+0.044 ood_seed:+0.057 branch:+0.069 -> 3/4 | tie (gleichauf): Holm p = 1.000 >= 0.05; sign in 3/4 splits
+   zs:global_full - bag+graph  pooled   +0.003 [-0.050,+0.058] p 0.8516 Holm 1.0000 | strat-boot p 0.8480 | DeLong p 0.83 | splits test_id:-0.028 ood_family:-0.004 ood_seed:+0.066 branch:-0.003 -> 1/4 | tie (gleichauf): Holm p = 1.000 >= 0.05; sign in 1/4 splits
+SECONDARY
+  [post hoc: tab_mem (hgb_bag+graph+mem) in]                 gnn5 - tab_mem        pooled   +0.005 [-0.043,+0.055] p 0.8170 (valid draws 10000) splits test_id:+0.026 ood_family:-0.014 ood_seed:-0.036 branch:+0.032 -> 2/4
+  [post hoc: tab_mem (hgb_bag+graph+mem) in]               hybrid - tab_mem        pooled   +0.021 [-0.005,+0.049] p 0.1206 (valid draws 10000) splits test_id:+0.027 ood_family:+0.016 ood_seed:+0.006 branch:+0.029 -> 4/4
+  [post hoc: tab_mem (hgb_bag+graph+mem) in]          zs:pairwise - tab_mem        pooled   +0.043 [-0.006,+0.096] p 0.0812 (valid draws 10000) splits test_id:-0.023 ood_family:+0.060 ood_seed:+0.063 branch:+0.098 -> 3/4
+  [post hoc: tab_mem vs clock, time-matched]              tab_mem - clock          tm_plan  +0.088 [-0.012,+0.187] p 0.0904 (valid draws 10000) splits test_id:+0.146 ood_family:+0.109 ood_seed:-0.012 branch:-0.032 -> 2/4
+  [post hoc: zs:agent (agent-level LLM vari]             zs:agent - zs:pairwise    pooled   -0.006 [-0.021,+0.009] p 0.4832 (valid draws 10000) splits test_id:-0.002 ood_family:-0.019 ood_seed:-0.013 branch:+0.004 -> 3/4
+  [post hoc: zs:agent, time-matched        ]             zs:agent - zs:pairwise    tm_plan  -0.002 [-0.024,+0.016] p 0.7738 (valid draws 10000) splits test_id:-0.035 ood_family:-0.009 ood_seed:-0.032 branch:+0.015 -> 3/4
+  [post hoc: zs:agent (agent-level LLM vari]             zs:agent - hybrid         pooled   +0.017 [-0.033,+0.066] p 0.4714 (valid draws 10000) splits test_id:-0.052 ood_family:+0.025 ood_seed:+0.044 branch:+0.073 -> 3/4
+  [post hoc: zs:agent, time-matched        ]             zs:agent - hybrid         tm_plan  +0.018 [-0.044,+0.069] p 0.5054 (valid draws 10000) splits test_id:-0.095 ood_family:+0.032 ood_seed:+0.050 branch:+0.056 -> 3/4
+  [secondary (RQ3, not in the Holm family) ]          zs:pairwise - zs:global_full pooled   +0.039 [-0.004,+0.082] p 0.0710 (valid draws 10000) splits test_id:-0.003 ood_family:+0.084 ood_seed:+0.017 branch:+0.063 -> 3/4
+  [secondary (RQ3), time-matched           ]          zs:pairwise - zs:global_full tm_plan  +0.019 [-0.025,+0.070] p 0.4158 (valid draws 10000) splits test_id:-0.016 ood_family:+0.033 ood_seed:+0.054 branch:+0.026 -> 3/4
+  [secondary: primary difference on the OOD]            bag+graph - clock          tm_plan  +0.043 [-0.067,+0.149] p 0.4714 (valid draws 10000)
+  [secondary: primary difference on the OOD]          zs:pairwise - clock          tm_plan  +0.115 [+0.014,+0.216] p 0.0206 (valid draws 10000)
+  [secondary: primary difference on the OOD]       zs:global_full - clock          tm_plan  +0.081 [-0.010,+0.172] p 0.0854 (valid draws 10000)
+  [secondary: primary difference on the OOD]                 gnn5 - clock          tm_plan  -0.006 [-0.128,+0.102] p 0.9410 (valid draws 10000)
+  [secondary: primary difference on the OOD]               hybrid - clock          tm_plan  +0.057 [-0.048,+0.154] p 0.2852 (valid draws 10000)
+  [secondary: primary difference on the OOD]                 gnn5 - bag+graph      pooled   -0.009 [-0.067,+0.050] p 0.7612 (valid draws 10000)
+  [secondary: primary difference on the OOD]               hybrid - bag+graph      pooled   +0.016 [-0.020,+0.051] p 0.3676 (valid draws 10000)
+  [secondary: primary difference on the OOD]          zs:pairwise - bag+graph      pooled   +0.088 [+0.029,+0.149] p 0.0026 (valid draws 10000)
+  [secondary: primary difference on the OOD]          zs:pairwise - gnn5           pooled   +0.097 [+0.016,+0.182] p 0.0198 (valid draws 10000)
+  [secondary: primary difference on the OOD]          zs:pairwise - hybrid         pooled   +0.073 [+0.008,+0.137] p 0.0292 (valid draws 10000)
+  [secondary: primary difference on the OOD]       zs:global_full - bag+graph      pooled   +0.025 [-0.037,+0.091] p 0.4408 (valid draws 10000)
+  [secondary: primary difference on test_id]            bag+graph - clock          tm_plan  +0.149 [-0.049,+0.354] p 0.1460 (valid draws 9999)
+  [secondary: primary difference on test_id]          zs:pairwise - clock          tm_plan  +0.115 [-0.123,+0.349] p 0.3514 (valid draws 9999)
+  [secondary: primary difference on test_id]       zs:global_full - clock          tm_plan  +0.131 [-0.114,+0.380] p 0.2900 (valid draws 9999)
+  [secondary: primary difference on test_id]                 gnn5 - clock          tm_plan  +0.183 [-0.010,+0.377] p 0.0636 (valid draws 9999)
+  [secondary: primary difference on test_id]               hybrid - clock          tm_plan  +0.175 [-0.020,+0.369] p 0.0764 (valid draws 9999)
+  [secondary: primary difference on test_id]                 gnn5 - bag+graph      pooled   +0.019 [-0.029,+0.067] p 0.3984 (valid draws 9999)
+  [secondary: primary difference on test_id]               hybrid - bag+graph      pooled   +0.020 [-0.007,+0.050] p 0.1420 (valid draws 9999)
+  [secondary: primary difference on test_id]          zs:pairwise - bag+graph      pooled   -0.030 [-0.099,+0.038] p 0.4526 (valid draws 9999)
+  [secondary: primary difference on test_id]          zs:pairwise - gnn5           pooled   -0.049 [-0.118,+0.006] p 0.1066 (valid draws 9999)
+  [secondary: primary difference on test_id]          zs:pairwise - hybrid         pooled   -0.050 [-0.115,+0.004] p 0.0828 (valid draws 9999)
+  [secondary: primary difference on test_id]       zs:global_full - bag+graph      pooled   -0.028 [-0.120,+0.057] p 0.6685 (valid draws 9999)
+  [exploratory, post hoc: mean-of-ranks com] comb:pairwise+hybrid - zs:pairwise    pooled   +0.006 [-0.021,+0.035] p 0.6666 (valid draws 10000) splits test_id:+0.038 ood_family:-0.005 ood_seed:-0.018 branch:-0.009 -> 1/4
+  [exploratory, post hoc: combination, time] comb:pairwise+hybrid - zs:pairwise    tm_plan  +0.011 [-0.015,+0.043] p 0.4450 (valid draws 10000) splits test_id:+0.052 ood_family:-0.009 ood_seed:-0.021 branch:+0.021 -> 2/4
+  [exploratory, post hoc: mean-of-ranks com] comb:pairwise+hybrid - hybrid         pooled   +0.029 [+0.004,+0.056] p 0.0238 (valid draws 10000) splits test_id:-0.012 ood_family:+0.039 ood_seed:+0.039 branch:+0.060 -> 3/4
+  [exploratory, post hoc: combination, time] comb:pairwise+hybrid - hybrid         tm_plan  +0.031 [+0.004,+0.064] p 0.0244 (valid draws 10000) splits test_id:-0.009 ood_family:+0.032 ood_seed:+0.061 branch:+0.062 -> 3/4
+  [extra: other predictors vs clock, time-m]                 edge - clock          tm_plan  +0.076 [-0.012,+0.150] p 0.0918 (valid draws 10000) splits test_id:+0.040 ood_family:+0.094 ood_seed:+0.005 branch:-0.024 -> 3/4
+  [extra: other predictors vs clock, time-m]     zs:global_window - clock          tm_plan  +0.099 [+0.012,+0.186] p 0.0250 (valid draws 10000) splits test_id:+0.095 ood_family:+0.141 ood_seed:-0.029 branch:+0.026 -> 3/4
+  [extra: other predictors vs clock, time-m]             zs:agent - clock          tm_plan  +0.119 [+0.028,+0.209] p 0.0144 (valid draws 10000) splits test_id:+0.080 ood_family:+0.148 ood_seed:+0.018 branch:+0.049 -> 4/4
+  [extra: other predictors vs clock, time-m]               oracle - clock          tm_plan  +0.156 [+0.095,+0.233] p 0.0001 (valid draws 10000) splits test_id:+0.182 ood_family:+0.130 ood_seed:+0.120 branch:+0.125 -> 4/4
+  [check: refit noise (same tab_mem model r]  tab_mem(refit here) - tab_mem        pooled   +0.002 [-0.003,+0.007] p 0.3654 (valid draws 10000) splits test_id:+0.001 ood_family:-0.006 ood_seed:+0.008 branch:+0.005 -> 3/4
+  [context: bag+graph vs tab_mem (memory fe]            bag+graph - tab_mem        pooled   +0.001 [-0.021,+0.023] p 0.9162 (valid draws 10000) splits test_id:+0.007 ood_family:-0.021 ood_seed:-0.020 branch:+0.039 -> 2/4
+SE ratio cluster bootstrap / DeLong: {'gnn5 - bag+graph': 1.5, 'hybrid - bag+graph': 1.31, 'zs:pairwise - bag+graph': 1.69, 'zs:pairwise - gnn5': 2.08, 'zs:pairwise - hybrid': 2.0, 'zs:global_full - bag+graph': 1.78}

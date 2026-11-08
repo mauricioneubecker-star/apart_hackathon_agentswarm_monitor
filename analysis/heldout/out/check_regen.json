@@ -1,0 +1,17 @@
+{
+ "bag+graph_committed": {
+  "val_auroc": 0.9021956087824351
+ },
+ "bag+graph_refit": {
+  "val_auroc": 0.9009481037924152,
+  "heldout_auroc": 0.8121915321159133
+ },
+ "tab_mem_committed": {
+  "val_auroc": 0.9161676646706587,
+  "heldout_auroc": 0.8112411572539895
+ },
+ "tab_mem_refit": {
+  "val_auroc": 0.9162924151696606,
+  "heldout_auroc": 0.8133695856541868
+ }
+}

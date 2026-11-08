@@ -1,0 +1,6 @@
+train rows 3370 positives 135 | predicting 3720 snapshots
+hgb_bag+graph          ref=hgb_bag+graph.csv ref rows 720 matched 720 | max|diff| 0.104  max rel 0.986  exact-equal share 0.0014
+hgb_clock              ref=hgb_clock.csv ref rows 720 matched 720 | max|diff| 0  max rel 0  exact-equal share 1.0000
+oracle_risk+clock      ref=oracle_risk+clock.csv ref rows 720 matched 720 | max|diff| 0  max rel 0  exact-equal share 1.0000
+hgb_bag+graph+mem      ref=hgb_bag+graph+mem__allsplits.csv ref rows 3720 matched 3720 | max|diff| 0.236  max rel 1.44  exact-equal share 0.0000
+edge_monitor_top3      ref=edge_monitor_top3__allsplits.csv ref rows 3720 matched 3720 | max|diff| 0  max rel 0  exact-equal share 1.0000

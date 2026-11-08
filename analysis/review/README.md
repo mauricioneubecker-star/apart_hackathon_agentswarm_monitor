@@ -14,6 +14,7 @@ Hier liegen ihre Skripte, Text-Ausgaben und Rückgaben, damit jede zitierte Zahl
 | `findings/` | Faktencheck jeder Aussage in `FINDINGS.md` |
 | `stats-monitors/`, `stats-verify-monitors/` | GNN gegen LLM gegen Baselines auf identischen Harness-Zeilen (CV auf night_train), Holm |
 | `stats-factors/`, `stats-verify-factors/` | Design-Faktoren → Kippen: Permutationstests über Konfigurationen, Holm, logistische Regression |
+| `heldout-verify/` | Nachrechnung des Vergleichs auf den zurückgehaltenen Testzeilen (`analysis/heldout/`, `analysis/results/heldout.md`) |
 | `_agent_results/` | strukturierte Rückgaben aller Prüfer (JSON) |
 
 Hinweise:

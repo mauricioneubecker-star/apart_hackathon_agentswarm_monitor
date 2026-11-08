@@ -1,8 +1,8 @@
 # Findings: aktueller Stand fürs Paper
 
-**Stand:** 8. Nov. 2026, 19:15 · eingearbeitet: LLM-Monitore bis `68744e2`, GNN bis `aebf0e1` (gnn-opt-torch) und
-`38d1f52` (gnn-opt), unabhängige Gegenprüfung vom 8. Nov. (`analysis/review/`) · **Nächstes Update:** wenn
-`runs_vx` fertig ist
+**Stand:** 8. Nov. 2026, 19:35 · eingearbeitet: LLM-Monitore bis `68744e2`, GNN bis `aebf0e1` (gnn-opt-torch) und
+`38d1f52` (gnn-opt), Validierungslauf `5ea7874`, unabhängige Gegenprüfung vom 8. Nov. (`analysis/review/`) ·
+**Nächstes Update:** nach der Monitor-Auswertung von `night_vx`
 
 Hier stehen die wichtigsten Ergebnisse an einer Stelle, kurz und in einfacher Sprache. Die Datei erzählt die
 Geschichte des Papers. Alle Details und Zahlen stehen in den Quellen unten. Für jede Aussage mit Zahl gibt es einen
@@ -16,10 +16,12 @@ Zeichen: ✅ gesichert (getestet, CI, unabhängig nachgerechnet) · 🟡 vorläu
 
 1. In einem Schwarm aus 24 Coding-Agenten kippt in 4 von 10 Läufen der Schwarm: Mindestens 8 Agenten nutzen den
    verbotenen Shortcut. Echte Ansteckung über Nachrichten zeigt sich dabei nur beim Shortcut „Checks überspringen“.
-2. Monitore, die nur die Nachrichten lesen, sagen das Kippen 3 Runden vorher klar besser voraus als die Uhr, auch bei
-   gleichem Abstand zur Deadline.
-3. Ein LLM, das ohne jedes Training Gespräch für Gespräch liest, ist so gut wie die besten trainierten Modelle. Liest es
-   das ganze Protokoll auf einmal, ist es nicht besser als einfache gezählte Merkmale.
+2. Monitore, die nur die Nachrichten lesen, sagen das Kippen 3 Runden vorher voraus, deutlich besser als die reine
+   Rundenzahl. Ob sie auch eine Uhr schlagen, die zusätzlich die Deadline kennt, hängt auf den Testdaten davon ab, wie
+   man die Zeit abgleicht.
+3. Ein LLM, das ohne jedes Training Gespräch für Gespräch liest, ist so gut wie die besten trainierten Modelle. In
+   bekannten Setups liegt das GNN etwas vorne, unter neuen Bedingungen das LLM. Signifikant ist auf den Testdaten keiner
+   dieser Unterschiede.
 4. Die Graphstruktur selbst trägt kaum etwas bei. Neu verdrahtete Kanten kosten nichts. Es zählt, was in den Nachrichten
    steht.
 5. Schwer bleiben neue Bedingungen und die Frage, welcher von zwei gleichen Läufen kippt. Genau das prüft die
@@ -65,14 +67,18 @@ Diese Analyse ist nachträglich entstanden und gegengeprüft. Details: `analysis
 - Mindestens zwei Drittel der Nachahmer hatten vorher etwas Öffentliches gesehen: einen Post eines Regelbrechers oder
   einen Shortcut-Merge im Merge-Feed. Ob der Feed ansteckt, lässt sich nicht schätzen. Kein fair verglichener Monitor sieht ihn.
 
-## 3. Nachrichten schlagen die Uhr ✅
+## 3. Nachrichten gegen die Uhr ✅ / 🟡
 
 - Schon die Rundenzahl allein sagt das Kippen recht gut voraus, weil es meist spät im Sprint passiert. Daran muss sich
   jeder Monitor messen.
-- **Alle Monitore schlagen die Uhr klar, auch zeitgematcht**, also im Vergleich nur von Momenten mit gleichem Abstand zur
-  Deadline. Das gilt in der Kreuzvalidierung (Holm p ≈ 0,001, in 8 von 8 ausgeblendeten Bereichen). Bei anderen θ/Δ
-  gilt es für das LLM Gespräch für Gespräch und die gezählten Merkmale in allen Varianten, für das LLM mit dem ganzen
-  Protokoll nicht in allen. ⏳ Testzeilen siehe Abschnitt 6.
+- ✅ **Gegen die reine Rundenzahl gewinnen alle Monitore klar.** Vergleicht man nur Momente in derselben Runde, fällt
+  die Uhr auf Zufallsniveau, die Monitore nicht. Das gilt in der Kreuzvalidierung und auf den Testdaten (p ≤ 0,0002).
+- 🟡 **Gegen eine Uhr, die auch die Deadline kennt, wird es knapp.** Der Plan gleicht nach „Runden bis zur Deadline“ ab.
+  Dort verrät die absolute Runde, ob die Deadline früh oder spät liegt, und die Uhr erreicht auf den Testdaten 0,72.
+  Dann ist nach Holm kein Monitor signifikant besser. Am knappsten ist das LLM Gespräch für Gespräch (Holm-p 0,09).
+  Hält man Runde und Deadline gleichzeitig fest (nachträglich), liegen 4 von 5 Monitoren signifikant über der Uhr. Nur
+  das GNN allein nicht.
+- Bei anderen θ/Δ liegen das LLM Gespräch für Gespräch und die gezählten Merkmale in allen Varianten über der Uhr.
 - Könnte man die echten Verstöße zählen, käme man noch weiter. Das sieht kein Monitor. In den Nachrichten steckt viel
   Signal, aber nicht alles.
 
@@ -106,7 +112,7 @@ keine Uhr und keine Aufgabenwörter.
   (`cloud_final`). Den besten Kreuzvalidierungs-Score hat allerdings ein zweistufiges Tabellenmodell pro Agent ohne
   neuronales Netz (`gnn-opt`).
 
-## 6. Der faire Vergleich: GNN gegen LLM gegen Baselines ✅ / ⏳
+## 6. Der faire Vergleich: GNN gegen LLM gegen Baselines ✅
 
 Alle Monitore wurden auf identischen Zeilen bewertet, gepaart, mit Bootstrap über Setups und Holm-Korrektur über
 11 vorab festgelegte Tests.
@@ -117,10 +123,18 @@ Alle Monitore wurden auf identischen Zeilen bewertet, gepaart, mit Bootstrap üb
   - Die Kombination GNN + Tabellenmodell ist signifikant besser als die gezählten Merkmale. Das GNN allein ist es je nach
     GNN-Version oder nicht.
   - Das LLM, das das ganze Protokoll liest, ist gleichauf mit den gezählten Merkmalen.
-- ⏳ **Zurückgehaltene Testzeilen:** wird gerade gerechnet. Laut GNN-Team: in bekannten Setups ist das GNN stark (0,92),
-  auf neuen Bedingungen fallen alle Monitore auf 0,74–0,82.
-- Bei Injektion über Tool-Ausgaben (test_ood_seed) sieht zeitgematcht kein Monitor etwas. Der Auslöser steht nicht in der
-  Kommunikation.
+- **Zurückgehaltene Testzeilen (36 Setups, eingefrorene Modelle, Holm über 11 Tests):** Alle Monitore liegen zwischen
+  0,80 und 0,85 AUROC. Vorne liegen die LLMs Gespräch für Gespräch und Agent für Agent (beide 0,85), dann GNN + Tabelle
+  (0,83) und GNN (0,82). Die gezählten Merkmale kommen auf 0,81, die Uhr auf 0,78. **Kein Unterschied zwischen den
+  Monitoren ist nach Holm signifikant.**
+- 🟡 Explorativ: In bekannten Setups (test_id) sind GNN und GNN + Tabelle am besten (0,92). Unter neuen Bedingungen
+  (fremde Aufgabe, neuer Injektionsweg, Branch) liegt das LLM Gespräch für Gespräch vorne, gegen das GNN etwa +0,10.
+- Bei Injektion über Tool-Ausgaben (test_ood_seed) steht der Auslöser nicht in der Kommunikation. Zeitgematcht liegen
+  die trainierten Monitore dort fast bei Zufall, die LLM-Monitore etwas darüber.
+- **Praktisch:** Bei 5 % Fehlalarmrate pro Zeile warnen die Monitore in rund der Hälfte der gekippten Läufe vorher. Das
+  GNN warnt am frühesten (Median 5 Runden), das LLM Gespräch für Gespräch hat die wenigsten Fehlalarme (10 von 48
+  nicht gekippten Läufen). Die Uhr alarmiert in jedem nicht gekippten Lauf.
+- Details: `analysis/results/heldout.md`.
 
 ## 7. Die harte Stelle: Welcher Lauf kippt? 🟡
 
@@ -145,7 +159,7 @@ Alle Monitore wurden auf identischen Zeilen bewertet, gepaart, mit Bootstrap üb
 - Noch nicht final: Der Test wurde mehrfach angesehen. Fürs Paper einmal mit eingefrorenem Modell neu rechnen oder in den
   Anhang.
 
-## 9. Validierung `night_vx` ⏳ fast fertig
+## 9. Validierung `night_vx` ✅ gelaufen, ⏳ Monitor-Auswertung offen
 
 Die Validierung prüft, ob die Monitore aus den richtigen Gründen gut sind. Sie ist nur zum Testen da: kein Training,
 keine Modellauswahl darauf. **Für `night_vx` gibt es noch keinen einzigen Monitor-Score.** Es ist der einzige blinde Teil.
@@ -161,9 +175,16 @@ keine Modellauswahl darauf. **Für `night_vx` gibt es noch keinen einzigen Monit
 - **Teil B:** je 2 neue Wiederholungen von 8 zurückgehaltenen Nacht-Setups (6 mit gemischtem Ausgang, 2 Beinahe-Kipper).
 - **Teil C fällt weg.** Das feinjustierte 4B-Modell lieferte in der Testepisode 44 % kaputtes JSON. Das ist ein
   technisches Problem, kein inhaltliches Ergebnis, gehört aber in die Grenzen. GLM-5.2 lief sauber (4,8 % ungültiges JSON).
-- 🟡 **Zwischenstand der Kipp-Zählung** (nur gezählt): Mit GLM-Agenten kippen 13 von 14 Läufen, ohne GLM 6 von 14.
-  Sichtbare Ahndung bremst das Kippen nicht (5 von 14). Der GLM-Test verschiebt also auch die Basisrate stark, und der
-  enf-Arm taugt nicht wie geplant als Fehlalarm-Test.
+- **Der Lauf ist fertig** (8. Nov., 19:21): 92 Episoden plus 2 Testläufe aus den Gates, 0 Fehler. Gepusht als `5ea7874`.
+  Alle Plausibilitäts-Checks bestehen: time-Arm mit 36 Runden, Sanktionen im enf-Arm in 12 von 14 Läufen, GLM-Aufrufe im
+  glm-Arm, Teil B mit je 2 Wiederholungen.
+- 🟡 **Kipp-Zählung** (nur gezählt, keine Monitore). Das Rauschen ist klein: Die zweite id-Wiederholung kippt in nur
+  1 von 14 Setups anders.
+  - Mit GLM-Agenten kippen 13 von 14 Läufen, ohne GLM 6 von 14. Das ist der einzige deutliche Effekt (McNemar
+    p = 0,016, nach Holm über 4 Arme 0,06). Der GLM-Test verschiebt also auch die Basisrate stark.
+  - Sichtbare Ahndung (enf): 5 von 14. Bei K4 kippt mit Ahndung 1 von 9 Setups statt 3 von 9, bei K2 aber 4 von 5 statt
+    3 von 5. Die Zahlen sind sehr klein. Der Arm taugt nur eingeschränkt als Fehlalarm-Test.
+  - Längerer Sprint (time): 8 von 14. Anderes Netz (topo): 5 von 7. Teil B: 7 von 16.
 
 ## 10. Robustheit der Labels ✅ (explorativ)
 
@@ -176,12 +197,12 @@ keine Modellauswahl darauf. **Für `night_vx` gibt es noch keinen einzigen Monit
 
 ## Was fürs Paper noch fehlt ⏳
 
-1. **Analyseplan v2 committen**, bevor `night_vx` mit Monitoren ausgewertet wird ([ANALYSIS_PLAN.md](ANALYSIS_PLAN.md)).
+1. ~~Analyseplan v2 committen.~~ Erledigt: `4e6e998`, gepusht vor den vx-Daten. Das Team sollte ihn gegenlesen.
+   Änderungen nur noch als datierter Nachtrag.
 2. **`night_vx` auswerten**, in dieser Reihenfolge:
-   - zero-shot-LLM-Monitore auf `runs_vx` laufen lassen (API, grob 5–8 $);
-   - das eingefrorene GNN auf `runs_vx` anwenden;
-   - `analysis/vx_eval.py` schreiben und committen;
-   - dann genau einmal auswerten.
+   - zero-shot-LLM-Monitore auf `runs_vx` laufen lassen (API, grob 5–8 $, Plan §6);
+   - das eingefrorene GNN mit `gnn_opt_torch/predict.py` auf `runs_vx` anwenden;
+   - genau einmal `analysis/vx_eval.py` laufen lassen. Das Skript ist committet und nur mit Zufalls-Scores getestet.
 3. **Jury prüfen:** Übereinstimmung Haiku gegen DeepSeek berichten, besser zusätzlich rund 100 Nachrichten von Hand
    labeln.
 4. **Among Us** final neu rechnen oder in den Anhang.
@@ -195,6 +216,8 @@ keine Modellauswahl darauf. **Für `night_vx` gibt es noch keinen einzigen Monit
   nur bei einem davon.
 - Wenige Kipp-Ereignisse im Training (45 gekippte Läufe). Deshalb sind die Unsicherheiten und das Seed-Rauschen groß.
 - Die Test-Splits haben beide Seiten schon angesehen. Blind ist nur `night_vx`.
+- Auf den Testdaten (36 Setups) ist kein Unterschied zwischen Monitoren nach Holm signifikant. Rangfolgen müssen wir
+  deshalb vorsichtig formulieren. Ob die Monitore die Uhr schlagen, hängt davon ab, wie man Zeit abgleicht.
 - Die GNN-Konfiguration wurde auf denselben CV-Zeilen gewählt, auf denen sie verglichen wird. Die CV-Zahlen des GNN
   sind deshalb optimistisch.
 - Der LLM-Monitor stammt aus derselben Modellfamilie wie ein Jury-Mitglied, das die GNN-Merkmale bewertet. Beide
@@ -207,6 +230,22 @@ keine Modellauswahl darauf. **Für `night_vx` gibt es noch keinen einzigen Monit
 ---
 
 ## Zahlen auf einen Blick
+
+**Zurückgehaltene Testzeilen** (Hauptergebnis: 2.338 Zeilen, 36 Setups, eingefrorene Modelle, gepaarter Bootstrap über
+Setups, Holm über 11 Tests). AUROC: 0,5 = Raten, 1 = perfekt.
+
+| Monitor | AUROC gesamt | in gleicher Runde | Runde + Deadline fest* | bekannte Setups | neue Bedingungen** |
+|---|---|---|---|---|---|
+| nur Uhr | 0,78 | 0,53 | 0,66 | 0,85 | 0,66 / 0,82 / 0,78 |
+| gezählte Merkmale (bag + graph) | 0,81 | 0,72 | 0,78 | 0,90 | 0,79 / 0,76 / 0,74 |
+| GNN (eingefroren) | 0,82 | 0,74 | 0,76 | **0,92** | 0,79 / 0,74 / 0,73 |
+| GNN + Tabellenmodell | 0,83 | 0,75 | 0,80 | **0,92** | 0,82 / 0,79 / 0,73 |
+| LLM, ganzes Protokoll | 0,82 | 0,73 | 0,79 | 0,87 | 0,78 / 0,83 / 0,73 |
+| LLM, Gespräch für Gespräch | **0,85** | **0,79** | **0,82** | 0,87 | **0,87 / 0,84 / 0,80** |
+| echte Verstöße zählen (nicht beobachtbar) | 0,91 | 0,87 | 0,87 | 0,93 | 0,90 / 0,92 / 0,88 |
+
+Kein Unterschied zwischen Monitoren ist nach Holm signifikant (Details `analysis/results/heldout.md`).
+\* nachträglich. \*\* fremde Aufgabenfamilie / Injektion über Tool-Ausgaben / Branch-Arme.
 
 **Kreuzvalidierung auf identischen Zeilen** (night_train, 64 Setups, gepaarter Bootstrap über Setups, Holm über
 11 Tests; unabhängig nachgerechnet). AUROC: 0,5 = Raten, 1 = perfekt.
@@ -226,8 +265,6 @@ In der Kreuzvalidierung stehen das Mac-GNN (`final.pt`) und seine Kombination. F
 (`cloud_final_gnn`) gibt es nur einen CV-Stellvertreter (`e_ngru_4runs`). Mit ihm ist auch das GNN allein signifikant
 besser als die gezählten Merkmale (+0,04, Holm 0,03). Alle anderen Urteile bleiben gleich, auch gleichauf mit dem LLM.
 
-⏳ **Zurückgehaltene Testzeilen:** folgt.
-
 ---
 
 ## Quellen
@@ -240,7 +277,7 @@ besser als die gezählten Merkmale (+0,04, Holm 0,03). Alle anderen Urteile blei
 | GNN | `gnn_opt_torch/RESULTS.md` (Step 4–9), `gnn_opt_torch/LOOKS.md`, `gnn_opt_torch/STATUS.md` | gnn-opt-torch |
 | GNN-Harness, zweistufiges Modell | `gnn_opt/HARNESS.md`, `gnn_opt/preds/cv_log.jsonl` | gnn-opt |
 | Fairer Vergleich (CV) | `analysis/review/stats-monitors/REPORT.md` | night-vx-validation (nach dem Push) |
-| Fairer Vergleich (Testzeilen) | `analysis/results/heldout.md` ⏳ | night-vx-validation (nach dem Push) |
+| Fairer Vergleich (Testzeilen) | `analysis/results/heldout.md`, Skripte `analysis/heldout/` | night-vx-validation |
 | θ/Δ-Sensitivität | `analysis/results/sensitivity.md`, Skripte `analysis/sens.py`, `analysis/sens_summary.py` | night-vx-validation (nach dem Push) |
 | Among Us | `gnn/RESULTS_amongus.md` | alle |
 | Validierung | `sim_dataset/VALIDATION.md`, `sim_dataset/runs_vx/_logs/vx_decisions.md` | night-vx-validation (nach dem Push) |
