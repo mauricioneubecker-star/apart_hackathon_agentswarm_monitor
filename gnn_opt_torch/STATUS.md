@@ -36,4 +36,6 @@ Cloud session, 17:30 UTC:
   preds/{cv,eval}/cloud_final*.csv. NOTE: my final.py first wrote preds/{cv,eval}/final.csv and overwrote the Mac's
   files of the same name (pushed 16:53 UTC); restored from f70a6f6 and my files renamed to cloud_final* (17:30 UTC).
 - [done] night_val look 1 (cloud), TEST LOOK 1 of 2: results/test_look1/ (see LOOKS.md). No further test looks planned.
-- [running] f_* ablations (S0/S1/S2, +lex, shuffle_ef, rewire) and j_* judge-swap CV on the node-GRU base.
+- [done] f_* ablations (S0/S1/S2, +lex, shuffle_ef, rewire), j_* judge-swap CV, exact 5-seed CV of the final config
+  (cloud_final_gnn_cv5: 0.863; hybrid cloud_final_cv5: 0.880). RESULTS.md: summary at the top + steps 9, 9b, 9c.
+- Cloud session: no further runs planned.

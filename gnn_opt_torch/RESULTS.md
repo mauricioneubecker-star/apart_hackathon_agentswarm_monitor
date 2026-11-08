@@ -3,6 +3,26 @@
 Spatio-temporal GNN monitor for "the swarm tips within 3 rounds" (y3: >= 8 of 24 agents use the forbidden shortcut
 within the next 3 rounds), trained on `night_train` only and scored with the shared harness (`gnn_opt/`).
 
+## Summary (final, 2026-11-08 21:30 UTC)
+- **Final monitor = hybrid**: node-level-GRU GNN (relational GINE, direct / broadcast / both relations, judge-swap
+  augmentation, 5 seeds; headline inputs only) + hgb_bag+graph+mem, logit blend 0.5 / 0.5.
+  `models/cloud_final_gnn.pt`; one command for new batches: `python3 gnn_opt_torch/predict.py --runs
+  sim_dataset/runs_<new> --model gnn_opt_torch/models/cloud_final_gnn.pt` (step 9).
+- **CV (night_train, 18 shared folds):** hybrid select 0.880, GNN alone 0.863, best headline GBM 0.848 (pairwise edge
+  monitor 0.836, clock only 0.727, oracle violator count 0.926). Hybrid - GBM ID AUROC +0.022 [+0.004, +0.043].
+- **Test (1 look, step 9):** pooled AUROC hybrid 0.832 [0.78, 0.89], GNN 0.817, GBM 0.811, edge monitor 0.800;
+  test_id 0.92 (GNN recall@5%FPR 0.72 vs GBM 0.41); OOD family / OOD seed / branch 0.79-0.82 / 0.74-0.79 / 0.70-0.73
+  for all monitors; hybrid best or tied everywhere, margin over GBM +0.02 (n.s.).
+- **What carries the signal:** jury-scored message content + per-agent temporal memory. The 5 interpretive jury
+  dimensions are worth ~0.08 select; graph topology adds nothing at this data size (rewiring costs nothing); the
+  shortcut lexicon and the clock add <= 0.02. Graph-level (team) memory fails on K2 -> K4 transfer; node-level memory
+  does not (step 9).
+- **Limits:** injection via tool output is nearly invisible to a communication monitor (tAUROC ~0.55); counterfactual
+  branch arms are not separated after the branch point; 135 positive training rows (seed noise +-0.02 select, use
+  >= 4-seed ensembles); the GNN alone is judge-sensitive (-0.04 with one judge on test; hybrid -0.01 to -0.02).
+  More data: `DATA_REQUESTS.md` (150 episodes). LLM transcript monitor written (`llm_monitor.py`), not run (no key).
+- Looks: night_val 2 (team), test 1 (`LOOKS.md`).
+
 ## Setup
 - Data: `python3 gnn_opt/build_dataset.py --runs sim_dataset/runs_night --out gnn_opt_data/night` (252 run dirs =
   112 configs x reps, 7560 snapshots). Harness training rows: night_train, eval == 1 -> 3370 rows, **135
