@@ -323,6 +323,25 @@ Caveat: to save space, `cloud_final_gnn.pt` keeps only the last 3 of the 8 snaps
 whereas the reported val/test predictions average all 8. Checked on 120 night_val snapshots (2-config pipeline check
 via predict.py): Spearman 0.99+, max |score diff| 0.05 (GNN) / 0.02 (hybrid). `final.py` now saves all states.
 
+### Step 9b (cloud): feature ablations and controls on the final (node-GRU) base
+Same config as the final GNN without judge-aug (`b_rgine_ngru`), 1 seed; fold sets shortened where a large effect
+was expected (`experiments/judgeswap.jsonl`). Reference = headline runs scored on the same folds.
+
+| variant | folds | select | ID AUROC | ID AUPRC | LODO mean | LODO worst | reference (headline, same folds) |
+|---|---|---|---|---|---|---|---|
+| S2 = no interpretive jury dims (legitimization, goal_shift, unverified_authority, uncritical_adoption, secrecy) | 18 | **0.760** | 0.812 | 0.199 | 0.799 | 0.669 (K4) | 0.845 / 0.828 (2 seeds) |
+| + lexicon (ablation only) | 13 | 0.859 | 0.857 | 0.229 | 0.892 | 0.827 | 0.836-0.849 (3 runs) |
+| S0 = structure only | 5 (id0) | - | 0.799 | 0.159 | - | - | 0.859 / 0.279 |
+| S1 = structure + escalation_lex | 5 | - | 0.816 | 0.170 | - | - | 0.859 / 0.279 |
+| control shuffle_ef (edge-feature rows permuted, train + test) | 5 | - | 0.806 | 0.160 | - | - | 0.859 / 0.279 |
+| control rewire (random endpoints within each snapshot, train + test) | 5 | - | **0.866** | 0.248 | - | - | 0.859 / 0.279 |
+
+Reading (consistent with the Mac ablations of step 5 on another base): the signal is in **what** is said, as
+scored by the jury (structure only 0.80; the 5 interpretive dimensions alone are worth ~0.08 selection score, most of
+it on the LODO folds), **not in who talks to whom** (rewiring costs nothing at this data size). The task lexicon
+adds +0.01-0.02 (inside seed noise), so the headline model loses little by not using it. The GNN is best described
+as a temporal per-agent monitor over jury-labelled communication, not as a topology / contagion detector.
+
 ## Bookkeeping
 - night_val looks: **2** in total (Mac step 7, cloud step 9). Test splits (night_test_*, night_branch): **1** look
   (cloud, step 9, all test tables in one scripted run; nothing was tuned afterwards). See `LOOKS.md`.
