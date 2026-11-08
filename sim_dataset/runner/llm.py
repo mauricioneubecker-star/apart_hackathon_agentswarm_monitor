@@ -4,6 +4,8 @@
   limiter (default 95/min, the endpoint allows 100/min per key), retries on 429/5xx/network with backoff.
 - AnthropicClient: POST https://api.anthropic.com/v1/messages (Haiku 5.5 judge), retries on 429/529/5xx.
 - load_secrets(): keys come ONLY from secrets.local.json or environment variables - never from code or chat.
+- load_ft_endpoint(): optional self-hosted OpenAI-compatible endpoint (modal_ft/ft_server.py) - AdaptionClient sends
+  calls for its model ids there (no Adaption rate limit, Adaption key unused, separate ft_* token counters).
 
 All clients return a dict: {text, usage, latency, status, error, attempts, key}.
 """
@@ -59,6 +61,30 @@ def load_secrets(path: Path | None = None) -> dict:
         sec["adaption"] = [k.strip() for k in env_keys.split(",") if k.strip()]
     sec["anthropic"] = sec["anthropic"] or os.environ.get("ANTHROPIC_API_KEY")
     return sec
+
+
+FT_DEFAULT_MODELS = ["qwen3.5-4b", "qwen3.5-4b-ft"]
+
+
+def load_ft_endpoint(path: Path | None = None) -> dict | None:
+    """Self-hosted endpoint for the 4B fine-tune arms (modal_ft/ft_server.py). Env FT_ENDPOINT_URL, FT_ENDPOINT_KEY,
+    FT_ENDPOINT_MODELS (comma-separated, default qwen3.5-4b,qwen3.5-4b-ft), or in secrets.local.json:
+    {"ft_endpoint": {"base_url": "https://...modal.run", "api_key": "...", "models": [...]}}. None if not configured.
+    FT_JSON=1 adds response_format json_object (grammar-constrained valid JSON) to these calls - for simulation runs
+    only (both 4B arms alike); ft_check's free-text probes must run without it."""
+    path = path or ROOT / "secrets.local.json"
+    d = {}
+    if path.exists():
+        d = json.loads(path.read_text()).get("ft_endpoint") or {}
+    url = (os.environ.get("FT_ENDPOINT_URL") or d.get("base_url") or "").strip().rstrip("/")
+    if not url:
+        return None
+    if not url.endswith("/v1"):
+        url += "/v1"
+    env_models = os.environ.get("FT_ENDPOINT_MODELS")
+    models = [m.strip() for m in env_models.split(",") if m.strip()] if env_models else (d.get("models") or FT_DEFAULT_MODELS)
+    return {"base": url, "key": os.environ.get("FT_ENDPOINT_KEY") or d.get("api_key") or "", "models": set(models),
+            "json": os.environ.get("FT_JSON", "").lower() in ("1", "true", "yes")}
 
 
 def _post(url: str, headers: dict, body: dict, timeout: float):
@@ -119,7 +145,9 @@ class AdaptionClient:
         self.net_patience = net_patience  # seconds of network errors (DNS, connect, timeout) tolerated per call
         self.limiter = RateLimiter(per_minute)
         self.server_limit = None
-        self.stats = {"calls": 0, "errors": 0, "retries": 0, "input_tokens": 0, "output_tokens": 0}
+        self.stats = {"calls": 0, "errors": 0, "retries": 0, "input_tokens": 0, "output_tokens": 0,
+                      "ft_calls": 0, "ft_input_tokens": 0, "ft_output_tokens": 0}
+        self.ft = load_ft_endpoint()
 
     def _adapt_rate(self, hdr: dict):
         """Keys have different limits (seen: 100 and 20 req/min). Pace each key at 95 % of the limit the server
@@ -134,14 +162,20 @@ class AdaptionClient:
 
     async def chat(self, model: str, messages: list, **params) -> dict:
         body = {"model": model, "messages": messages, **params}
-        headers = {"Authorization": f"Bearer {self.key}", "Content-Type": "application/json"}
+        ft = self.ft if self.ft and model in self.ft["models"] else None   # own fine-tune endpoint (Modal)
+        if ft and ft.get("json"):
+            body.setdefault("response_format", {"type": "json_object"})
+        base, key = (ft["base"], ft["key"]) if ft else (ADAPTION_BASE, self.key)
+        headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
         t0, attempt, st, js, hdr = time.time(), 0, None, {}, {}
         tries, net_since = 0, None
         while True:
             attempt += 1
-            await self.limiter.acquire()
-            st, js, hdr = await asyncio.to_thread(_post, f"{ADAPTION_BASE}/chat/completions", headers, body, self.timeout)
-            self._adapt_rate(hdr)
+            if not ft:   # the Adaption per-key rate limit does not apply to the own endpoint
+                await self.limiter.acquire()
+            st, js, hdr = await asyncio.to_thread(_post, f"{base}/chat/completions", headers, body, self.timeout)
+            if not ft:
+                self._adapt_rate(hdr)
             if st == 200:
                 break
             if st is None:  # network error: keep waiting up to net_patience (short outages stay invisible)
@@ -155,7 +189,7 @@ class AdaptionClient:
             tries += 1
             if tries >= self.max_retries:
                 break
-            if st == 429:
+            if st == 429 and not ft:
                 reset = hdr.get("retry-after") or hdr.get("x-ratelimit-reset")
                 try:
                     r = float(reset)
@@ -163,12 +197,13 @@ class AdaptionClient:
                 except (TypeError, ValueError):
                     wait = 10
                 self.limiter.block_for(max(1.0, min(wait, 65)))
-            elif st is not None and st < 500 and st != 408:
+            elif st is not None and st < 500 and st not in (408, 429):
                 break  # 4xx: not retryable (e.g. unsupported field)
             else:
                 await asyncio.sleep(min(2 ** attempt, 30))
             self.stats["retries"] += 1
         self.stats["calls"] += 1
+        self.stats["ft_calls"] += 1 if ft else 0
         out = {"status": st, "latency": round(time.time() - t0, 3), "attempts": attempt, "key": self.idx,
                "text": None, "usage": {}, "error": None}
         if st == 200:
@@ -176,8 +211,9 @@ class AdaptionClient:
             out["text"] = (ch.get("message") or {}).get("content") or ""
             out["finish_reason"] = ch.get("finish_reason")
             out["usage"] = js.get("usage", {})
-            self.stats["input_tokens"] += out["usage"].get("prompt_tokens", 0) or 0
-            self.stats["output_tokens"] += out["usage"].get("completion_tokens", 0) or 0
+            pre = "ft_" if ft else ""
+            self.stats[pre + "input_tokens"] += out["usage"].get("prompt_tokens", 0) or 0
+            self.stats[pre + "output_tokens"] += out["usage"].get("completion_tokens", 0) or 0
         else:
             self.stats["errors"] += 1
             out["error"] = str(js.get("error"))[:500]
