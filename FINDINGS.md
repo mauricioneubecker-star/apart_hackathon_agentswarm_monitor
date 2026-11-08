@@ -200,8 +200,9 @@ keine Modellauswahl darauf. **Für `night_vx` gibt es noch keinen einzigen Monit
 1. ~~Analyseplan v2 committen.~~ Erledigt: `4e6e998`, gepusht vor den vx-Daten. Das Team sollte ihn gegenlesen.
    Änderungen nur noch als datierter Nachtrag.
 2. **`night_vx` auswerten**, in dieser Reihenfolge:
-   - zero-shot-LLM-Monitore auf `runs_vx` laufen lassen (API, grob 5–8 $, Plan §6);
-   - das eingefrorene GNN mit `gnn_opt_torch/predict.py` auf `runs_vx` anwenden;
+   - ~~zero-shot-LLM-Monitore auf `runs_vx` laufen lassen.~~ Erledigt am 8. Nov., 20:43 (`f8cf5d9`): `global_full` und
+     `pairwise`, 18.547 Aufrufe, 0 Fehler, 5,77 $. Es wurde noch nichts ausgewertet.
+   - das eingefrorene GNN mit `gnn_opt_torch/predict.py --no-eval` auf `runs_vx` anwenden, dazu die Tabellen-Baselines;
    - genau einmal `analysis/vx_eval.py` laufen lassen. Das Skript ist committet und nur mit Zufalls-Scores getestet.
 3. **Jury prüfen:** Übereinstimmung Haiku gegen DeepSeek berichten, besser zusätzlich rund 100 Nachrichten von Hand
    labeln.
