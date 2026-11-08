@@ -2,7 +2,7 @@
 """One command: new runs_* directory -> snapshot dataset -> GNN monitor predictions -> full metrics table.
 
   python3 gnn_opt_torch/predict.py --runs sim_dataset/runs_<new> [--model gnn_opt_torch/models/final.pt] \
-      [--thr-from gnn_opt_torch/preds/cv/final.csv] [--no-eval]
+      [--thr-from gnn_opt_torch/preds/cv/final.csv] [--splits all] [--no-eval]
 
 Steps: (1) gnn_opt/build_dataset.py --runs <dir> --out gnn_opt_data/<name> (skipped if it exists, --rebuild to force)
 (2) load the saved ensemble (cfg + seed/snapshot states + training normalisation; trained on night_train only)
@@ -36,6 +36,7 @@ def main():
     ap.add_argument("--rebuild", action="store_true")
     ap.add_argument("--no-eval", action="store_true")
     ap.add_argument("--target", default="y3")
+    ap.add_argument("--splits", default="all", help="splits passed to evaluate.py (comma list or 'all')")
     a = ap.parse_args()
     name = os.path.basename(os.path.normpath(a.runs))
     dd = a.data_out or os.path.join(REPO, "gnn_opt_data", name)
@@ -54,7 +55,7 @@ def main():
     if not a.no_eval:
         thr = a.thr_from or os.path.join(HERE, "preds", "cv", f"{mname}.csv")
         cmd = [sys.executable, os.path.join(REPO, "gnn_opt", "evaluate.py"), "--data", dd, "--preds", out,
-               "--splits", "all", "--target", a.target]
+               "--splits", a.splits, "--target", a.target]
         if os.path.exists(thr):
             cmd += ["--thr-from", thr]
         subprocess.run(cmd, check=True)

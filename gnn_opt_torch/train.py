@@ -9,7 +9,10 @@
   # controls: --control rewire | shuffle_ef | shuffle_labels
 
 Config keys (defaults in DEFAULT): model (see model.STGNN) + training (epochs, lr, wd, batch_runs, pos_weight,
-focal_gamma, w_aux, w_risk, w_node, edge_drop, feat_noise, swa_last, seeds, feat).
+focal_gamma, w_aux, w_risk, w_node, edge_drop, feat_noise, swa_last, swa, swa_lr, seeds, feat).
+swa=0: the last `swa_last` epochs of the one-cycle schedule are a prediction (snapshot) ensemble.
+swa=1: one-cycle over the first epochs - swa_last epochs, then a constant lr = swa_lr * lr for swa_last epochs whose
+weights are averaged (stochastic weight averaging; no BatchNorm in the model, so no statistics update is needed).
 """
 from __future__ import annotations
 
@@ -38,7 +41,7 @@ DEFAULT = dict(hid=64, layers=3, conv="rgine", reverse=True, vn=True, tmem="none
                heads=4, aggr=["sum", "mean", "max"], edge_readout=True, att_pool=True, edge_update=True,
                epochs=40, lr=2e-3, wd=1e-4, batch_runs=8, pos_weight=3.0, focal_gamma=0.0, w_aux=0.5, w_risk=0.2,
                w_node=0.5, edge_drop=0.1, feat_noise=0.05, swa_last=8, seeds=1, feat="headline", clock=False,
-               label_smooth=0.0, judge_aug=0.0, crop=0)
+               label_smooth=0.0, judge_aug=0.0, crop=0, swa=0, swa_lr=0.25)
 
 _D = {}
 
@@ -95,8 +98,10 @@ def fit_models(data_path, cfg, train_runs_idx, seed=0, control=None, verbose=Fal
         gen = torch.Generator().manual_seed(sd)
         model = STGNN(D.d_node, D.d_edge, **c)
         opt = torch.optim.AdamW(model.parameters(), lr=c["lr"], weight_decay=c["wd"])
-        steps = c["epochs"] * int(np.ceil(len(tr) / c["batch_runs"]))
+        n_one = c["epochs"] - (c["swa_last"] if c["swa"] else 0)
+        steps = n_one * int(np.ceil(len(tr) / c["batch_runs"]))
         sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=c["lr"], total_steps=steps, pct_start=0.15)
+        swa_model = torch.optim.swa_utils.AveragedModel(model) if c["swa"] else None
         # shuffled-labels control: training runs get the label sequences of other training runs
         perm_lab = np.random.RandomState(sd).permutation(len(tr)) if control == "shuffle_labels" else None
         acc, n_acc = None, 0
@@ -130,9 +135,19 @@ def fit_models(data_path, cfg, train_runs_idx, seed=0, control=None, verbose=Fal
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
                 opt.step()
-                sched.step()
+                if ep < n_one:
+                    sched.step()
                 tot += float(loss.detach())
-            if ep >= c["epochs"] - c["swa_last"]:
+            if swa_model is not None:
+                if ep == n_one - 1:
+                    for g in opt.param_groups:
+                        g["lr"] = c["swa_lr"] * c["lr"]
+                if ep >= n_one:
+                    swa_model.update_parameters(model)
+                continue_ = True
+            else:
+                continue_ = False
+            if not continue_ and ep >= c["epochs"] - c["swa_last"]:
                 if keep_states:
                     states.append({k: v.detach().clone() for k, v in model.state_dict().items()})
                 if pb is not None:
@@ -144,6 +159,15 @@ def fit_models(data_path, cfg, train_runs_idx, seed=0, control=None, verbose=Fal
                     n_acc += 1
             if verbose:
                 print(f"  seed {s} ep {ep} loss {tot:.3f}", flush=True)
+        if swa_model is not None:
+            sm = swa_model.module
+            if keep_states:
+                states.append({k: v.detach().clone() for k, v in sm.state_dict().items()})
+            if pb is not None:
+                sm.eval()
+                with torch.no_grad():
+                    og, _, _ = sm(pb)
+                acc, n_acc = torch.stack([torch.sigmoid(og[:, 0]), og[:, 3].exp()], 1), 1
         if pb is not None:
             preds.append(acc / n_acc)
     out = None
