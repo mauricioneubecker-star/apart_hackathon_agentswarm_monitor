@@ -236,8 +236,11 @@ def predict(D: Data, m, runs, bs=16):
         if sd is not None:
             m.load_state_dict(sd)
         parts = []
-        for i in range(0, len(runs), bs):
-            br = runs[i:i + bs]
+        by_len = {}
+        for r in runs:                       # batches need equal run length (dense temporal layout)
+            by_len.setdefault(len(D.run_snaps[r]), []).append(r)
+        chunks = [rs[i:i + bs] for rs in by_len.values() for i in range(0, len(rs), bs)]
+        for br in chunks:
             B = D.batch(br)
             o = m.forward(B, train=False)
             parts.append(pd.DataFrame({"snap": B["snaps"], "score": sigmoid(o["tip"].data.ravel()),

@@ -39,7 +39,7 @@ def ema_kernel(T, a):
     return K / K.sum(1, keepdims=True)
 
 
-def build_node_table(G, S, lex=False, judge_ef=None):
+def build_node_table(G, S, lex=False, judge_ef=None, tool=False):
     """Returns DataFrame with one row per node row of graphs.npz (same order) + list of feature columns."""
     ec, nc = list(G["ecols"]), list(G["ncols"])
     EF = G["EF"] if judge_ef is None else judge_ef
@@ -68,7 +68,7 @@ def build_node_table(G, S, lex=False, judge_ef=None):
     F["in_direct"] = gi.direct.sum().reindex(idx).fillna(0).values
     F["out_vol"] = go.vol.max().reindex(idx).fillna(0).values
     for c in ["unanswered_share", "role_external", "bcast_legitimization", "stance_drift", "frustration_own"] + \
-            (["bcast_mech_ref", "exposure_breadth"] if lex else []):
+            (["bcast_mech_ref", "exposure_breadth"] if lex else []) + (["tests_failed", "escalated_unresolved"] if tool else []):
         v = G["X"][:, nc.index(c)]
         F[f"n_{c}"] = np.nan_to_num(v, nan=-1.0)
     F = pd.DataFrame(F)
@@ -228,10 +228,31 @@ def neighbor_feats(ps, pf, G, S):
     return pd.DataFrame(F)
 
 
-def node_stage_ica(NT, cols, node_lab, S, G, tr_snaps, pred_snaps, seed=0, rounds=1):
-    ps, pf, _ = node_stage(NT, cols, node_lab, S, tr_snaps, pred_snaps, seed=seed)
+def node_stage_ica(NT, cols, node_lab, S, G, tr_snaps, pred_snaps, seed=0, rounds=1, return_models=False):
+    ps, pf, mods = node_stage(NT, cols, node_lab, S, tr_snaps, pred_snaps, seed=seed)
+    models = [mods]
     for _ in range(rounds):
         NB = neighbor_feats(ps, pf, G, S)
         NT2 = pd.concat([NT.reset_index(drop=True), NB], axis=1)
-        ps, pf, _ = node_stage(NT2, cols + list(NB.columns), node_lab, S, tr_snaps, pred_snaps, seed=seed)
+        ps, pf, mods = node_stage(NT2, cols + list(NB.columns), node_lab, S, tr_snaps, pred_snaps, seed=seed)
+        models.append(mods)
+    return (ps, pf, models) if return_models else (ps, pf)
+
+
+def apply_node_models(models, NT, cols, G, S):
+    """Apply trained stage-1 (+ICA) node models to a new dataset; externals get NaN."""
+    agent = NT.ext.values == 0
+    ps = np.full(len(NT), np.nan)
+    pf = np.full(len(NT), np.nan)
+    X = NT[cols].values
+    ms, mf = models[0]
+    ps[agent] = ms.predict_proba(X[agent])[:, 1]
+    pf[agent] = mf.predict_proba(X[agent])[:, 1]
+    for ms, mf in models[1:]:
+        NB = neighbor_feats(ps, pf, G, S)
+        X2 = np.concatenate([X, NB.values], 1)
+        ps = np.full(len(NT), np.nan)
+        pf = np.full(len(NT), np.nan)
+        ps[agent] = ms.predict_proba(X2[agent])[:, 1]
+        pf[agent] = mf.predict_proba(X2[agent])[:, 1]
     return ps, pf

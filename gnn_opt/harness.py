@@ -77,6 +77,8 @@ def cv_summary(S, P, target="y3"):
     """Summary of a CV predictions frame: pooled ID AUROC/AUPRC per repeat (mean), LODO per fold, selection score."""
     lab = S[["run", "round", target]].rename(columns={target: "y"})
     P = P.merge(lab, on=["run", "round"], how="left")
+    ok = S.set_index(["run", "round"])["eval"].reindex(pd.MultiIndex.from_frame(P[["run", "round"]])).values == 1
+    P = P[ok & P.y.notna().values]
     idm = P.fold.str.startswith("id")
     reps = P[idm].fold.str.split("_").str[0]
     id_au = [M.auroc(g.y, g.score) for _, g in P[idm].groupby(reps)]

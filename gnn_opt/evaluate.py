@@ -96,6 +96,7 @@ def main():
     ap.add_argument("--preds", nargs="+", required=True)
     ap.add_argument("--names", default=None, help="comma-separated display names")
     ap.add_argument("--thr-from", nargs="*", default=None, help="CV prediction files (same order) for the 5%%-FPR threshold")
+    ap.add_argument("--thr", default=None, help="comma list of explicit thresholds (same order as --preds)")
     ap.add_argument("--splits", default="night_val", help="comma list, or 'all'")
     ap.add_argument("--target", default="y3")
     ap.add_argument("--boot", type=int, default=1000)
@@ -150,6 +151,8 @@ def main():
         for i, f in enumerate(a.thr_from):
             oof = H.id_oof(pd.read_csv(f)).merge(lab, on=["run", "round"])
             thrs[i] = M.thr_at_fpr(oof.y.values, oof.score.values)
+    if a.thr:
+        thrs = [float(x) if x not in ("", "none") else None for x in a.thr.split(",")]
     rows, aligned = [], {}
     for n, P, thr in zip(names, preds, thrs):
         d = L.merge(P, on=["run", "round"], how="inner")
