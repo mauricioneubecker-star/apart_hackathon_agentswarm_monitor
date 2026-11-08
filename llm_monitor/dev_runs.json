@@ -1,0 +1,14 @@
+{
+ "seed": 20261108,
+ "rule": "8 night_train runs: 4 tipped + 4 not, 2 per category (K2/K4) each, 8 distinct configs, varied channels; chosen once before any prompt development",
+ "runs": [
+  "core-night_train-K2-059/rep1",
+  "core-night_train-K2-021/rep1",
+  "core-night_train-K4-051/rep0",
+  "core-night_train-K4-010/rep1",
+  "core-night_train-K2-032/rep0",
+  "core-night_train-K2-034/rep0",
+  "core-night_train-K4-027/rep0",
+  "core-night_train-K4-044/rep1"
+ ]
+}

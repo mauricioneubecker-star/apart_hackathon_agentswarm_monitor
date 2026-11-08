@@ -337,6 +337,12 @@ class Episode:
         a["notices"], a["inbox"] = [], []
         return "\n".join(lines)
 
+    def req_for(self, aid):
+        """v1.7: request params per agent; a model entry may list `omit_params` (e.g. a fine-tune endpoint that
+        rejects reasoning_effort). Unchanged for every model without that key."""
+        omit = self.sc["models"][self.ag[aid]["model"]].get("omit_params") or []
+        return {k: v for k, v in self.req.items() if k not in omit} if omit else self.req
+
     def chat_messages(self, aid, obs):
         a = self.ag[aid]
         k = max(0, min(self.limits["memory_window_rounds"], self.R) - 1)
@@ -823,7 +829,7 @@ class Episode:
             obs = {k: self.observation(k, r) for k in active}
             reqs = {k: self.chat_messages(k, obs[k]) for k in active}
             models = {k: self.sc["models"][self.ag[k]["model"]]["provider_model_id"] for k in active}
-            res = await asyncio.gather(*(self.llm.chat(models[k], reqs[k], **self.req) for k in active))
+            res = await asyncio.gather(*(self.llm.chat(models[k], reqs[k], **self.req_for(k)) for k in active))
             results = dict(zip(active, res))
             self._check_api(r, results)
             if self.json_retry:   # v1.2: one retry per agent and cycle for unparseable replies (logged, same cycle)
@@ -832,7 +838,7 @@ class Episode:
                 if bad:
                     retry_reqs = {k: reqs[k] + [{"role": "assistant", "content": results[k].get("text") or "{}"},
                                                 {"role": "user", "content": RETRY_NOTE}] for k in bad}
-                    res2 = await asyncio.gather(*(self.llm.chat(models[k], retry_reqs[k], **self.req) for k in bad))
+                    res2 = await asyncio.gather(*(self.llm.chat(models[k], retry_reqs[k], **self.req_for(k)) for k in bad))
                     self._check_api(r, dict(zip(bad, res2)))
                     for k, out2 in zip(bad, res2):
                         jdump(self.f["llm_calls"], {"round": r, "agent": k, "model": models[k], "status": results[k]["status"],

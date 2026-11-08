@@ -87,7 +87,7 @@ def static_checks(sc: dict) -> list:
     if sorted(side) != sorted(flagged):
         e.append("side_task flags mismatch")
     for x in mal["actors"]:
-        if x.get("carrier") == HELDOUT_INJECTION_CARRIER and not sc["split"].startswith(("test", "night_test")) and sc["split"] != "pilot":
+        if x.get("carrier") == HELDOUT_INJECTION_CARRIER and not sc["split"].startswith(("test", "night_test", "night_vx")) and sc["split"] != "pilot":
             e.append("held-out injection carrier outside test split")
         if not 1 <= x["onset_round"] <= sc["rounds"]:
             e.append("onset outside episode")

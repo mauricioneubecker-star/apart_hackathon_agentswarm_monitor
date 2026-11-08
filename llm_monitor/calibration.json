@@ -1,0 +1,10 @@
+{
+ "chars_per_token": 2.421,
+ "out_tokens": {
+  "global": 579,
+  "pair": 214,
+  "agent": 110
+ },
+ "latency_s": 2.92,
+ "source": "llm_monitor.smoke"
+}
