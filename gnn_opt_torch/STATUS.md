@@ -27,4 +27,6 @@ Local Mac session (12 CPU: 8P+4E, MPS), worktree of gnn-opt-torch, started 2026-
 - [next] search (successive halving, search.py) -> preds/cv/rs*_*.csv, preds/search_log.jsonl; then top-3 seed
   ensembles / SWA / augmentation (m_*), controls + ablations (m_ctl_*, m_abl_*), blend, final model
 - Mac logs: preds/screen_log.jsonl, preds/search_log.jsonl, preds/mac_log.jsonl (never cv_log.jsonl)
-- night_val looks: 0. Test-split looks: 0.
+- [done] m_* candidates on 18 folds, final = 2 cfg x 2 seeds (0.839), blend with hgb_bag+graph+mem (0.875),
+  controls/ablations on id0, models/final.pt, predict.py, RESULTS.md (2026-11-08 ~16:45 UTC)
+- night_val looks (Mac): 1 (final + blend). Test-split looks: 0.

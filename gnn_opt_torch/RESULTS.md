@@ -173,6 +173,15 @@ complementary: the **blend beats both** (select 0.875, +0.027 over the best GBM,
 +0.026 [+0.006, +0.049] over hgb_bag+graph+mem; best LODO worst of all models, 0.831). The cloud session found the
 same with its GINE model (rank blend 0.3/0.7: 0.866).
 
+**Better GNN found in parallel (cloud session, verified here with evaluate.py on the same folds).** Node-level GRU
+memory only (`tmem=gru, gtemp=none`, edge readout on, 30 epochs), 4 runs (`preds/cv/e_ngru_4runs.csv`): **select
+0.871** (ID 0.888, AUPRC 0.283, LODO mean 0.894, worst 0.831 = hold_K4), i.e. a GNN alone that **beats
+hgb_bag+graph+mem (0.848) by 0.023**; its logit blend with the GBM (`h_ngru4_hgb_logit55.csv`) reaches **0.884**
+(LODO worst 0.852). My final ensemble mixes in the graph-GRU SWA config, which is weak on hold_K4 (0.756), and
+is therefore 0.032 below it. `models/final.pt` is the 0.839 / 0.875 ensemble; retraining the final model as the
+node-GRU-only ensemble (`finalize.py --cfgs` with the two node-GRU configs) is the obvious next step and would be
+night_val look #2.
+
 ## Step 5: controls and ablations (ID repeat 0, 5 folds, seed-matched to m_noer)
 | variant | ID AUROC [95 % CI over configs] | ID AUPRC | tAUROC | risk 3-7 |
 |---|---|---|---|---|
@@ -246,5 +255,6 @@ because it also works on single held-out files.
   augmentation was implemented (single-judge caches for both judges) but not evaluated here; controls and
   ablations on 5 folds (id0) only.
 - The GNN's gain is from temporal memory over jury edge/node features, not from graph topology (rewire control).
+- The shipped final model is not the best GNN on the branch (see the note in step 4: node-GRU-only, 0.871).
 - night_val is tiny and disagrees with the CV ranking on AUROC; the CV conclusion (blend > both) should be checked
   on the test splits.
