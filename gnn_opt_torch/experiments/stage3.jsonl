@@ -1,5 +1,6 @@
-{"name": "c_gine_crop8", "cfg": {"epochs": 30, "conv": "gine", "crop": 8}}
-{"name": "c_gine_crop15", "cfg": {"epochs": 30, "conv": "gine", "crop": 15}}
-{"name": "c_gine_judgeaug", "cfg": {"epochs": 30, "conv": "gine", "judge_aug": 0.5}}
-{"name": "c_gine_reg", "cfg": {"epochs": 30, "conv": "gine", "drop": 0.2, "wd": 0.001, "edge_drop": 0.2}}
-{"name": "c_gine_crop8_ja_reg", "cfg": {"epochs": 30, "conv": "gine", "crop": 8, "judge_aug": 0.5, "drop": 0.2, "wd": 0.001, "edge_drop": 0.2}}
+{"name": "c_ngru_crop8", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none", "crop": 8}}
+{"name": "c_ngru_judgeaug", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none", "judge_aug": 0.5}}
+{"name": "c_ngru_noer", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none", "edge_readout": false, "edge_update": false}}
+{"name": "c_ngru_reg", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none", "drop": 0.2, "wd": 0.001, "edge_drop": 0.2}}
+{"name": "c_ngru_seed1", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none"}, "seed": 100}
+{"name": "c_gine_crop8", "cfg": {"epochs": 30, "tmem": "none", "gtemp": "gru", "conv": "gine", "crop": 8}}
