@@ -342,6 +342,24 @@ it on the LODO folds), **not in who talks to whom** (rewiring costs nothing at t
 adds +0.01-0.02 (inside seed noise), so the headline model loses little by not using it. The GNN is best described
 as a temporal per-agent monitor over jury-labelled communication, not as a topology / contagion detector.
 
+### Step 9c (cloud): judge swap in CV (13 folds = id0 + 8 LODO)
+Train on the merged jury, predict the test folds from single-judge features (`test_judge`). Note: in this CV the
+swapped copies keep the merged `jury_disagreement` (tdata.add_judge); the test-look judge swap of step 9 uses the
+real single-judge builds where `jury_disagreement` = 0, a stricter shift.
+
+| training | test features | select | ID AUROC | LODO mean | LODO worst |
+|---|---|---|---|---|---|
+| merged jury (no aug) | merged | 0.836-0.848 (2 seeds) | 0.856-0.858 | 0.862-0.868 | 0.788-0.816 |
+| merged jury (no aug) | DeepSeek only | 0.800 | 0.858 | 0.822 | 0.721 |
+| merged jury (no aug) | Haiku only | 0.790 | 0.842 | 0.813 | 0.717 |
+| judge-swap aug (p = 0.5) | merged | 0.849 | 0.884 | 0.863 | 0.799 |
+| judge-swap aug (p = 0.5) | DeepSeek only | 0.832 | 0.874 | 0.842 | 0.780 |
+| judge-swap aug (p = 0.5) | Haiku only | 0.841 | 0.874 | 0.852 | 0.798 |
+
+Judge-swap augmentation removes most of the judge sensitivity (-0.05 -> -0.01 to -0.02) at no cost on merged
+features; it is part of the final model. On the test runs with truly single-judge features (no disagreement
+signal) the final GNN still loses 0.04-0.05 (step 9), the hybrid 0.01-0.02.
+
 ## Bookkeeping
 - night_val looks: **2** in total (Mac step 7, cloud step 9). Test splits (night_test_*, night_branch): **1** look
   (cloud, step 9, all test tables in one scripted run; nothing was tuned afterwards). See `LOOKS.md`.

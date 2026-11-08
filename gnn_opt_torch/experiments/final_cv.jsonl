@@ -1,0 +1,1 @@
+{"name": "cloud_final_gnn_cv5", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none", "judge_aug": 0.5, "seeds": 5}}
