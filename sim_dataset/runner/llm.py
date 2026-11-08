@@ -12,6 +12,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import socket
 import ssl
 import time
 import urllib.error
@@ -24,6 +25,18 @@ try:
     SSL_CTX = ssl.create_default_context(cafile=certifi.where())
 except ImportError:  # pragma: no cover
     SSL_CTX = ssl.create_default_context()
+
+# Prefer IPv4: api.anthropic.com resolves to IPv6 first. On networks with broken IPv6 every new connection hung until
+# the OS connect timeout (~75 s) before falling back to IPv4 - each Haiku call took 76 s (seen 8 Nov). urllib opens a
+# new connection per request, so this hit every call. IPv6 is still tried if no IPv4 address works.
+_orig_getaddrinfo = socket.getaddrinfo
+
+
+def _getaddrinfo_ipv4_first(*args, **kwargs):
+    return sorted(_orig_getaddrinfo(*args, **kwargs), key=lambda r: r[0] != socket.AF_INET)
+
+
+socket.getaddrinfo = _getaddrinfo_ipv4_first
 
 ROOT = Path(__file__).resolve().parents[1]
 ADAPTION_BASE = os.environ.get("ADAPTION_BASE_URL", "https://api.prod.adaptionlabs.ai/api/v1").rstrip("/")
