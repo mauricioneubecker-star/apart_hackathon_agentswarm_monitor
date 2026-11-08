@@ -1,0 +1,4 @@
+{"name": "j_gine_test_ds", "cfg": {"epochs": 30, "conv": "gine", "test_judge": 0}}
+{"name": "j_gine_test_hk", "cfg": {"epochs": 30, "conv": "gine", "test_judge": 1}}
+{"name": "j_gine_ja_test_ds", "cfg": {"epochs": 30, "conv": "gine", "test_judge": 0, "judge_aug": 0.5}}
+{"name": "j_gine_ja_test_hk", "cfg": {"epochs": 30, "conv": "gine", "test_judge": 1, "judge_aug": 0.5}}

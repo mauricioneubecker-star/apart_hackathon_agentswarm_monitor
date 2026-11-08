@@ -41,7 +41,7 @@ DEFAULT = dict(hid=64, layers=3, conv="rgine", reverse=True, vn=True, tmem="none
                heads=4, aggr=["sum", "mean", "max"], edge_readout=True, att_pool=True, edge_update=True,
                epochs=40, lr=2e-3, wd=1e-4, batch_runs=8, pos_weight=3.0, focal_gamma=0.0, w_aux=0.5, w_risk=0.2,
                w_node=0.5, edge_drop=0.1, feat_noise=0.05, swa_last=8, seeds=1, feat="headline", clock=False,
-               label_smooth=0.0, judge_aug=0.0, crop=0, swa=0, swa_lr=0.25)
+               label_smooth=0.0, judge_aug=0.0, crop=0, swa=0, swa_lr=0.25, test_judge=-1)
 
 _D = {}
 
@@ -81,7 +81,7 @@ def fit_models(data_path, cfg, train_runs_idx, seed=0, control=None, verbose=Fal
     torch.set_num_threads(1)
     c = {**DEFAULT, **cfg}
     D = get_data(data_path, c["feat"], c["clock"])
-    if c["judge_aug"] > 0 and not D.alt:
+    if (c["judge_aug"] > 0 or c["test_judge"] >= 0) and not D.alt:
         for j in ("night_ds", "night_hk"):
             D.add_judge(os.path.join(os.path.dirname(os.path.normpath(data_path)), j))
     tr = [D.runs[i] for i in train_runs_idx]
@@ -89,7 +89,8 @@ def fit_models(data_path, cfg, train_runs_idx, seed=0, control=None, verbose=Fal
     # input controls corrupt the prediction batch too (otherwise the test graphs still carry the real structure)
     pgen = torch.Generator().manual_seed(seed * 1000 + 999)
     pb = (D.batch([D.runs[i] for i in pred_runs_idx], pgen, rewire=(control == "rewire"),
-                  shuffle_ef=(control == "shuffle_ef")) if pred_runs_idx is not None else None)
+                  shuffle_ef=(control == "shuffle_ef"), judge=c["test_judge"])
+          if pred_runs_idx is not None else None)   # test_judge: 0 = DeepSeek only, 1 = Haiku only (judge swap)
     preds, states = [], []
     for s in range(c["seeds"]):
         sd = seed * 1000 + s
