@@ -64,7 +64,7 @@ If either is still a placeholder, ask me once. If I don't answer, run without Pa
      and, if the base is present, one of `night_vx_ft_base`. Pass if: no `error.txt`, invalid JSON of the 4B agents
      (`ft4-persistent` / `base4` in `vx_summary.py`) < 15 %, and the 4B agents act and send messages.
    - Fallbacks:
-     - fine-tune fails → drop all three `night_vx_ft*` splits;
+     - fine-tune fails → drop both `night_vx_ft*` splits;
      - base not hosted or fails → keep only `night_vx_ft` and note "Part C = population shift only, not
        attributable to persistence".
 5. **Full run.** Build `WHERE` from the gates. The default is
@@ -75,7 +75,7 @@ If either is still a placeholder, ask me once. If I don't answer, run without Pa
    export SWARM_FT_MODEL=... SWARM_FT_BASE_MODEL=... [SWARM_FT_OMIT_PARAMS=reasoning_effort]
    OUT=runs_vx WHERE="..." STAGE2_WHERE="..." STAGE2_REPS=1 STOP_AT=2359 nohup bash tools/night_run.sh > runs_vx_night.out 2>&1 &
    ```
-   Expected: up to 135 episodes, about 4.5 h on 4 sim keys. Check how many keys `secrets.local.json` has; all except
+   Expected: up to 121 episodes, about 4 h on 4 sim keys. Check how many keys `secrets.local.json` has; all except
    the jury keys simulate.
 6. **Monitoring** every ~15 min until `runs_vx/_logs/DONE` exists:
    - `tail runs_vx/_logs/night.log`, `tools/night_util.py finished runs_vx`, and the number of `error.txt` files.

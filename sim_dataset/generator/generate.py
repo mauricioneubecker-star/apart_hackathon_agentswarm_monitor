@@ -556,11 +556,10 @@ VX_ARMS = {   # arm -> (split, replicates_planned)
     "topo": ("night_vx_topo", 1),        # scale-free visibility graph (local-channel bases only)
     "bal": ("night_vx_pop_bal", 0),      # reserve (not run by default): balanced 6/6/6/6 mix of the train models
     # persistence fine-tune block (VALIDATION.md section 2.5): the 12 agents flagged `persistent` (persistent_share 0.5,
-    # stratified stuck/solvable, never seeds/tech lead/auditor) move to a 4B model; the 3 arms are exact twins of
-    # each other and differ only in model / persona sentence
-    "ft4": ("night_vx_ft", 1),           # fine-tuned persistent 4B, persona sentence removed (trained persistence)
-    "p4": ("night_vx_ft_prompt", 1),     # 4B base + persistence persona sentence (prompted persistence, same model)
-    "b4": ("night_vx_ft_base", 1),       # 4B base, persona sentence removed (no persistence)
+    # stratified stuck/solvable, never seeds/tech lead/auditor) move to a 4B model, persona sentence removed in both
+    # arms; the 2 arms are exact twins of each other and differ only in the model (fine-tune vs. its base)
+    "ft4": ("night_vx_ft", 1),           # fine-tuned persistent 4B
+    "b4": ("night_vx_ft_base", 1),       # the same 4B base model, not fine-tuned
 }
 VX_FT_MODELS = {   # provider ids are resolved from the environment at run time (runner/run.py resolve_env_models)
     "ft4-persistent": {"family": "ft4", "arch": "dense", "size": "4b", "split_role": "heldout_finetune",
@@ -630,7 +629,7 @@ def vx_arm_params(p: dict, arm: str) -> tuple[dict, int] | None:
         p.update(VX_ENF, sanctions="enforced")
         if p["enforcer"] == "none":   # keep an existing enforcer (auditor_agent changes the role draws)
             p["enforcer"] = "automated"
-    elif arm in ("ft4", "p4", "b4"):
+    elif arm in ("ft4", "b4"):
         p["persistent_share"] = 0.5   # bases with 0.0 get the flags too (own RNG; other agents unchanged)
     elif arm == "topo":
         if p["channels"] == "board" or p["topology"] != "small_world":
@@ -667,15 +666,14 @@ def vx_swap_models(sc: dict, arm: str, k: int) -> dict:
 
 
 def vx_ft_swap(sc: dict, arm: str) -> dict:
-    """Put the agents flagged `persistent` on the 4B model of the arm; ft4/b4 drop the persistence persona sentence
-    (as runner/run.py with_persistent_model does), p4 keeps it."""
+    """Put the agents flagged `persistent` on the 4B model of the arm and drop the persistence persona sentence
+    (as runner/run.py with_persistent_model does), so only the weights differ between ft4 and b4."""
     from config import PERSONAS
     key = "ft4-persistent" if arm == "ft4" else "base4"
     flagged = [a for a in sc["population"] if a["flags"].get("persistent")]
     for a in flagged:
         a["model"] = key
-        if arm != "p4":
-            a["system_prompt"] = a["system_prompt"].replace(" " + PERSONAS["persistent"], "").replace(
+        a["system_prompt"] = a["system_prompt"].replace(" " + PERSONAS["persistent"], "").replace(
                 PERSONAS["persistent"], "")
     used = sorted({a["model"] for a in sc["population"]})
     sc["models"] = {m: (VX_FT_MODELS[m] if m in VX_FT_MODELS else MODELS[m]) for m in used}
@@ -706,7 +704,7 @@ def gen_night_vx():
             sc = build_scenario(sid, p, stable_seed(c["base"]), "core", f"core_{split}", split, rounds=rounds)
             if arm in ("glm", "bal"):
                 sc = vx_swap_models(sc, arm, k)
-            elif arm in ("ft4", "p4", "b4"):
+            elif arm in ("ft4", "b4"):
                 sc = vx_ft_swap(sc, arm)
             write(sc, "core")
             out.append(sc)

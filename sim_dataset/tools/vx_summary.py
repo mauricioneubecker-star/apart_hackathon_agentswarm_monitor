@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "generator"))
 from query import Dataset  # noqa: E402
 
-ARMS = ["id", "time", "glm", "enf", "topo", "bal", "ft4", "p4", "b4", "rep"]
+ARMS = ["id", "time", "glm", "enf", "topo", "bal", "ft4", "b4", "rep"]
 
 
 def run_rows(out: Path, ds: Dataset):
@@ -112,7 +112,7 @@ def main():
                                                        mean_d_violators=("d_nv", "mean"))
             print("## Paired outcome change vs. id rep0 (same base)\n")
             print(md(P.round(2)), "\n")
-        F = A[A.arm.isin(["ft4", "p4", "b4"])]
+        F = A[A.arm.isin(["ft4", "b4"])]
         if len(F):
             print("## 4B block: violators among the agents on the 4B model\n")
             print(md(F.groupby("arm", observed=True).agg(runs=("rep", "size"), on_4b=("n_persistent", "mean"),
