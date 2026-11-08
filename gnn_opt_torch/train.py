@@ -38,7 +38,7 @@ DEFAULT = dict(hid=64, layers=3, conv="rgine", reverse=True, vn=True, tmem="none
                heads=4, aggr=["sum", "mean", "max"], edge_readout=True, att_pool=True, edge_update=True,
                epochs=40, lr=2e-3, wd=1e-4, batch_runs=8, pos_weight=3.0, focal_gamma=0.0, w_aux=0.5, w_risk=0.2,
                w_node=0.5, edge_drop=0.1, feat_noise=0.05, swa_last=8, seeds=1, feat="headline", clock=False,
-               label_smooth=0.0, judge_aug=0.0)
+               label_smooth=0.0, judge_aug=0.0, crop=0)
 
 _D = {}
 
@@ -64,6 +64,12 @@ def bce(logit, y, pw=1.0, gamma=0.0, ls=0.0):
         pt = torch.where(yy > 0.5, p, 1 - p)
         l = l * (1 - pt).pow(gamma)
     return (w * l).sum() / w.sum()
+
+
+def crop_run(r, k):
+    if k <= 0:
+        return r
+    return {**r, "snaps": r["snaps"][k:], "tab": r["tab"][:, k:]}
 
 
 def fit_models(data_path, cfg, train_runs_idx, seed=0, control=None, verbose=False, keep_states=False,
@@ -101,7 +107,10 @@ def fit_models(data_path, cfg, train_runs_idx, seed=0, control=None, verbose=Fal
             for i in range(0, len(tr), c["batch_runs"]):
                 bi = order[i:i + c["batch_runs"]]
                 jd = int(np.random.randint(len(D.alt))) if (D.alt and np.random.rand() < c["judge_aug"]) else -1
-                b = D.batch([tr[j] for j in bi], gen, c["edge_drop"], c["feat_noise"],
+                runs_b = [tr[j] for j in bi]
+                if c["crop"] > 0:     # random start-crop: the temporal block cannot rely on the episode start
+                    runs_b = [crop_run(r, np.random.randint(0, c["crop"] + 1)) for r in runs_b]
+                b = D.batch(runs_b, gen, c["edge_drop"], c["feat_noise"],
                             rewire=(control == "rewire"), shuffle_ef=(control == "shuffle_ef"), judge=jd)
                 if perm_lab is not None:
                     lb = D.batch([tr[perm_lab[j]] for j in bi])

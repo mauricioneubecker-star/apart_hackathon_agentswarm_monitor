@@ -1,3 +1,5 @@
+{"name": "c_gine_crop8", "cfg": {"epochs": 30, "conv": "gine", "crop": 8}}
+{"name": "c_gine_crop15", "cfg": {"epochs": 30, "conv": "gine", "crop": 15}}
 {"name": "c_gine_seeds3", "cfg": {"epochs": 30, "conv": "gine", "seeds": 3}}
 {"name": "c_gine_nomtl", "cfg": {"epochs": 30, "conv": "gine", "w_aux": 0, "w_risk": 0, "w_node": 0}}
 {"name": "c_gine_nonode", "cfg": {"epochs": 30, "conv": "gine", "w_node": 0}}
