@@ -1,0 +1,25 @@
+{"id_auroc": 0.8792489552922319, "id_auprc": 0.27316342428280604, "name": "s_base_r1", "cv": "id0", "control": null, "wall_s": 609, "cfg": {"epochs": 30}}
+{"id_auroc": 0.8796611139733241, "id_auprc": 0.313360900232533, "name": "s_base", "cv": "id0", "control": null, "wall_s": 609, "cfg": {"epochs": 30}}
+{"id_auroc": 0.8754135897876238, "id_auprc": 0.26303144060420414, "name": "s_gine", "cv": "id0", "control": null, "wall_s": 1142, "cfg": {"epochs": 30, "conv": "gine"}}
+{"id_auroc": 0.8404556643196519, "id_auprc": 0.28711925886544426, "name": "s_base_r2", "cv": "id0", "control": null, "wall_s": 1147, "cfg": {"epochs": 30}}
+{"id_auroc": 0.8482134066059878, "id_auprc": 0.29473773359573624, "name": "s_norev", "cv": "id0", "control": null, "wall_s": 1429, "cfg": {"epochs": 30, "reverse": false}}
+{"id_auroc": 0.8495849791058447, "id_auprc": 0.2589725743669466, "name": "s_gatv2", "cv": "id0", "control": null, "wall_s": 1604, "cfg": {"epochs": 30, "conv": "gatv2"}}
+{"id_auroc": 0.8605277920888432, "id_auprc": 0.258152640517893, "name": "s_tf", "cv": "id0", "control": null, "wall_s": 1644, "cfg": {"epochs": 30, "conv": "transformer"}}
+{"id_auroc": 0.8330345182895414, "id_auprc": 0.28168112009347, "name": "s_tmem_gru", "cv": "id0", "control": null, "wall_s": 2001, "cfg": {"epochs": 30, "tmem": "gru"}}
+{"id_auroc": 0.8429217470948537, "id_auprc": 0.2480990085971426, "name": "s_tmem_conv5", "cv": "id0", "control": null, "wall_s": 2290, "cfg": {"epochs": 30, "tmem": "conv5"}}
+{"id_auroc": 0.7933642452344153, "id_auprc": 0.19466667894924294, "name": "s_gtemp_none", "cv": "id0", "control": null, "wall_s": 2503, "cfg": {"epochs": 30, "gtemp": "none"}}
+{"id_auroc": 0.8755189192283473, "id_auprc": 0.2815096141271535, "name": "s_gtemp_none_tmem_gru", "cv": "id0", "control": null, "wall_s": 2718, "cfg": {"epochs": 30, "gtemp": "none", "tmem": "gru"}}
+{"id_auroc": 0.8201476901940581, "id_auprc": 0.23791762097680422, "name": "s_gtemp_conv5", "cv": "id0", "control": null, "wall_s": 2807, "cfg": {"epochs": 30, "gtemp": "conv5"}}
+{"id_auroc": 0.8764119297040471, "id_auprc": 0.2548658997533612, "name": "s_novn", "cv": "id0", "control": null, "wall_s": 3230, "cfg": {"epochs": 30, "vn": false}}
+{"id_auroc": 0.8902146659797354, "id_auprc": 0.29120150396566286, "name": "s_noer", "cv": "id0", "control": null, "wall_s": 3319, "cfg": {"epochs": 30, "edge_readout": false}}
+{"id_auroc": 0.8513618409754422, "id_auprc": 0.30015009767156564, "name": "s_noap", "cv": "id0", "control": null, "wall_s": 3591, "cfg": {"epochs": 30, "att_pool": false}}
+{"id_auroc": 0.8710424179975956, "id_auprc": 0.2783808898235649, "name": "s_noer_noap", "cv": "id0", "control": null, "wall_s": 3684, "cfg": {"epochs": 30, "edge_readout": false, "att_pool": false}}
+{"id_auroc": 0.8420104184555499, "id_auprc": 0.24318304386287004, "name": "s_waux0", "cv": "id0", "control": null, "wall_s": 4191, "cfg": {"epochs": 30, "w_aux": 0.0}}
+{"id_auroc": 0.868388574045452, "id_auprc": 0.2701828904855429, "name": "s_wnode0", "cv": "id0", "control": null, "wall_s": 4325, "cfg": {"epochs": 30, "w_node": 0.0}}
+{"id_auroc": 0.8070616520693802, "id_auprc": 0.28410567695188815, "name": "s_wrisk0", "cv": "id0", "control": null, "wall_s": 4503, "cfg": {"epochs": 30, "w_risk": 0.0}}
+{"id_auroc": 0.8194195431907951, "id_auprc": 0.28469819566843746, "name": "s_noauxloss", "cv": "id0", "control": null, "wall_s": 4762, "cfg": {"epochs": 30, "w_aux": 0.0, "w_node": 0.0, "w_risk": 0.0}}
+{"id_auroc": 0.8688213406605987, "id_auprc": 0.25209427294117576, "name": "s_wnode1_wrisk05", "cv": "id0", "control": null, "wall_s": 4948, "cfg": {"epochs": 30, "w_node": 1.0, "w_risk": 0.5}}
+{"id_auroc": 0.8451038983341921, "id_auprc": 0.24782828742953306, "name": "s_pw1", "cv": "id0", "control": null, "wall_s": 5193, "cfg": {"epochs": 30, "pos_weight": 1.0}}
+{"id_auroc": 0.869505982025302, "id_auprc": 0.28103913415154824, "name": "s_pw6", "cv": "id0", "control": null, "wall_s": 5304, "cfg": {"epochs": 30, "pos_weight": 6.0}}
+{"id_auroc": 0.8683702558818478, "id_auprc": 0.25989763881905137, "name": "s_focal2", "cv": "id0", "control": null, "wall_s": 5412, "cfg": {"epochs": 30, "pos_weight": 1.0, "focal_gamma": 2.0}}
+{"id_auroc": 0.8626549888373691, "id_auprc": 0.25690643431166443, "name": "s_focal1_pw3", "cv": "id0", "control": null, "wall_s": 5502, "cfg": {"epochs": 30, "focal_gamma": 1.0}}

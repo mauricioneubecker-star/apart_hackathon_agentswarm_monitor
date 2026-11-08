@@ -91,7 +91,12 @@ class Data:
         z = np.load(os.path.join(data_dir, "graphs.npz"), allow_pickle=False)
         assert len(z["ES"]) == len(self.ES) and (z["ES"] == self.ES.numpy()).all()
         X, EF = self._feats(z, self.e_names, self.n_names, self.clock, self.S)
-        self.alt.append((torch.from_numpy(X), torch.from_numpy(EF)))
+        EF = torch.from_numpy(EF)
+        # a single judge has no disagreement (all NaN there): keep the merged-jury value instead of a constant 0
+        if "jury_disagreement" in self.e_names:
+            i = self.e_names.index("jury_disagreement")
+            EF[:, i] = self.EF[:, i]
+        self.alt.append((torch.from_numpy(X), EF))
 
     def _init_rest(self, z, S, rel):
         self.ES = torch.from_numpy(z["ES"].astype(np.int64))
