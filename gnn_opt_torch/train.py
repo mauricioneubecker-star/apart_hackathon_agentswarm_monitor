@@ -77,7 +77,10 @@ def fit_models(data_path, cfg, train_runs_idx, seed=0, control=None, verbose=Fal
             D.add_judge(os.path.join(os.path.dirname(os.path.normpath(data_path)), j))
     tr = [D.runs[i] for i in train_runs_idx]
     D.fit_norm(tr)
-    pb = D.batch([D.runs[i] for i in pred_runs_idx]) if pred_runs_idx is not None else None
+    # input controls corrupt the prediction batch too (otherwise the test graphs still carry the real structure)
+    pgen = torch.Generator().manual_seed(seed * 1000 + 999)
+    pb = (D.batch([D.runs[i] for i in pred_runs_idx], pgen, rewire=(control == "rewire"),
+                  shuffle_ef=(control == "shuffle_ef")) if pred_runs_idx is not None else None)
     preds, states = [], []
     for s in range(c["seeds"]):
         sd = seed * 1000 + s

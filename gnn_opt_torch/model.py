@@ -135,7 +135,7 @@ class TemporalBlock(nn.Module):
             y = self.conv(F.pad(x.transpose(1, 2), (self.K - 1, 0))).transpose(1, 2)
             y = F.gelu(y)
         else:
-            i = torch.arange(T)
+            i = torch.arange(T, device=x.device)
             mask = (i[None, :] > i[:, None]) | (i[:, None] - i[None, :] >= self.K)   # True = blocked
             y, _ = self.mha(x, x, x, attn_mask=mask)
         return self.norm(x + self.drop(y))
@@ -172,7 +172,7 @@ class STGNN(nn.Module):
         e = self.eenc(torch.cat([ef, F.one_hot(rel, self.n_rel).float()], 1))
         h = self.nenc(x)
         N = h.shape[0]
-        cnt = seg_sum(torch.ones(N, 1), ng, G).clamp_min(1)
+        cnt = seg_sum(h.new_ones(N, 1), ng, G).clamp_min(1)
         vn = h.new_zeros(G, h.shape[1])
         for li, layer in enumerate(self.layers):
             if self.vn:
@@ -189,7 +189,7 @@ class STGNN(nn.Module):
         if self.edge_readout:
             E2 = e.shape[0]
             eg = ng[dst]
-            ce = seg_sum(torch.ones(E2, 1), eg, G).clamp_min(1)
+            ce = seg_sum(e.new_ones(E2, 1), eg, G).clamp_min(1)
             parts += [seg_max(e, eg, G), seg_sum(e, eg, G) / ce]
         g = self.proj(torch.cat(parts, 1))
         if self.gtemp is not None:
