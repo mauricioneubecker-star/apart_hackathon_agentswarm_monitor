@@ -4,6 +4,27 @@ Frozen, reusable baselines of LLM-based communication oversight for the swarm-ti
 the rows and labels the GNN uses. The GNN itself is not trained or tuned here; it plugs in later through a
 prediction CSV (`--compare` / `--combine`). Results: [`results/llm_monitor/RESULTS.md`](../results/llm_monitor/RESULTS.md).
 
+## Headline (night batch, protocol a: pooled OOF, 6,468 rows / 303 positives, 95 % CI over configs)
+
+| Predictor | AUROC | AUPRC | time-matched AUROC | within mixed config × time |
+|---|---|---|---|---|
+| clock | 0.783 [0.742, 0.823] | 0.112 | 0.698 | 0.682 |
+| feature pairwise monitor | 0.804 [0.770, 0.836] | 0.174 | 0.784 | 0.627 |
+| bag-of-edges | 0.839 [0.809, 0.871] | 0.227 | 0.825 | 0.712 |
+| bag + graph | 0.864 [0.832, 0.894] | 0.262 | 0.844 | 0.748 |
+| oracle count + clock (not observable) | 0.934 [0.911, 0.956] | 0.580 | 0.897 | 0.895 |
+| LLM global_full, zero-shot (k = 3) | 0.844 [0.810, 0.878] | 0.169 | 0.839 | 0.746 |
+| LLM global_window, zero-shot | 0.856 [0.828, 0.887] | 0.185 | 0.835 | 0.718 |
+| LLM pairwise, zero-shot | 0.890 [0.865, 0.916] | 0.240 | 0.871 | 0.824 |
+| LLM agent (ego), zero-shot | 0.888 [0.863, 0.914] | 0.230 | 0.873 | 0.838 |
+| LLM global_full + notices (NON-PARITY), stacked LR | 0.901 [0.880, 0.922] | 0.328 | | |
+
+Local LLM monitors (one conversation or one agent at a time, max-pooled) beat the global transcript monitors and
+are on par with or slightly above bag + graph (+0.026 AUROC, CI [−0.002, 0.055]). Stacking the bag-of-edges score
+onto the LLM features (`--combine`) adds +0.012 to global_full and nothing to pairwise. Full tables, frozen
+protocol, slices, run / node level, lead time, cost and reliability: `results/llm_monitor/RESULTS.md`.
+Total API cost for all 7 variants on the night batch: $39.
+
 ## Rerun on new runs (one command)
 
 ```bash
@@ -139,6 +160,13 @@ and the sanity plot p_tip_3 vs rounds-to-θ ([`results/llm_monitor/dev/`](../res
 | global_window | r0 | 240 / 240 | 0 | 0.934 | frozen, no revision |
 | pairwise | r0 | 798 / 798 | 0 | 0.923 | frozen, no revision |
 | agent | r0 | 1210 / 1210 | 0 | 0.926 | frozen, no revision |
+| global_full_informed | r0 | 240 / 240 | 0 | 0.935 | frozen, no revision (checked after the run) |
+| global_full_notices | r0 | 240 / 240 | 0 | 0.918 | frozen, no revision (checked after the run) |
+| global_sequential | r0 | 239 / 240 | 0 | 0.945 | frozen, no revision (checked after the run) |
+
+P0/P1 and `agent` were checked on the dev runs before the full runs. The three P2 global variants were run once at
+r0 on all night runs (dev runs included) and their dev rows checked afterwards with the same criteria; none needed a
+revision, so no output was re-scored.
 
 The sanity plot shows p_tip_3 rising in the ~8 rounds before θ and peaking at the tip, and a slower rise toward
 the cut in untipped runs (two of the four untipped dev runs had 5 and 2 violators). No revision was needed;

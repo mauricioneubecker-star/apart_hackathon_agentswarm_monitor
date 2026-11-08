@@ -203,12 +203,14 @@ def figures(out, D, preds, res_a):
     show = [n for n in ("clock", "pairwise", "bag", "bag+graph", "oracle") if n in preds] + \
         [n for n in preds if n.startswith("zs:") or n in ("lr:global_full", "lr:pairwise")]
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(10, 4.2))
-    for n in show:
+    colors = plt.get_cmap("tab20").colors
+    for i, n in enumerate(show):
+        kw = {"color": colors[i % 20], "lw": 1.2, "label": name(n), "ls": "--" if n == "oracle" else "-"}
         m = rows & ~np.isnan(preds[n])
         fpr, tpr, _ = roc_curve(D.y[m], preds[n][m])
         pr, rc, _ = precision_recall_curve(D.y[m], preds[n][m])
-        a1.plot(fpr, tpr, lw=1.2, label=name(n), ls="--" if n == "oracle" else "-")
-        a2.plot(rc, pr, lw=1.2, label=name(n), ls="--" if n == "oracle" else "-")
+        a1.plot(fpr, tpr, **kw)
+        a2.plot(rc, pr, **kw)
     a1.plot([0, 1], [0, 1], color="grey", lw=0.6)
     a1.axvline(0.05, color="grey", lw=0.6, ls=":")
     a1.set_xlabel("FPR"), a1.set_ylabel("TPR"), a1.set_title("ROC (protocol a, OOF)")
