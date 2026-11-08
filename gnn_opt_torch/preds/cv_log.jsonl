@@ -1,2 +1,3 @@
 {"id_auroc": 0.8632365905317992, "id_auprc": 0.2639754742175617, "name": "smoke_default", "cv": "id0", "control": null, "wall_s": 590, "cpu_s": 1515, "cfg": {"epochs": 30}}
 {"id_auroc": 0.8632365905317992, "id_auprc": 0.2639754742175617, "name": "a_rgine_ggru__id0", "cv": "id0", "control": null, "wall_s": 590, "cfg": {"epochs": 30}}
+{"id_auroc": 0.8841673822199325, "id_auprc": 0.2768194548680678, "name": "a_gine_ggru__id0", "cv": "id0", "control": null, "wall_s": 876, "cfg": {"epochs": 30, "conv": "gine"}}
