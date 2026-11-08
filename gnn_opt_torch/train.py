@@ -44,6 +44,13 @@ DEFAULT = dict(hid=64, layers=3, conv="rgine", reverse=True, vn=True, tmem="none
                label_smooth=0.0, judge_aug=0.0, crop=0, swa=0, swa_lr=0.25)
 
 _D = {}
+DEVICE = os.environ.get("GNN_DEVICE", "cpu")     # cpu | mps (queue_cv --mps K sets it per worker)
+
+
+def to_dev(b, dev):
+    if str(dev) == "cpu":
+        return b
+    return {k: (v.to(dev) if torch.is_tensor(v) else v) for k, v in b.items()}
 
 
 def get_data(path, feat, clock):
@@ -79,6 +86,7 @@ def fit_models(data_path, cfg, train_runs_idx, seed=0, control=None, verbose=Fal
                pred_runs_idx=None):
     """Train cfg['seeds'] models; returns (snapshot-ensembled predictions for pred_runs_idx, saved states)."""
     torch.set_num_threads(1)
+    dev = torch.device(DEVICE)
     c = {**DEFAULT, **cfg}
     D = get_data(data_path, c["feat"], c["clock"])
     if c["judge_aug"] > 0 and not D.alt:
@@ -90,13 +98,15 @@ def fit_models(data_path, cfg, train_runs_idx, seed=0, control=None, verbose=Fal
     pgen = torch.Generator().manual_seed(seed * 1000 + 999)
     pb = (D.batch([D.runs[i] for i in pred_runs_idx], pgen, rewire=(control == "rewire"),
                   shuffle_ef=(control == "shuffle_ef")) if pred_runs_idx is not None else None)
+    snaps_pb = pb["snaps"].numpy() if pb is not None else None
+    pb = to_dev(pb, dev) if pb is not None else None
     preds, states = [], []
     for s in range(c["seeds"]):
         sd = seed * 1000 + s
         torch.manual_seed(sd)
         np.random.seed(sd)
         gen = torch.Generator().manual_seed(sd)
-        model = STGNN(D.d_node, D.d_edge, **c)
+        model = STGNN(D.d_node, D.d_edge, **c).to(dev)
         opt = torch.optim.AdamW(model.parameters(), lr=c["lr"], weight_decay=c["wd"])
         n_one = c["epochs"] - (c["swa_last"] if c["swa"] else 0)
         steps = n_one * int(np.ceil(len(tr) / c["batch_runs"]))
@@ -113,15 +123,17 @@ def fit_models(data_path, cfg, train_runs_idx, seed=0, control=None, verbose=Fal
                 bi = order[i:i + c["batch_runs"]]
                 jd = int(np.random.randint(len(D.alt))) if (D.alt and np.random.rand() < c["judge_aug"]) else -1
                 runs_b = [tr[j] for j in bi]
+                ks = np.random.randint(0, c["crop"] + 1, len(bi)) if c["crop"] > 0 else np.zeros(len(bi), int)
                 if c["crop"] > 0:     # random start-crop: the temporal block cannot rely on the episode start
-                    runs_b = [crop_run(r, np.random.randint(0, c["crop"] + 1)) for r in runs_b]
+                    runs_b = [crop_run(r, k) for r, k in zip(runs_b, ks)]
                 b = D.batch(runs_b, gen, c["edge_drop"], c["feat_noise"],
                             rewire=(control == "rewire"), shuffle_ef=(control == "shuffle_ef"), judge=jd)
                 if perm_lab is not None:
-                    lb = D.batch([tr[perm_lab[j]] for j in bi])
+                    lb = D.batch([crop_run(tr[perm_lab[j]], k) for j, k in zip(bi, ks)])
                     for k in ("y3", "y5", "yrel3", "risk"):
                         b[k] = lb[k]
                     b["nlab"] = torch.full_like(b["nlab"], float("nan"))
+                b = to_dev(b, dev)
                 og, on, _ = model(b)
                 loss = bce(og[:, 0], b["y3"], c["pos_weight"], c["focal_gamma"], c["label_smooth"])
                 if c["w_aux"] > 0:
@@ -149,7 +161,7 @@ def fit_models(data_path, cfg, train_runs_idx, seed=0, control=None, verbose=Fal
                 continue_ = False
             if not continue_ and ep >= c["epochs"] - c["swa_last"]:
                 if keep_states:
-                    states.append({k: v.detach().clone() for k, v in model.state_dict().items()})
+                    states.append({k: v.detach().cpu().clone() for k, v in model.state_dict().items()})
                 if pb is not None:
                     model.eval()
                     with torch.no_grad():
@@ -162,18 +174,18 @@ def fit_models(data_path, cfg, train_runs_idx, seed=0, control=None, verbose=Fal
         if swa_model is not None:
             sm = swa_model.module
             if keep_states:
-                states.append({k: v.detach().clone() for k, v in sm.state_dict().items()})
+                states.append({k: v.detach().cpu().clone() for k, v in sm.state_dict().items()})
             if pb is not None:
                 sm.eval()
                 with torch.no_grad():
                     og, _, _ = sm(pb)
                 acc, n_acc = torch.stack([torch.sigmoid(og[:, 0]), og[:, 3].exp()], 1), 1
         if pb is not None:
-            preds.append(acc / n_acc)
+            preds.append((acc / n_acc).cpu())
     out = None
     if pb is not None:
         P = torch.stack(preds).mean(0).numpy()
-        snaps = pb["snaps"].numpy()
+        snaps = snaps_pb
         S = D.S
         out = pd.DataFrame({"run": S.run.values[snaps], "round": S["round"].values[snaps], "score": P[:, 0],
                             "count": P[:, 1]})
@@ -216,11 +228,12 @@ def _job(args):
 
 def cv_jobs(D, which, seed_base=0):
     F_ = json.load(open(FOLDS))
-    kinds = {"all": ["id", "lodo"], "id": ["id"], "lodo": ["lodo"], "id0": ["id0"], "id0+lodo": ["id0", "lodo"]}[which]
+    kinds = {"all": ["id", "lodo"], "id": ["id"], "lodo": ["lodo"], "id0": ["id0"], "id1": ["id1"],
+             "id0+lodo": ["id0", "lodo"]}[which]
     tr_runs = [i for i, r in enumerate(D.runs) if r["split"] == TRAIN_SPLIT]
     jobs = []
     for kind in kinds:
-        folds = F_["lodo"] if kind == "lodo" else {k: v for k, v in F_["id"].items() if kind == "id" or k.startswith("id0")}
+        folds = F_["lodo"] if kind == "lodo" else {k: v for k, v in F_["id"].items() if kind == "id" or k.startswith(kind + "_")}
         for name, te_cfgs in folds.items():
             te_cfgs = set(te_cfgs)
             tr = [i for i in tr_runs if D.runs[i]["cfg"] not in te_cfgs]

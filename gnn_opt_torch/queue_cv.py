@@ -14,6 +14,7 @@ import json
 import os
 import sys
 import time
+import multiprocessing as mp
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 import pandas as pd
@@ -21,6 +22,15 @@ import pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import train as T  # noqa: E402
+
+
+def _init_worker(counter, n_mps):
+    """The first n_mps pool workers train on the Apple GPU (MPS), the rest on one CPU thread each."""
+    with counter.get_lock():
+        i = counter.value
+        counter.value += 1
+    if i < n_mps:
+        T.DEVICE = "mps"
 
 
 def summarize_cv(data, P, cvk):
@@ -36,7 +46,7 @@ def summarize_cv(data, P, cvk):
     return {"id_auroc": sum(au) / len(au), "id_auprc": sum(pr) / len(pr)}
 
 
-def run_queue(specs, cv="all", workers=12, data=None, force=False, log=None, out_dir=None):
+def run_queue(specs, cv="all", workers=12, data=None, force=False, log=None, out_dir=None, mps=0):
     """specs: list of {"name", "cfg", ...}. Returns {name: summary dict}."""
     data = data or os.path.join(T.REPO, "gnn_opt_data", "night")
     out_dir = out_dir or os.path.join(HERE, "preds", "cv")
@@ -58,7 +68,9 @@ def run_queue(specs, cv="all", workers=12, data=None, force=False, log=None, out
     print(f"{len(jobs)} jobs, {len(pending)} configs", flush=True)
     if not jobs:
         return results
-    with ProcessPoolExecutor(workers) as ex:
+    ctx = mp.get_context("spawn")
+    with ProcessPoolExecutor(workers, mp_context=ctx, initializer=_init_worker,
+                             initargs=(ctx.Value("i", 0), mps)) as ex:
         futs = {ex.submit(T._job, j[1]): j for j in jobs}
         for f in as_completed(futs):
             name, args, sp = futs[f]
@@ -92,9 +104,10 @@ def main():
     ap.add_argument("--data", default=os.path.join(T.REPO, "gnn_opt_data", "night"))
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--log", default=os.path.join(HERE, "preds", "cv_log.jsonl"), help="summary log (JSONL)")
+    ap.add_argument("--mps", type=int, default=0, help="number of workers on the Apple GPU (rest: 1 CPU thread)")
     a = ap.parse_args()
     specs = [json.loads(l) for l in open(a.jobs) if l.strip() and not l.startswith("#")]
-    run_queue(specs, a.cv, a.workers, a.data, a.force, a.log)
+    run_queue(specs, a.cv, a.workers, a.data, a.force, a.log, mps=a.mps)
 
 
 if __name__ == "__main__":
