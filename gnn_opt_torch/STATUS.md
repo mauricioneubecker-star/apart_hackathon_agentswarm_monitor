@@ -4,7 +4,7 @@ Cloud session (4 CPU, no GPU), branch gnn-opt-torch:
 - [done] architecture screen on ID repeat 0 (5 folds): experiments/arch_id0.jsonl -> preds/cv/a_*__id0.csv
 - [running] stage 2: top 5 architectures on all 18 folds (experiments/stage2.jsonl, b_*)
 - [queued] stage 3 = LODO robustness on all 18 folds (experiments/stage3.jsonl, c_*) on the node-GRU base: crop=8,
-  judge-swap augmentation, no edge readout, regularisation, 2nd seed; then judge-swap evaluation (j_*)
+  judge-swap augmentation, no edge readout, regularisation, 2nd seed; then GNN feature ablations (f_*: stages S0/S1/S2, +lex, shuffle_ef, rewire on the node-GRU base) and judge-swap evaluation (j_*)
 - FINDING (all 18 folds): GNNs win ID but lose LODO. b_gine_ggru select 0.804 (ID 0.886, LODO mean 0.830, worst
   0.696 = hold_K4); b_tf_ggru 0.800 (worst 0.708 nonboard); hgb_bag+graph+mem 0.848. On hold_K4 the GNN is fine in
   rounds 8-20 (0.79-0.82) and breaks after round 20 (0.61): late-episode dynamics learned on K2 do not transfer.

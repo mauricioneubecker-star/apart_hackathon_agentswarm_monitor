@@ -1,3 +1,9 @@
+{"name": "f_ngru_S0", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none", "feat": "S0"}, "control": null}
+{"name": "f_ngru_S1", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none", "feat": "S1"}, "control": null}
+{"name": "f_ngru_S2", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none", "feat": "S2"}, "control": null}
+{"name": "f_ngru_lex", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none", "feat": "+lex"}, "control": null}
+{"name": "f_ngru_shuffle_ef", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none"}, "control": "shuffle_ef"}
+{"name": "f_ngru_rewire", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none"}, "control": "rewire"}
 {"name": "j_gine_test_ds", "cfg": {"epochs": 30, "conv": "gine", "test_judge": 0}}
 {"name": "j_gine_test_hk", "cfg": {"epochs": 30, "conv": "gine", "test_judge": 1}}
 {"name": "j_gine_ja_test_ds", "cfg": {"epochs": 30, "conv": "gine", "test_judge": 0, "judge_aug": 0.5}}
