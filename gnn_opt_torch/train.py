@@ -97,14 +97,10 @@ def fit_models(data_path, cfg, train_runs_idx, seed=0, control=None, verbose=Fal
     # input controls corrupt the prediction batch too (otherwise the test graphs still carry the real structure)
     pgen = torch.Generator().manual_seed(seed * 1000 + 999)
     pb = (D.batch([D.runs[i] for i in pred_runs_idx], pgen, rewire=(control == "rewire"),
-<<<<<<< HEAD
                   shuffle_ef=(control == "shuffle_ef"), judge=c["test_judge"])
           if pred_runs_idx is not None else None)   # test_judge: 0 = DeepSeek only, 1 = Haiku only (judge swap)
-=======
-                  shuffle_ef=(control == "shuffle_ef")) if pred_runs_idx is not None else None)
     snaps_pb = pb["snaps"].numpy() if pb is not None else None
     pb = to_dev(pb, dev) if pb is not None else None
->>>>>>> 9e5a690e85f771a15fa49f877611ee1313b4d82a
     preds, states = [], []
     for s in range(c["seeds"]):
         sd = seed * 1000 + s
