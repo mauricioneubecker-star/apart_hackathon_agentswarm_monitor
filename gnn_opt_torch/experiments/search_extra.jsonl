@@ -1,0 +1,7 @@
+{"name": "rs1_xbase", "cfg": {"epochs": 30}}
+{"name": "rs1_xnoer", "cfg": {"epochs": 30, "edge_readout": false}}
+{"name": "rs1_xnoer_crop10", "cfg": {"epochs": 30, "edge_readout": false, "crop": 10}}
+{"name": "rs1_xnoer_swa", "cfg": {"epochs": 30, "edge_readout": false, "swa": 1}}
+{"name": "rs1_xnoer_reg", "cfg": {"epochs": 30, "edge_readout": false, "hid": 32, "drop": 0.2, "wd": 0.01, "crop": 5}}
+{"name": "rs1_xtmemgru", "cfg": {"epochs": 30, "gtemp": "none", "tmem": "gru"}}
+{"name": "rs1_xgine_noer", "cfg": {"epochs": 30, "conv": "gine", "edge_readout": false}}

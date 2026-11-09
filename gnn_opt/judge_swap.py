@@ -1,54 +1,54 @@
 #!/usr/bin/env python3
-"""Judge-swap ablation: rebuild graph_edges.csv / graph_nodes.csv with ONE judge's scores (no disagreement), using
-the project's own feature code (sim_dataset/runner/features.py, jury=<judge>). Outputs go to a cache directory, the
-run directories are not modified.
+"""Single-judge feature builds for the judge-swap augmentation / ablation (sim_dataset runs stay untouched).
 
-  python3 gnn_opt/judge_swap.py --runs sim_dataset/runs_night --judge deepseek-v4-flash
-  python3 gnn_opt/build_dataset.py --runs sim_dataset/runs_night --out gnn_opt_data/night_deepseek --judge deepseek-v4-flash
+  python3 gnn_opt/judge_swap.py --runs sim_dataset/runs_night --judge deepseek-v4-flash --cache gnn_opt_data/cache
+  GNN_OPT_CACHE=gnn_opt_data/cache python3 gnn_opt/build_dataset.py --runs sim_dataset/runs_night \
+      --out gnn_opt_data/night_ds --judge deepseek-v4-flash --no-table
+
+Per run: runner/features.build_features(..., jury=<judge>) (features from jury_<judge>.jsonl only, no NLI; the
+NLI column 'contradiction' is not exported), then the graph_*_<judge>.csv outputs are moved to
+<cache>/judge/<judge>/<cfg>/<rep>/graph_{edges,nodes}.csv, the layout data.load_run reads when a run dir has no
+graph_*_<judge>.csv of its own.
 """
 from __future__ import annotations
 
 import argparse
-import glob
-import json
 import os
 import shutil
 import sys
-import tempfile
 from pathlib import Path
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-REPO = os.path.abspath(os.path.join(HERE, ".."))
-sys.path.insert(0, os.path.join(REPO, "sim_dataset", "runner"))
+REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO / "sim_dataset" / "runner"))
+sys.path.insert(0, str(REPO / "sim_dataset" / "generator"))
+from features import NLI, build_features  # noqa: E402
+from query import Dataset  # noqa: E402
 
 
 def main():
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--runs", required=True)
-    ap.add_argument("--judge", required=True)
-    ap.add_argument("--cache", default=os.environ.get("GNN_OPT_CACHE", "/home/claude/cache"))
+    ap.add_argument("--judge", required=True, help="deepseek-v4-flash | claude-haiku-5-5")
+    ap.add_argument("--cache", default=os.environ.get("GNN_OPT_CACHE", str(REPO / "gnn_opt_data" / "cache")))
     a = ap.parse_args()
-    import features  # noqa: E402
-    scen = os.path.join(REPO, "sim_dataset", "dataset", "scenarios", "core")
+    ds = Dataset(REPO / "sim_dataset" / "dataset")
+    nli = NLI(enabled=False)
+    runs = sorted(p.parent for p in Path(a.runs).glob("*/rep*/meta.json"))
     n = 0
-    for d in sorted(glob.glob(os.path.join(a.runs, "*", "rep*"))):
-        if not os.path.exists(os.path.join(d, f"jury_{a.judge}.jsonl")):
+    for rd in runs:
+        if not (rd / f"jury_{a.judge}.jsonl").exists() or not (rd / "graph_edges.csv").exists():
             continue
-        cfg, rep = os.path.basename(os.path.dirname(d)), os.path.basename(d)
-        out = os.path.join(a.cache, "judge", a.judge, cfg, rep)
-        if os.path.exists(os.path.join(out, "graph_edges.csv")):
+        out = Path(a.cache) / "judge" / a.judge / rd.parent.name / rd.name
+        if (out / "graph_nodes.csv").exists():
+            n += 1
             continue
-        sc = json.load(open(os.path.join(scen, f"{cfg}.json")))
-        with tempfile.TemporaryDirectory() as tmp:
-            for f in ("messages.jsonl", f"jury_{a.judge}.jsonl", "events.jsonl"):
-                if os.path.exists(os.path.join(d, f)):
-                    os.symlink(os.path.abspath(os.path.join(d, f)), os.path.join(tmp, f))
-            features.build_features(sc, Path(tmp), nli=None, jury=a.judge)
-            os.makedirs(out, exist_ok=True)
-            shutil.copy(os.path.join(tmp, f"graph_edges_{a.judge}.csv"), os.path.join(out, "graph_edges.csv"))
-            shutil.copy(os.path.join(tmp, f"graph_nodes_{a.judge}.csv"), os.path.join(out, "graph_nodes.csv"))
+        build_features(ds.load(rd.parent.name), rd, nli, jury=a.judge)
+        out.mkdir(parents=True, exist_ok=True)
+        for k in ("edges", "nodes"):
+            shutil.move(str(rd / f"graph_{k}_{a.judge}.csv"), str(out / f"graph_{k}.csv"))
+        shutil.move(str(rd / f"graph_meta_{a.judge}.json"), str(out / "graph_meta.json"))
         n += 1
-    print(f"{n} runs rebuilt for judge {a.judge} -> {a.cache}/judge/{a.judge}")
+    print(f"{a.judge}: {n}/{len(runs)} runs -> {Path(a.cache) / 'judge' / a.judge}")
 
 
 if __name__ == "__main__":

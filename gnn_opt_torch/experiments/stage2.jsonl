@@ -1,0 +1,5 @@
+{"name": "b_gine_ggru", "cfg": {"epochs": 30, "conv": "gine"}}
+{"name": "b_tf_ggru", "cfg": {"epochs": 30, "conv": "transformer"}}
+{"name": "b_rgine_ggru", "cfg": {"epochs": 30}}
+{"name": "b_rgine_ngru", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none"}}
+{"name": "b_gine_ggru_noedgero", "cfg": {"epochs": 30, "conv": "gine", "edge_readout": false, "edge_update": false}}

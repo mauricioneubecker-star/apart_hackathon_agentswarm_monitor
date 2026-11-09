@@ -1,0 +1,10 @@
+{"name": "f_ngru_S2", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none", "feat": "S2"}, "control": null, "cv": "all"}
+{"name": "f_ngru_S0__id0", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none", "feat": "S0"}, "control": null, "cv": "id0"}
+{"name": "f_ngru_S1__id0", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none", "feat": "S1"}, "control": null, "cv": "id0"}
+{"name": "f_ngru_shuffle_ef__id0", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none"}, "control": "shuffle_ef", "cv": "id0"}
+{"name": "f_ngru_rewire__id0", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none"}, "control": "rewire", "cv": "id0"}
+{"name": "f_ngru_lex__id0lodo", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none", "feat": "+lex"}, "control": null, "cv": "id0+lodo"}
+{"name": "j_ngru_test_ds__id0lodo", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none", "test_judge": 0}, "control": null, "cv": "id0+lodo"}
+{"name": "j_ngru_test_hk__id0lodo", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none", "test_judge": 1}, "control": null, "cv": "id0+lodo"}
+{"name": "j_ngruja_test_ds__id0lodo", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none", "test_judge": 0, "judge_aug": 0.5}, "control": null, "cv": "id0+lodo"}
+{"name": "j_ngruja_test_hk__id0lodo", "cfg": {"epochs": 30, "tmem": "gru", "gtemp": "none", "test_judge": 1, "judge_aug": 0.5}, "control": null, "cv": "id0+lodo"}
