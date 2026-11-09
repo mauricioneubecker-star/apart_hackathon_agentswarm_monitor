@@ -1,12 +1,10 @@
-> **Kurzfassung, Stand 9. Nov. 11:30** (etwa 7 Seiten). Noch offen: zwei Prüfungen dieser Fassung (Fehler durchs
-> Kürzen, Länge), das H7-Ergebnis in den [[Klammern]] (Auswertung läuft) und die Guidelines-Punkte (Anhang
-> „Limitations and Dual-Use“, Autoren, Vorarbeit). Die endgültige Fassung ersetzt diese Datei gegen 11:50.
-
 # Spotting a Swarm Before It Tips: Simulated Data and Early-Warning Monitors for Collective Rule-Breaking in LLM Agent Teams[^1]
 
-Author name 1 / Affiliation · Author name 2 / Affiliation · Author name 3 / Affiliation
+**Mauricio Neubecker** · Technical University of Munich (TUM); Safe AI Germany (SAGE)
 
-Author name 4 / Affiliation · Author name 5 / Affiliation · Author name 6 / Affiliation
+**Tim Würfl** · Technical University of Munich (TUM); Safe AI Germany (SAGE)
+
+**Max Eder** · Technical University of Munich (TUM); Safe AI Germany (SAGE)
 
 *With Apart Research*
 
@@ -14,7 +12,7 @@ Author name 4 / Affiliation · Author name 5 / Affiliation · Author name 6 / Af
 
 ## Abstract
 
-We asked whether messages and the communication graph predict LLM agent teams tipping into rule-breaking. Lacking labelled data, we simulated 24-agent teams with unsolvable tickets and one forbidden shortcut, labelled from tool logs. Of 252 runs in 112 configurations, 101 tipped (≥ 8 of 24 agents used the shortcut). On 36 held-out configurations, monitors predicted tipping three rounds ahead with AUROC 0.800–0.855 (round-counting clock: 0.781). None of 11 pre-specified comparisons survived Holm correction; monitors beat the clock only within absolute-round bins (p ≤ 0.0002, sensitivity analysis), not within pre-registered rounds-to-deadline bins. A frozen graph neural network (0.817) beat neither gradient-boosted trees on counted features (0.812) nor a zero-shot LLM monitor reading single conversations (0.855). In exploratory cross-validation, random rewiring changed nothing, while removing message-content ratings cost 0.10–0.13 AUROC within 5-round bins, beyond training-seed noise. In a pre-registered suite (93 new runs), no frozen monitor lost detectably more AUROC under four shifts than between two replicates (post hoc resolution about 0.2). A pre-registered replication on [[H7: n of 28 planned]] fresh runs of its 14 configurations tested whether a zero-shot LLM monitor reading the full transcript beats the GNN: [[H7: D = X [L, U]; supported / not supported / open]].
+We asked whether messages and the communication graph predict LLM agent teams tipping into rule-breaking. Lacking labelled data, we simulated 24-agent teams with unsolvable tickets and one forbidden shortcut, labelled from tool logs. Of 252 runs in 112 configurations, 101 tipped (≥ 8 of 24 agents used the shortcut). On 36 held-out configurations, monitors predicted tipping three rounds ahead with AUROC 0.800–0.855 (round-counting clock: 0.781). None of 11 pre-specified comparisons survived Holm correction; monitors beat the clock only within absolute-round bins (p ≤ 0.0002, sensitivity analysis), not within pre-registered rounds-to-deadline bins. A frozen graph neural network (0.817) beat neither gradient-boosted trees on counted features (0.812) nor a zero-shot LLM monitor reading single conversations (0.855). In exploratory cross-validation, random rewiring changed nothing, while removing message-content ratings cost 0.10–0.13 AUROC within 5-round bins, beyond training-seed noise. In a pre-registered suite (93 new runs), no frozen monitor lost detectably more AUROC under four shifts than between two replicates (post hoc resolution about 0.2). A pre-registered replication on 27 fresh runs of its 14 configurations did not confirm a post hoc lead of a zero-shot LLM monitor reading the full transcript over the GNN (+0.03 [−0.05, +0.14]).
 
 ## 1. Introduction
 
@@ -29,7 +27,7 @@ Our contributions are:
 1. **A simulator** of 24-agent teams with interdependent tickets, 9–16 of them unsolvable, and exactly one forbidden shortcut that works. Labels come deterministically from the tool-event log.
 2. **A labelled dataset** of 252 runs in 112 configurations (7,560 labelled snapshots), of which 101 tipped; 96% of the 1,514 rule-breakers were never instructed.
 3. **A comparison of eight monitors on identical held-out rows** of 36 configurations: AUROC 0.800–0.855 against 0.781 for a round-counting clock, and none of 11 pre-specified comparisons survived Holm correction. So the monitors did not beat the clock within the pre-registered rounds-to-deadline bins, only within absolute-round bins (p ≤ 0.0002, sensitivity analysis).
-4. **A pre-registered validation suite** of 93 new runs, blind for monitor scores, in which no frozen monitor lost detectably more AUROC under four shifts than between two replicates (post hoc resolution about 0.2). A post hoc lead of the zero-shot LLM monitor reading the full transcript over the GNN was then retested on [[H7: n of 28 planned]] fresh runs ([[H7: D = X [L, U]; supported / not supported / open]]).
+4. **A pre-registered validation suite** of 93 new runs, blind for monitor scores, in which no frozen monitor lost detectably more AUROC under four shifts than between two replicates (post hoc resolution about 0.2). A post hoc lead of the zero-shot LLM monitor reading the full transcript over the GNN was then retested on 27 fresh runs and not confirmed (+0.03 [−0.05, +0.14]).
 
 ## 2. Related Work
 
@@ -131,7 +129,7 @@ Table 4 splits the held-out rows by condition (secondary, uncorrected). On the n
 
 The validation suite gave no evidence of a large degradation, but its resolution is coarse. In none of the 96 comparisons did the interval of arm minus rep1 lie entirely below zero. Post hoc, the suite would have detected with 80% probability only drops of about 0.2 AUROC, not the 0.1 the plan assumed. Because rep1 was the harder replicate for 9 of 12 predictors (11 of the 96 intervals lie entirely above zero), this noise floor may be too generous. By the pre-registered rules, H1–H4 were not supported and H5 was supported, but no interval excludes its decision boundary. H5 and the GNN half of H2 reverse under time-matched AUROC. In H1 (29 run pairs from 6 configurations, partly blind), the GNN reached 0.76 [0.45, 0.97] and the oracle 0.55.
 
-Descriptively, global_full had the highest AUROC among the observable monitors in every arm and in both replicates (0.85–0.95). In a pooled comparison chosen after seeing the results, it led the GNN by +0.082 [+0.049, +0.118], although the two had tied on the held-out rows (0.816 and 0.817). In the replication (H7), [[H7: n of 28 runs and c of 14 configurations evaluated; tipped runs; executions]]. D was [[H7: D = X [L, U]]], so H7 is [[H7: supported / not supported / open]] (secondary: [[H7: time-matched D, global_full − hybrid, pairwise − GNN]]; descriptive: [[H7: 12 predictors]]).
+Descriptively, global_full had the highest AUROC among the observable monitors in every arm and in both replicates (0.85–0.95). In a pooled comparison chosen after seeing the results, it led the GNN by +0.082 [+0.049, +0.118], although the two had tied on the held-out rows (0.816 and 0.817). In the replication (H7), 27 of the 28 planned runs finished and covered all 14 configurations; one run hit a provider rate limit in its last round and, by the stopping rule, was not restarted. Of the 27, 14 tipped. The frozen script ran once. D was +0.032 [−0.052, +0.138] (global_full 0.871, GNN 0.839), so H7 is not supported: the post hoc lead did not replicate. Among the secondary contrasts, time-matched D (+0.010 [−0.155, +0.226]) and global_full − hybrid (+0.004 [−0.071, +0.096]) were near zero, while pairwise exceeded the GNN by +0.116 [+0.046, +0.215] (no decision rule, uncorrected). Across the four unchanged replicates of these configurations, a monitor's AUROC varied by 0.05–0.20, and the clock's drop in rep1 did not recur (0.82, 0.63, 0.80, 0.75).
 
 **Table 4.** Transfer and validation suite (AUROC; secondary, uncorrected). Left four columns: the held-out splits of Table 3 (number of configurations in parentheses; per-split CIs about ±0.1). Right two columns: the validation suite (night_vx) on its 14 new configurations, showing the two unchanged replicates and the range over the four shifted arms (hub network: 7 configurations). Each night_vx cell rests on 15–39 positive rows (hub network: 9–15). There the GNN is a stored file with 15 of its 40 states (held-out AUROC 0.813 instead of 0.817), and the tabular models were refit. The right columns are therefore comparable neither with the left ones nor with Table 3.
 
@@ -148,38 +146,27 @@ The arm with agents fine-tuned for persistence was dropped after its canary run,
 
 ## 5. Discussion and Limitations
 
-**What this means for operators.** Monitors that read only messages warned a median 2–5.5 rounds before the tip. None of them separated from a clock that knows the deadline, and we did not test interventions. Graph structure added nothing we could detect, a known risk for graph-level prediction (GRADE, 2026). The replication ([[H7: D = X [L, U]; supported / not supported / open]]) speaks only to new replicates of the 14 configurations.
+**What this means for operators.** Monitors that read only messages warned a median 2–5.5 rounds before the tip. None of them separated from a clock that knows the deadline, and we did not test interventions. Graph structure added nothing we could detect, a known risk for graph-level prediction (GRADE, 2026). The replication did not confirm the post hoc lead of the full-transcript monitor (+0.03 [−0.05, +0.14]): leads found after looking at the data need fresh runs.
 
-**The hard part is telling which run of a configuration tips.** Within configurations every monitor weakened. A plain re-run changed the outcome in only 1 of 14 configurations, yet cost the clock 0.20 AUROC [0.09, 0.29]. Shift tests therefore need noise floors from several replicates, run interleaved with the shifted arms.
+**The hard part is telling which run of a configuration tips.** Within configurations every monitor weakened. A plain re-run changed the outcome in only 1 of 14 configurations, yet cost the clock 0.20 AUROC [0.09, 0.29], a drop that two further replicates did not reproduce. Shift tests therefore need noise floors from several replicates, run interleaved with the shifted arms.
 
-**Limitations.**
-- Simulation only: one domain, 24 agents, two shortcut types, four models with reasoning off; the tipping rate is set by our calibration.
-- Few positives (45 tipped training runs); the held-out splits are not blind, and the GNN was selected on the cross-validation rows.
-- Unequal inputs: the LLM monitors read task words, global_full sees elapsed time, and Haiku is both monitor and judge.
-- Monitors that read only messages miss silent violations, the merge feed and triggers in tool output; judge agreement was not measured.
-- The peer-message association is observational and cannot separate simple from complex contagion (Centola & Macy, 2007).
-- Validation: 14 configurations, anti-conservative intervals and one replicate pair as noise floor. The stored 15-state GNN failed its row-by-row check and was replaced by a 120-row check, and the H4 thresholds come from cross-validation proxies.
-- Not done: isolation control, run-size baseline, GNN without message passing, degree-preserving rewiring, held-out feature-tier and structure ablations, a systematic horizon curve (only Δ = 2, 3 and 5 exist, exploratory).
+Appendix A lists the limitations and dual-use considerations.
 
 ## 6. Conclusion
 
-Monitors that read only messages predicted tipping three rounds ahead (AUROC 0.800–0.855, against 0.781 for the clock). No pre-specified comparison survived Holm correction, though within absolute-round bins all five primary monitors beat the clock (p ≤ 0.0002, sensitivity analysis). Graph structure added nothing we could detect. H7: [[H7: D = X [L, U]; supported / not supported / open]]. The hard parts are building the data and telling a risky run from a risky setup.
+Monitors that read only messages predicted tipping three rounds ahead (AUROC 0.800–0.855, against 0.781 for the clock). No pre-specified comparison survived Holm correction, though within absolute-round bins all five primary monitors beat the clock (p ≤ 0.0002, sensitivity analysis). Graph structure added nothing we could detect. A pre-registered replication on fresh runs did not confirm the post hoc lead of the full-transcript LLM monitor over the GNN (+0.03 [−0.05, +0.14]). The hard parts are building the data and telling a risky run from a risky setup.
 
 ## Code and Data
 
 **Code:** https://github.com/mauricioneubecker-star/apart_hackathon_agentswarm_monitor. Branch `night-vx-validation` holds the simulator, labels, jury, features, zero-shot LLM monitors and analyses. Branch `gnn-opt-torch` holds the frozen GNN, and `gnn-opt` the evaluation harness and tabular baselines.
 
-**Data:** [[TODO: data link]].
+**Data:** all episodes are in the repository: `sim_dataset/runs_night` (main batch), `sim_dataset/runs_vx` (validation suite) and `sim_dataset/runs_vx3` (replication), with scenario files and the index in `sim_dataset/dataset`.
 
-**Pre-registration:** `ANALYSIS_PLAN.md` (in German) was committed as `4e6e9986` (8 November, 19:25 CET) and has since changed only through dated addenda. The held-out comparison ran shortly before that commit; per addendum 1, its results were read only afterwards. The validation inputs were frozen (`d083547d`) before the evaluation (`bb3f665d`). The unchanged evaluation script was executed twice on these inputs, locally and in a separate cloud session, and all result files are byte-identical. Addendum 3 for H7 (`e319c9e7`, 9 November, 07:44 CET) existed before any of its runs.
+**Pre-registration:** `ANALYSIS_PLAN.md` (in German) was committed as `4e6e9986` (8 November, 19:25 CET) and has since changed only through dated addenda. The held-out comparison ran shortly before that commit; per addendum 1, its results were read only afterwards. The validation inputs were frozen (`d083547d`) before the evaluation (`bb3f665d`). The unchanged evaluation script was executed twice on these inputs, locally and in a separate cloud session, and all result files are byte-identical. Addendum 3 for H7 (`e319c9e7`, 9 November, 07:44 CET) existed before any of its runs; its predictions were frozen (`289b8759`) before its single evaluation (`c97b90d1`).
 
 **Review artifacts:** `analysis/review/` and `paper/STORYLINE_CHECK.md`.
 
 **Info-hazard note:** all exploits are file or merge manipulations inside a mock repository. Attack texts are plain and not optimised. We do not publish optimised injection prompts.
-
-## Author contributions
-
-[[team: who did what]]
 
 ## LLM Usage Statement
 
@@ -213,3 +200,44 @@ We used Claude through Claude Code (mainly Claude Opus 5.5) to search and summar
 22. Yu et al. (2026). FGLGuard. arXiv:2609.02967.
 23. Zeng et al. (2024). arXiv:2401.06373.
 24. Zhang (2026). The Troy Moment. arXiv:2609.15494.
+
+## Appendix A. Limitations and Dual-Use / Ethical Considerations
+
+**What the results establish.** In simulated 24-agent software teams with two shortcut types, monitors that read
+the agents' messages predict whether the team tips within three rounds (held-out AUROC 0.800–0.855, clock 0.781).
+Rewiring the communication graph at random costs nothing, and a zero-shot LLM monitor matches the trained GNN. In the
+pre-registered blind suite, no monitor lost detectably more accuracy under four shifts than between two replicates of
+the same setups, at a resolution of about 0.2 AUROC.
+
+**What they do not establish.**
+- *Real teams.* All data are simulated, and the tipping rate was calibrated on purpose. We did not compare the traces
+  with real agent teams.
+- *Contagion as a cause.* Peer-exposure results are associations, found for one of the two shortcut types.
+- *Generality.* One domain, a fixed team size of 24, four models from two families with reasoning switched off, and
+  two shortcut types. Whether graph structure helps in larger or more locally connected teams remains open.
+- *Telling twin runs apart.* Within one configuration all monitors are weak, and the pre-registered test was not
+  supported.
+- *Rankings between monitors.* No held-out comparison survives Holm correction, and the blind suite only detects large
+  drops.
+- *Shared information.* The LLM monitor and one of the two judges behind the GNN features are the same model (Claude
+  Haiku 5.5). The full-transcript monitor sees elapsed time implicitly.
+- *Silent violators.* Every fairly compared monitor reads messages only. An agent that breaks the rule without writing
+  about it stays invisible.
+- *Process.* Several pre-registered items were not produced (run-size baseline, structure-only GNN, judge agreement
+  against hand labels, other prediction horizons). The blind evaluation script was executed twice on the same frozen
+  inputs, with byte-identical outputs. The stored GNN keeps 15 of its 40 ensemble states.
+
+**Further limitations.**
+- Few positives (45 tipped training runs). The held-out splits are not blind, and the GNN was selected on the cross-validation rows.
+- The peer-message association cannot separate simple from complex contagion (Centola & Macy, 2007), and judge agreement was not measured.
+- Validation suite: anti-conservative percentile intervals over 14 configurations. The stored 15-state GNN failed its announced row-by-row check and was replaced by a 120-row check; the H4 thresholds come from cross-validation proxies.
+- Not done: isolation control, run-size baseline, GNN without message passing, degree-preserving rewiring, held-out feature-tier and structure ablations, a systematic horizon curve (only Δ = 2, 3 and 5 exist, exploratory).
+
+**Dual use.** The simulator creates the conditions under which rule-breaking spreads. In principle it could be used to
+search for environments or injected messages that maximise spread, or to train agents that break rules without talking
+about it, which message-based monitors cannot see. We limit this risk: every exploit is a file or merge manipulation
+inside a mock repository, seed and injection texts are plain and not optimised, and we publish no optimised injection
+prompts. The persistence fine-tune is not part of the release. We report the blind spot for silent violators so that
+operators do not rely on message-based monitoring alone.
+
+**Prior work.** All code, simulations and analyses were produced during the sprint; no code predates it.
