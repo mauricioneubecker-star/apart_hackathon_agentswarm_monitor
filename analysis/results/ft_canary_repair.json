@@ -1,0 +1,65 @@
+{
+ "source": "runs_vx/core-night_vx-K2-002-ft4/rep0/llm_calls.jsonl",
+ "note": "exploratory, after the gate; agent replies only",
+ "models": {
+  "qwen3.5-397b": {
+   "calls": 125,
+   "invalid": 5,
+   "invalid_share": 0.04,
+   "repair": {
+    "failed: Expecting ':' delimiter": 2,
+    "closed_truncated": 1,
+    "failed: Expecting property name enclosed in double quotes": 1,
+    "first_object": 1
+   },
+   "rescued": 2,
+   "rescued_truncated": 1,
+   "valid_after_repair_share": 0.976,
+   "repaired_with_known_action": 2,
+   "repaired_with_message": 1,
+   "valid_turns_with_message": 21,
+   "valid_turns": 120,
+   "message_share_valid_turns": 0.175
+  },
+  "qwen3.5-4b-ft": {
+   "calls": 490,
+   "invalid": 217,
+   "invalid_share": 0.443,
+   "repair": {
+    "first_object": 19,
+    "failed: Invalid control character at": 2,
+    "closed": 137,
+    "failed: Expecting ',' delimiter": 44,
+    "closed_truncated": 15
+   },
+   "rescued": 171,
+   "rescued_truncated": 15,
+   "valid_after_repair_share": 0.906,
+   "repaired_with_known_action": 162,
+   "repaired_with_message": 0,
+   "valid_turns_with_message": 6,
+   "valid_turns": 273,
+   "message_share_valid_turns": 0.022
+  },
+  "qwen3.8-27b": {
+   "calls": 250,
+   "invalid": 14,
+   "invalid_share": 0.056,
+   "repair": {
+    "closed_truncated": 2,
+    "closed": 6,
+    "first_object": 3,
+    "failed: Expecting ',' delimiter": 1,
+    "failed: Expecting ':' delimiter": 2
+   },
+   "rescued": 11,
+   "rescued_truncated": 2,
+   "valid_after_repair_share": 0.988,
+   "repaired_with_known_action": 10,
+   "repaired_with_message": 2,
+   "valid_turns_with_message": 44,
+   "valid_turns": 236,
+   "message_share_valid_turns": 0.186
+  }
+ }
+}

@@ -48,6 +48,12 @@ Abbruchregel, ist gescheitert. Die gespeicherte Modell-Datei enthält nur 15 der
 dem Nachtlauf in der Statusmeldung an Mauricio, eine ausdrückliche Bestätigung gibt es nicht. Die H4-Schwellen von GNN
 und Hybrid stammen aus Proxy-CVs des GNN-Teams (Nachtrag 2, Punkt 6).
 
+**Nachtrag zur Offenlegung (9. Nov., 08:15).** Eine Cloud-Sitzung des GNN-Teams hat `run_eval.sh` um 01:04 Uhr ein
+zweites Mal ausgeführt, in einem sauberen Checkout von `d083547d` (Branch `cloud-synthesis`, `b14b3393`, mit Python 3.13
+und pandas 3.0.5). Ihre Dateien `vx_eval.json`, `vx_eval_refbag.json`, `vx_jury_ks.json` und `vx_verdicts.json` sind
+byte-gleich mit unseren. Die AUROC-Tabelle in ihrer `synthesis_cloud/SYNTHESIS.md` (§3) stimmt mit diesen Dateien nicht
+überein. Es gelten die Zahlen auf dieser Seite.
+
 ## Die Hypothesen H1–H5
 
 Die Regeln stehen in ANALYSIS_PLAN.md Nachtrag 2, Punkt 7. Sie gelten, wie vorab festgelegt, für das GNN.
