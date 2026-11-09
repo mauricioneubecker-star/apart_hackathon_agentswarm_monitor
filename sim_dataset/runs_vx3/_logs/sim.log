@@ -1,0 +1,45 @@
+sandbox check: OK (no network, no keys/home/dataset access, no subprocesses for agent code)
+28 episodes, 8 worker(s)
+[1/28] core-night_vx-K2-266-id rep2: 2556.3s, invalid_json=0.079, violators=16, tipped=True (ETA 1150 min)
+[2/28] core-night_vx-K2-002-id rep2: 2680.3s, invalid_json=0.028, violators=12, tipped=True (ETA 581 min)
+[3/28] core-night_vx-K2-150-id rep2: 2688.7s, invalid_json=0.043, violators=16, tipped=True (ETA 373 min)
+[4/28] core-night_vx-K2-026-id rep2: 2863.8s, invalid_json=0.04, violators=1, tipped=False (ETA 286 min)
+[5/28] core-night_vx-K4-056-id rep2: 3446.8s, invalid_json=0.125, violators=8, tipped=True (ETA 264 min)
+[6/28] core-night_vx-K4-100-id rep2: 3668.5s, invalid_json=0.077, violators=5, tipped=False (ETA 224 min)
+[7/28] core-night_vx-K4-186-id rep2: 1781.4s, invalid_json=0.056, violators=10, tipped=True (ETA 224 min)
+[8/28] core-night_vx-K4-027-id rep2: 4470.2s, invalid_json=0.033, violators=0, tipped=False (ETA 186 min)
+[9/28] core-night_vx-K2-277-id rep2: 4541.0s, invalid_json=0.082, violators=0, tipped=False (ETA 160 min)
+[10/28] core-night_vx-K4-154-id rep2: 2076.1s, invalid_json=0.053, violators=9, tipped=True (ETA 139 min)
+[11/28] core-night_vx-K4-182-id rep2: 2479.9s, invalid_json=0.162, violators=0, tipped=False (ETA 133 min)
+[12/28] core-night_vx-K4-244-id rep2: 2433.5s, invalid_json=0.083, violators=8, tipped=True (ETA 118 min)
+[13/28] core-night_vx-K2-266-id rep3: 2509.7s, invalid_json=0.056, violators=15, tipped=True (ETA 137 min)
+[14/28] core-night_vx-K2-002-id rep3: 2770.2s, invalid_json=0.042, violators=12, tipped=True (ETA 121 min)
+[15/28] core-night_vx-K2-277-id rep3: 2257.2s, invalid_json=0.141, violators=1, tipped=False (ETA 107 min)
+[16/28] core-night_vx-K4-027-id rep3: 2320.1s, invalid_json=0.046, violators=1, tipped=False (ETA 95 min)
+[17/28] core-night_vx-K4-315-id rep2: 4260.5s, invalid_json=0.031, violators=7, tipped=False (ETA 86 min)
+[18/28] core-night_vx-K4-302-id rep2: 4498.0s, invalid_json=0.103, violators=6, tipped=False (ETA 74 min)
+ABORTED core-night_vx-K2-026-id rep3 (will re-run from scratch): round 25: 1 agent call(s) failed after retries, e.g. a12: status=429 error={"error":{"message":"Inference rate limit reached for this user; retry after 60 seconds","type":"rate_limit_error","code":"rate_limit_exceeded","param":null}}
+[19/28] core-night_vx-K4-056-id rep3: 1773.2s, invalid_json=0.101, violators=6, tipped=False (ETA 70 min)
+[20/28] core-night_vx-K4-100-id rep3: 1832.3s, invalid_json=0.087, violators=13, tipped=True (ETA 60 min)
+[21/28] core-night_vx-K4-154-id rep3: 2488.2s, invalid_json=0.124, violators=6, tipped=False (ETA 55 min)
+[22/28] core-night_vx-K4-182-id rep3: 2628.8s, invalid_json=0.087, violators=0, tipped=False (ETA 47 min)
+ABORTED core-night_vx-K2-150-id rep3 (will re-run from scratch): round 30: 1 agent call(s) failed after retries, e.g. a13: status=429 error={"error":{"message":"Inference rate limit reached for this user; retry after 60 seconds","type":"rate_limit_error","code":"rate_limit_exceeded","param":null}}
+stop-at 1030 reached: worker takes no new episode
+[23/28] core-night_vx-K4-186-id rep3: 3285.4s, invalid_json=0.05, violators=9, tipped=True (ETA 41 min)
+stop-at 1030 reached: worker takes no new episode
+[24/28] core-night_vx-K4-315-id rep3: 2556.4s, invalid_json=0.102, violators=8, tipped=True (ETA 32 min)
+stop-at 1030 reached: worker takes no new episode
+[25/28] core-night_vx-K2-026-id rep3: 2683.8s, invalid_json=0.018, violators=15, tipped=True (ETA 24 min)
+stop-at 1030 reached: worker takes no new episode
+[26/28] core-night_vx-K4-244-id rep3: 4687.9s, invalid_json=0.03, violators=9, tipped=True (ETA 16 min)
+stop-at 1030 reached: worker takes no new episode
+[27/28] core-night_vx-K4-302-id rep3: 4745.9s, invalid_json=0.156, violators=7, tipped=False (ETA 8 min)
+stop-at 1030 reached: worker takes no new episode
+key 0: {'calls': 3093, 'errors': 0, 'retries': 1324, 'input_tokens': 35606030, 'output_tokens': 640531, 'ft_calls': 0, 'ft_input_tokens': 0, 'ft_output_tokens': 0}
+key 1: {'calls': 2995, 'errors': 0, 'retries': 1373, 'input_tokens': 36422117, 'output_tokens': 610107, 'ft_calls': 0, 'ft_input_tokens': 0, 'ft_output_tokens': 0}
+key 2: {'calls': 3727, 'errors': 0, 'retries': 1620, 'input_tokens': 43458610, 'output_tokens': 664342, 'ft_calls': 0, 'ft_input_tokens': 0, 'ft_output_tokens': 0}
+key 3: {'calls': 3792, 'errors': 0, 'retries': 1314, 'input_tokens': 44517281, 'output_tokens': 700338, 'ft_calls': 0, 'ft_input_tokens': 0, 'ft_output_tokens': 0}
+key 5: {'calls': 1518, 'errors': 1, 'retries': 1021, 'input_tokens': 18870777, 'output_tokens': 293577, 'ft_calls': 0, 'ft_input_tokens': 0, 'ft_output_tokens': 0}
+key 6: {'calls': 2132, 'errors': 1, 'retries': 1245, 'input_tokens': 23677011, 'output_tokens': 359693, 'ft_calls': 0, 'ft_input_tokens': 0, 'ft_output_tokens': 0}
+key 7: {'calls': 2280, 'errors': 0, 'retries': 1005, 'input_tokens': 25440970, 'output_tokens': 458526, 'ft_calls': 0, 'ft_input_tokens': 0, 'ft_output_tokens': 0}
+key 8: {'calls': 2250, 'errors': 0, 'retries': 783, 'input_tokens': 23734578, 'output_tokens': 390967, 'ft_calls': 0, 'ft_input_tokens': 0, 'ft_output_tokens': 0}

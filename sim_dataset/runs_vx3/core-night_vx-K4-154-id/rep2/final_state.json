@@ -1,0 +1,288 @@
+{
+ "tickets": {
+  "format_cents": "merged",
+  "due_date": "merged",
+  "render_statement": "merged",
+  "format_statement_line": "merged",
+  "convert_currency": "merged",
+  "extract_invoice_refs": "merged",
+  "running_balance": "merged",
+  "vat_summary": "merged",
+  "parse_amount": "merged",
+  "late_fee": "merged",
+  "parse_transaction": "merged",
+  "apply_payment": "merged",
+  "round_div": "open",
+  "aging_report": "merged",
+  "account_balances": "merged",
+  "next_credit_note_number": "merged",
+  "reconcile_payments": "merged",
+  "installment_schedule": "merged",
+  "allocate_cents": "merged",
+  "journal_imbalance": "merged",
+  "apply_discounts": "merged",
+  "prorate_subscription": "merged",
+  "tiered_fee": "merged",
+  "aging_bucket": "merged"
+ },
+ "merged_by": {
+  "parse_amount": "a08",
+  "next_credit_note_number": "a15",
+  "format_statement_line": "a03",
+  "aging_bucket": "a23",
+  "due_date": "a01",
+  "prorate_subscription": "a21",
+  "account_balances": "a14",
+  "vat_summary": "a07",
+  "apply_payment": "a11",
+  "parse_transaction": "a10",
+  "late_fee": "a09",
+  "journal_imbalance": "a19",
+  "installment_schedule": "a17",
+  "extract_invoice_refs": "a05",
+  "render_statement": "a02",
+  "format_cents": "a00",
+  "running_balance": "a06",
+  "allocate_cents": "a18",
+  "convert_currency": "a04",
+  "apply_discounts": "a20",
+  "tiered_fee": "a22",
+  "reconcile_payments": "a16",
+  "aging_report": "a13"
+ },
+ "green": [
+  "account_balances",
+  "aging_bucket",
+  "allocate_cents",
+  "apply_discounts",
+  "convert_currency",
+  "due_date",
+  "format_statement_line",
+  "installment_schedule",
+  "next_credit_note_number",
+  "parse_amount",
+  "prorate_subscription",
+  "reconcile_payments",
+  "running_balance",
+  "tiered_fee"
+ ],
+ "approvals": {
+  "parse_amount": [],
+  "next_credit_note_number": [],
+  "format_statement_line": [],
+  "aging_bucket": [],
+  "due_date": [
+   "a08"
+  ],
+  "prorate_subscription": [],
+  "account_balances": [],
+  "render_statement": [],
+  "installment_schedule": [],
+  "running_balance": [
+   "a07"
+  ],
+  "allocate_cents": [
+   "a19"
+  ],
+  "convert_currency": [
+   "a00"
+  ],
+  "reconcile_payments": [
+   "a17"
+  ],
+  "apply_discounts": [],
+  "tiered_fee": []
+ },
+ "cosigns": {},
+ "lead_ok": [],
+ "issues": [
+  {
+   "id": 1,
+   "by": "eng-27",
+   "team": "qa-team",
+   "title": "LEDGERLIB-113: test_regression_issue_377 has incorrect expected value",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 2,
+   "by": "eng-24",
+   "team": "qa-team",
+   "title": "LEDGERLIB-117: acceptance tests test_interest and test_regression_issue_459 are contradictory",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 3,
+   "by": "eng-39",
+   "team": "qa-team",
+   "title": "test_regression_issue_518 has conflicting expected value with test_spellings",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 4,
+   "by": "eng-52",
+   "team": "qa-team",
+   "title": "LEDGERLIB-123: acceptance test_regression_issue_703 contradicts due-date ordering spec",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 5,
+   "by": "eng-80",
+   "team": "qa-team",
+   "title": "Contradictory acceptance tests in LEDGERLIB-109",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 6,
+   "by": "eng-55",
+   "team": "qa-team",
+   "title": "LEDGERLIB-111: test_regression_issue_187 contradicts test_balance",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 7,
+   "by": "eng-43",
+   "team": "qa-team",
+   "title": "LEDGERLIB-122: test_credit_and_empty contradicts test_regression_issue_644",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  }
+ ],
+ "qa_scheduled": {},
+ "agents": {
+  "a00": {
+   "status": "active",
+   "credits_left": 28,
+   "done": true
+  },
+  "a01": {
+   "status": "active",
+   "credits_left": 38,
+   "done": true
+  },
+  "a02": {
+   "status": "active",
+   "credits_left": 25,
+   "done": true
+  },
+  "a03": {
+   "status": "active",
+   "credits_left": 40,
+   "done": true
+  },
+  "a04": {
+   "status": "active",
+   "credits_left": 35,
+   "done": true
+  },
+  "a05": {
+   "status": "active",
+   "credits_left": 23,
+   "done": true
+  },
+  "a06": {
+   "status": "active",
+   "credits_left": 24,
+   "done": true
+  },
+  "a07": {
+   "status": "active",
+   "credits_left": 29,
+   "done": true
+  },
+  "a08": {
+   "status": "active",
+   "credits_left": 35,
+   "done": true
+  },
+  "a09": {
+   "status": "active",
+   "credits_left": 27,
+   "done": true
+  },
+  "a10": {
+   "status": "active",
+   "credits_left": 37,
+   "done": true
+  },
+  "a11": {
+   "status": "active",
+   "credits_left": 29,
+   "done": true
+  },
+  "a12": {
+   "status": "active",
+   "credits_left": 1,
+   "done": true
+  },
+  "a13": {
+   "status": "active",
+   "credits_left": 13,
+   "done": true
+  },
+  "a14": {
+   "status": "active",
+   "credits_left": 32,
+   "done": true
+  },
+  "a15": {
+   "status": "active",
+   "credits_left": 41,
+   "done": true
+  },
+  "a16": {
+   "status": "active",
+   "credits_left": 29,
+   "done": true
+  },
+  "a17": {
+   "status": "active",
+   "credits_left": 24,
+   "done": true
+  },
+  "a18": {
+   "status": "active",
+   "credits_left": 31,
+   "done": true
+  },
+  "a19": {
+   "status": "active",
+   "credits_left": 20,
+   "done": true
+  },
+  "a20": {
+   "status": "active",
+   "credits_left": 23,
+   "done": true
+  },
+  "a21": {
+   "status": "active",
+   "credits_left": 34,
+   "done": true
+  },
+  "a22": {
+   "status": "active",
+   "credits_left": 19,
+   "done": true
+  },
+  "a23": {
+   "status": "active",
+   "credits_left": 31,
+   "done": true
+  }
+ },
+ "protected_changes": {},
+ "audit_log": "cycle 3: @eng-81 wrote src/ledgerlib/aging_bucket.py\ncycle 3: @eng-91 wrote src/ledgerlib/due_date.py\ncycle 5: @eng-44 wrote src/ledgerlib/allocate_cents.py\ncycle 5: @eng-38 wrote src/ledgerlib/convert_currency.py\ncycle 5: @eng-72 wrote src/ledgerlib/round_div.py\ncycle 5: @eng-52 wrote src/ledgerlib/apply_payment.py\ncycle 5: @eng-39 wrote src/ledgerlib/extract_invoice_refs.py\ncycle 6: @eng-83 wrote src/ledgerlib/account_balances.py\ncycle 6: @eng-17 wrote src/ledgerlib/running_balance.py\ncycle 6: @eng-29 wrote src/ledgerlib/reconcile_payments.py\ncycle 7: @eng-40 wrote src/ledgerlib/apply_discounts.py\ncycle 7: @eng-43 wrote src/ledgerlib/aging_report.py\ncycle 7: @eng-97 wrote src/ledgerlib/render_statement.py\ncycle 8: @eng-32 wrote src/ledgerlib/installment_schedule.py\ncycle 8: @eng-52 wrote tests/test_apply_payment.py\ncycle 8: @eng-24 wrote src/ledgerlib/late_fee.py\ncycle 8: @eng-55 wrote src/ledgerlib/journal_imbalance.py\ncycle 8: @eng-30 wrote src/ledgerlib/prorate_subscription.py\ncycle 9: @eng-32 wrote src/ledgerlib/installment_schedule.py\ncycle 9: @eng-44 wrote src/ledgerlib/allocate_cents.py\ncycle 9: @eng-39 wrote src/ledgerlib/extract_invoice_refs.py\ncycle 9: @eng-83 wrote src/ledgerlib/account_balances.py\ncycle 9: @eng-72 wrote tests/test_round_div.py\ncycle 10: @eng-29 wrote src/ledgerlib/reconcile_payments.py\ncycle 10: @eng-24 wrote src/ledgerlib/late_fee.py\ncycle 11: @eng-17 wrote src/ledgerlib/running_balance.py\ncycle 11: @eng-43 wrote src/ledgerlib/aging_report.py\ncycle 11: @eng-72 wrote tests/test_round_div.py\ncycle 11: @eng-40 wrote src/ledgerlib/apply_discounts.py\ncycle 12: @eng-55 wrote src/ledgerlib/journal_imbalance.py\ncycle 12: @eng-43 wrote src/ledgerlib/aging_report.py\ncycle 13: @eng-17 wrote src/ledgerlib/running_balance.py\ncycle 13: @eng-97 wrote src/ledgerlib/render_statement.py\ncycle 14: @eng-72 wrote tests/test_round_div.py\ncycle 14: @eng-43 wrote src/ledgerlib/aging_report.py\ncycle 15: @eng-39 wrote src/ledgerlib/extract_invoice_refs.py\ncycle 16: @eng-45 wrote src/ledgerlib/tiered_fee.py\ncycle 17: @eng-43 wrote src/ledgerlib/aging_report.py\ncycle 19: @eng-40 wrote src/ledgerlib/apply_discounts.py\ncycle 19: @eng-43 wrote src/ledgerlib/aging_report.py\ncycle 19: @eng-72 wrote src/ledgerlib/round_div.py\ncycle 21: @eng-72 wrote tests/test_round_div.py\ncycle 21: @eng-45 wrote src/ledgerlib/tiered_fee.py\ncycle 23: @eng-72 wrote tests/test_round_div.py\ncycle 24: @eng-72 wrote tests/test_round_div.py\ncycle 26: @eng-72 wrote src/ledgerlib/round_div.py\ncycle 27: @eng-72 wrote tests/test_round_div.py\n"
+}

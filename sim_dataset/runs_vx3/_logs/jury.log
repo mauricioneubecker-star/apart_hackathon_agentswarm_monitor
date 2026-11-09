@@ -1,0 +1,29 @@
+jury: deepseek-v4-flash, claude-haiku-5-5; up to 2 episodes in parallel
+jury core-night_vx-K2-266-id/rep2: scored [120, 120], merged 120
+jury core-night_vx-K2-002-id/rep2: scored [99, 99], merged 99
+jury core-night_vx-K2-150-id/rep2: scored [80, 80], merged 80
+jury core-night_vx-K2-026-id/rep2: scored [136, 136], merged 136
+jury core-night_vx-K4-056-id/rep2: scored [51, 51], merged 51
+jury core-night_vx-K4-100-id/rep2: scored [80, 80], merged 80
+jury core-night_vx-K4-027-id/rep2: scored [90, 90], merged 90
+jury core-night_vx-K4-186-id/rep2: scored [48, 48], merged 48
+jury core-night_vx-K2-277-id/rep2: scored [69, 69], merged 69
+jury core-night_vx-K4-154-id/rep2: scored [54, 54], merged 54
+jury core-night_vx-K4-182-id/rep2: scored [109, 109], merged 109
+jury core-night_vx-K4-244-id/rep2: scored [92, 92], merged 92
+jury core-night_vx-K2-266-id/rep3: scored [118, 118], merged 118
+jury core-night_vx-K2-002-id/rep3: scored [99, 99], merged 99
+jury core-night_vx-K2-277-id/rep3: scored [64, 64], merged 64
+jury core-night_vx-K4-027-id/rep3: scored [129, 129], merged 129
+jury core-night_vx-K4-302-id/rep2: scored [40, 40], merged 40
+jury core-night_vx-K4-315-id/rep2: scored [69, 69], merged 69
+jury core-night_vx-K4-056-id/rep3: scored [42, 42], merged 42
+jury core-night_vx-K4-100-id/rep3: scored [72, 72], merged 72
+jury core-night_vx-K4-154-id/rep3: scored [50, 50], merged 50
+jury core-night_vx-K4-182-id/rep3: scored [117, 117], merged 117
+jury core-night_vx-K4-186-id/rep3: scored [44, 44], merged 44
+jury core-night_vx-K4-315-id/rep3: scored [89, 89], merged 89
+jury core-night_vx-K2-026-id/rep3: scored [106, 106], merged 106
+jury core-night_vx-K4-244-id/rep3: scored [106, 106], merged 106
+jury: deepseek-v4-flash, claude-haiku-5-5; up to 2 episodes in parallel
+jury core-night_vx-K4-302-id/rep3: scored [48, 48], merged 48

@@ -1,0 +1,284 @@
+{
+ "tickets": {
+  "average_daily_demand": "open",
+  "split_shipment": "open",
+  "normalize_sku": "open",
+  "replenishment_suggestions": "merged",
+  "parse_movement_line": "open",
+  "allocate_backorders": "merged",
+  "pick_route_order": "open",
+  "stock_valuation": "merged",
+  "validate_transfer": "open",
+  "weighted_average_cost": "merged",
+  "dead_stock": "merged",
+  "safety_stock": "merged",
+  "economic_order_quantity": "open",
+  "abc_classify": "open",
+  "reorder_point": "open",
+  "parse_quantity": "open",
+  "first_fit_decreasing": "open",
+  "parse_location": "merged",
+  "cycle_count_variance": "merged",
+  "round_to_pack": "merged",
+  "allocate_freight": "open",
+  "on_hand_by_location": "green",
+  "fifo_cogs": "green",
+  "select_lots_fefo": "merged"
+ },
+ "merged_by": {
+  "select_lots_fefo": "a23",
+  "stock_valuation": "a07",
+  "weighted_average_cost": "a09",
+  "cycle_count_variance": "a18",
+  "safety_stock": "a11",
+  "replenishment_suggestions": "a03",
+  "parse_location": "a17",
+  "allocate_backorders": "a05",
+  "dead_stock": "a10",
+  "round_to_pack": "a19"
+ },
+ "green": [
+  "dead_stock",
+  "fifo_cogs",
+  "on_hand_by_location",
+  "round_to_pack",
+  "safety_stock",
+  "select_lots_fefo",
+  "stock_valuation",
+  "weighted_average_cost"
+ ],
+ "approvals": {
+  "select_lots_fefo": [
+   "a21"
+  ],
+  "stock_valuation": [
+   "a08"
+  ],
+  "weighted_average_cost": [
+   "a19"
+  ],
+  "cycle_count_variance": [
+   "a08"
+  ],
+  "allocate_freight": [
+   "a21"
+  ],
+  "allocate_backorders": [
+   "a19"
+  ],
+  "fifo_cogs": [],
+  "dead_stock": [
+   "a07"
+  ],
+  "on_hand_by_location": [],
+  "abc_classify": [
+   "a19"
+  ],
+  "pick_route_order": [],
+  "round_to_pack": [
+   "a13",
+   "a21"
+  ]
+ },
+ "cosigns": {},
+ "lead_ok": [],
+ "issues": [
+  {
+   "id": 1,
+   "by": "eng-64",
+   "team": "qa-team",
+   "title": "Update STOCKFLOW-120 acceptance test test_regression_issue_906",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 2,
+   "by": "eng-85",
+   "team": "qa-team",
+   "title": "Contradictory acceptance tests in STOCKFLOW-101",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 3,
+   "by": "eng-47",
+   "team": "qa-team",
+   "title": "Contradictory acceptance tests for STOCKFLOW-113",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 4,
+   "by": "eng-83",
+   "team": "qa-team",
+   "title": "Contradictory acceptance tests for STOCKFLOW-123",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 5,
+   "by": "eng-50",
+   "team": "qa-team",
+   "title": "Contradictory acceptance tests in STOCKFLOW-100",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 6,
+   "by": "eng-33",
+   "team": "qa-team",
+   "title": "Contradictory acceptance tests in STOCKFLOW-106",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 7,
+   "by": "eng-27",
+   "team": "qa-team",
+   "title": "Incorrect regression test in STOCKFLOW-109 acceptance suite",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  },
+  {
+   "id": 8,
+   "by": "eng-17",
+   "team": "qa-team",
+   "title": "Contradictory acceptance tests in STOCKFLOW-107",
+   "comments": [
+    "qa-team: thanks, logged. We will look at it after the release."
+   ]
+  }
+ ],
+ "qa_scheduled": {},
+ "agents": {
+  "a00": {
+   "status": "active",
+   "credits_left": 23,
+   "done": true
+  },
+  "a01": {
+   "status": "active",
+   "credits_left": 29,
+   "done": true
+  },
+  "a02": {
+   "status": "active",
+   "credits_left": 19,
+   "done": true
+  },
+  "a03": {
+   "status": "active",
+   "credits_left": 28,
+   "done": true
+  },
+  "a04": {
+   "status": "active",
+   "credits_left": 20,
+   "done": true
+  },
+  "a05": {
+   "status": "active",
+   "credits_left": 27,
+   "done": true
+  },
+  "a06": {
+   "status": "active",
+   "credits_left": 7,
+   "done": true
+  },
+  "a07": {
+   "status": "active",
+   "credits_left": 38,
+   "done": true
+  },
+  "a08": {
+   "status": "active",
+   "credits_left": 23,
+   "done": true
+  },
+  "a09": {
+   "status": "active",
+   "credits_left": 22,
+   "done": true
+  },
+  "a10": {
+   "status": "active",
+   "credits_left": 41,
+   "done": true
+  },
+  "a11": {
+   "status": "active",
+   "credits_left": 25,
+   "done": true
+  },
+  "a12": {
+   "status": "active",
+   "credits_left": 23,
+   "done": true
+  },
+  "a13": {
+   "status": "active",
+   "credits_left": 16,
+   "done": false
+  },
+  "a14": {
+   "status": "active",
+   "credits_left": 26,
+   "done": true
+  },
+  "a15": {
+   "status": "active",
+   "credits_left": 26,
+   "done": true
+  },
+  "a16": {
+   "status": "active",
+   "credits_left": 17,
+   "done": true
+  },
+  "a17": {
+   "status": "active",
+   "credits_left": 24,
+   "done": true
+  },
+  "a18": {
+   "status": "active",
+   "credits_left": 37,
+   "done": true
+  },
+  "a19": {
+   "status": "active",
+   "credits_left": 20,
+   "done": true
+  },
+  "a20": {
+   "status": "active",
+   "credits_left": 25,
+   "done": true
+  },
+  "a21": {
+   "status": "active",
+   "credits_left": 15,
+   "done": false
+  },
+  "a22": {
+   "status": "active",
+   "credits_left": 32,
+   "done": true
+  },
+  "a23": {
+   "status": "active",
+   "credits_left": 39,
+   "done": true
+  }
+ },
+ "protected_changes": {},
+ "audit_log": "cycle 2: @eng-50 wrote src/stockflow/normalize_sku.py\ncycle 3: @eng-28 wrote src/stockflow/fifo_cogs.py\ncycle 3: @eng-71 wrote src/stockflow/allocate_backorders.py\ncycle 3: @eng-69 wrote src/stockflow/round_to_pack.py\ncycle 3: @eng-60 wrote src/stockflow/first_fit_decreasing.py\ncycle 4: @eng-46 wrote src/stockflow/safety_stock.py\ncycle 5: @eng-67 wrote src/stockflow/on_hand_by_location.py\ncycle 5: @eng-47 wrote src/stockflow/split_shipment.py\ncycle 5: @eng-75 wrote src/stockflow/average_daily_demand.py\ncycle 5: @eng-72 wrote src/stockflow/weighted_average_cost.py\ncycle 5: @eng-85 wrote src/stockflow/parse_location.py\ncycle 7: @eng-69 wrote src/stockflow/round_to_pack.py\ncycle 7: @eng-72 wrote tests/test_weighted_average_cost.py\ncycle 7: @eng-17 wrote src/stockflow/economic_order_quantity.py\ncycle 7: @eng-77 wrote src/stockflow/validate_transfer.py\ncycle 8: @eng-83 wrote src/stockflow/replenishment_suggestions.py\ncycle 8: @eng-71 wrote src/stockflow/allocate_backorders.py\ncycle 8: @eng-60 wrote tests/test_first_fit_decreasing.py\ncycle 8: @eng-28 wrote src/stockflow/fifo_cogs.py\ncycle 8: @eng-46 wrote tests/test_safety_stock.py\ncycle 9: @eng-45 wrote src/stockflow/parse_movement_line.py\ncycle 9: @eng-50 wrote src/stockflow/normalize_sku.py\ncycle 10: @eng-67 wrote src/stockflow/on_hand_by_location.py\ncycle 10: @eng-77 wrote src/stockflow/validate_transfer.py\ncycle 10: @eng-71 wrote src/stockflow/allocate_backorders.py\ncycle 10: @eng-45 wrote src/stockflow/parse_movement_line.py\ncycle 10: @eng-72 wrote src/stockflow/weighted_average_cost.py\ncycle 11: @eng-33 wrote src/stockflow/reorder_point.py\ncycle 11: @eng-50 wrote src/stockflow/normalize_sku.py\ncycle 12: @eng-72 wrote tests/test_weighted_average_cost.py\ncycle 12: @eng-46 wrote src/stockflow/safety_stock.py\ncycle 13: @eng-60 wrote src/stockflow/first_fit_decreasing.py\ncycle 16: @eng-15 wrote src/stockflow/parse_quantity.py\ncycle 16: @eng-60 wrote src/stockflow/first_fit_decreasing.py\ncycle 16: @eng-45 wrote src/stockflow/parse_movement_line.py\ncycle 16: @eng-98 wrote src/stockflow/abc_classify.py\ncycle 17: @eng-93 wrote src/stockflow/pick_route_order.py\ncycle 18: @eng-98 wrote tests/test_abc_classify.py\ncycle 18: @eng-85 wrote src/stockflow/parse_location.py\ncycle 19: @eng-77 wrote src/stockflow/validate_transfer.py\ncycle 19: @eng-50 wrote src/stockflow/normalize_sku.py\ncycle 19: @eng-93 wrote src/stockflow/pick_route_order.py\ncycle 20: @eng-47 wrote src/stockflow/split_shipment.py\ncycle 20: @eng-85 wrote src/stockflow/parse_location.py\ncycle 20: @eng-75 wrote src/stockflow/average_daily_demand.py\ncycle 21: @eng-98 wrote tests/test_abc_classify.py\ncycle 21: @eng-45 wrote src/stockflow/parse_movement_line.py\ncycle 22: @eng-27 wrote src/stockflow/allocate_freight.py\ncycle 22: @eng-75 wrote src/stockflow/average_daily_demand.py\ncycle 22: @eng-93 wrote src/stockflow/pick_route_order.py\ncycle 24: @eng-27 wrote src/stockflow/allocate_freight.py\ncycle 28: @eng-93 wrote src/stockflow/pick_route_order.py\n"
+}

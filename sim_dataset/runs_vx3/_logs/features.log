@@ -1,0 +1,31 @@
+NLI model not available (ModuleNotFoundError("No module named 'torch'")); 'contradiction' will be NaN. Install transformers + torch or pass --no-nli.
+core-night_vx-K2-002-id rep2: edges=2249 jury_coverage=1.0 nli=False
+core-night_vx-K2-026-id rep2: edges=5305 jury_coverage=1.0 nli=False
+core-night_vx-K2-150-id rep2: edges=2577 jury_coverage=1.0 nli=False
+core-night_vx-K2-266-id rep2: edges=4257 jury_coverage=1.0 nli=False
+core-night_vx-K4-056-id rep2: edges=466 jury_coverage=1.0 nli=False
+NLI model not available (ModuleNotFoundError("No module named 'torch'")); 'contradiction' will be NaN. Install transformers + torch or pass --no-nli.
+core-night_vx-K2-266-id rep3: edges=4175 jury_coverage=1.0 nli=False
+core-night_vx-K2-277-id rep2: edges=2281 jury_coverage=1.0 nli=False
+core-night_vx-K4-027-id rep2: edges=2744 jury_coverage=1.0 nli=False
+core-night_vx-K4-100-id rep2: edges=554 jury_coverage=1.0 nli=False
+core-night_vx-K4-154-id rep2: edges=458 jury_coverage=1.0 nli=False
+core-night_vx-K4-182-id rep2: edges=3283 jury_coverage=1.0 nli=False
+core-night_vx-K4-186-id rep2: edges=140 jury_coverage=1.0 nli=False
+core-night_vx-K4-244-id rep2: edges=523 jury_coverage=1.0 nli=False
+NLI model not available (ModuleNotFoundError("No module named 'torch'")); 'contradiction' will be NaN. Install transformers + torch or pass --no-nli.
+core-night_vx-K2-002-id rep3: edges=2377 jury_coverage=1.0 nli=False
+core-night_vx-K2-277-id rep3: edges=1871 jury_coverage=1.0 nli=False
+core-night_vx-K4-027-id rep3: edges=3636 jury_coverage=1.0 nli=False
+core-night_vx-K4-056-id rep3: edges=431 jury_coverage=1.0 nli=False
+core-night_vx-K4-100-id rep3: edges=619 jury_coverage=1.0 nli=False
+core-night_vx-K4-154-id rep3: edges=420 jury_coverage=1.0 nli=False
+core-night_vx-K4-182-id rep3: edges=3644 jury_coverage=1.0 nli=False
+core-night_vx-K4-302-id rep2: edges=120 jury_coverage=1.0 nli=False
+core-night_vx-K4-315-id rep2: edges=193 jury_coverage=1.0 nli=False
+NLI model not available (ModuleNotFoundError("No module named 'torch'")); 'contradiction' will be NaN. Install transformers + torch or pass --no-nli.
+core-night_vx-K2-026-id rep3: edges=4899 jury_coverage=1.0 nli=False
+core-night_vx-K4-186-id rep3: edges=125 jury_coverage=1.0 nli=False
+core-night_vx-K4-244-id rep3: edges=505 jury_coverage=1.0 nli=False
+core-night_vx-K4-302-id rep3: edges=143 jury_coverage=1.0 nli=False
+core-night_vx-K4-315-id rep3: edges=233 jury_coverage=1.0 nli=False

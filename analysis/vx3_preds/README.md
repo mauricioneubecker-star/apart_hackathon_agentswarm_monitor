@@ -16,6 +16,14 @@ cd sim_dataset && OUT=runs_vx3 WHERE="split=='__none__'" STAGE2_WHERE="split=='n
 `--rep-start` (commit `6d1b9c5e`) only selects the replicate indices. Models, jury, labels and features are the code of
 the night_vx run.
 
+**Outcome of the run (11:24).** 27 of 28 episodes finished, 0 errors, jury complete for all 27; all 14 bases have at
+least one new run (rep2: 14, rep3: 13). `core-night_vx-K2-150-id/rep3` was aborted at 10:36 in round 30 after a
+provider rate limit (429). The runner re-queues such an episode, but under STOP_AT 10:30 (Nachtrag 3, item 7) no new
+episode starts, so it was not re-run. Its partial directory is kept for transparency; it has no labels and is not part
+of any analysis. A second episode (`K2-026-id/rep3`) had aborted earlier for the same reason and was re-run from scratch
+before 10:30. Outcome counts were visible in the run log (`runner/run.py status`); no monitor score was compared with a
+label before the evaluation.
+
 ## Contents
 
 | path | what |

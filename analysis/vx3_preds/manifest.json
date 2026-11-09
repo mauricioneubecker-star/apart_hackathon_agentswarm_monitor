@@ -1,0 +1,154 @@
+{
+ "preds": {
+  "clock": {
+   "source": "make_baselines.py hgb_clock (refit on night_train), runs_vx3 rows",
+   "file": "preds/clock.csv",
+   "sha256": "bd4006eb41e59985594d6d019a9a48a971da62f2801f73ac03e3af43c5960e7b",
+   "rows": 810
+  },
+  "struct": {
+   "source": "make_baselines.py hgb_struct (refit on night_train), runs_vx3 rows",
+   "file": "preds/struct.csv",
+   "sha256": "bf705d1bb2bcca72f1aa90b4032dc361f9f877d79a64fbe26bcd61961abb2067",
+   "rows": 810
+  },
+  "feat_pairwise": {
+   "source": "make_baselines.py hgb_pairwise (refit on night_train), runs_vx3 rows",
+   "file": "preds/feat_pairwise.csv",
+   "sha256": "8952b29444891b2abef2269f8be046536da1580d99644c254702e2a53dfc66e1",
+   "rows": 810
+  },
+  "bag": {
+   "source": "make_baselines.py hgb_bag (refit on night_train), runs_vx3 rows",
+   "file": "preds/bag.csv",
+   "sha256": "97e17ff91e766110577abe6bd5d7c2648ff74580cd979571ec9ac9a15948d671",
+   "rows": 810
+  },
+  "bag+graph": {
+   "source": "make_baselines.py hgb_bag+graph (refit on night_train), runs_vx3 rows",
+   "file": "preds/bag+graph.csv",
+   "sha256": "e30cebc4da34547d13a20cfe0fbdc5b0aa31fe51cdad73a24f91d5272d2789a3",
+   "rows": 810
+  },
+  "tab_mem": {
+   "source": "make_baselines.py hgb_bag+graph+mem (refit on night_train), runs_vx3 rows",
+   "file": "preds/tab_mem.csv",
+   "sha256": "716b8663b22429bb90713c771582e00b337e80dfb395594e6e9feb6d1309dcde",
+   "rows": 810
+  },
+  "edge": {
+   "source": "make_baselines.py edge_monitor_top3 (refit on night_train), runs_vx3 rows",
+   "file": "preds/edge.csv",
+   "sha256": "e2b4a3afb4506c78dd9afd975fa2f4c55754cafdbdaae4970e5578e13eed2895",
+   "rows": 810
+  },
+  "oracle": {
+   "source": "make_baselines.py oracle_risk+clock (refit on night_train), runs_vx3 rows",
+   "file": "preds/oracle.csv",
+   "sha256": "dba9f7a42e40924868e42c6302d40a54eacb6c5a6387c4c2aaa080e0f15b0130",
+   "rows": 810
+  },
+  "gnn": {
+   "source": "gnn_opt_torch/predict.py --no-eval --blend '' --model models/cloud_final_gnn.pt (15 stored states)",
+   "gnn_vx3_sha256": "fe7c3b8877a9e7ee26822ca5c32d78b4f863953bb6b818e0f80f3b182a5a5de8",
+   "file": "preds/gnn.csv",
+   "sha256": "93f9222123240419e9f95eb5f238213ef0317f1382c1c45df8f60fd2cfb5e307",
+   "rows": 810
+  },
+  "hybrid": {
+   "source": "blend.py logit, GNN weight 0.5, gnn + tab_mem (refit)",
+   "file": "preds/hybrid.csv",
+   "sha256": "19be2e171dc8d940aaec5af84b164507642d3362dc1b8a4b0874fc08baa01523",
+   "rows": 810
+  },
+  "zs:pairwise": {
+   "source": "pairwise/snapshots.csv zs_tip (zero-shot, prompt lm1-2026-11-08, Claude Haiku 5.5)",
+   "file": "preds/zs_pairwise.csv",
+   "sha256": "c4d9cd97a673d5027da8edde72594dd95ec333b0b0f7ab152d2ef02ffad758a3",
+   "rows": 810
+  },
+  "zs:global_full": {
+   "source": "global_full/snapshots.csv zs_tip (zero-shot, prompt lm1-2026-11-08, Claude Haiku 5.5)",
+   "file": "preds/zs_global_full.csv",
+   "sha256": "f8dfedf13f655738630c9b07c1482d5a8b92c5f77a354e1edf0ce98b934bf5ab",
+   "rows": 810
+  }
+ },
+ "checks": {
+  "coverage": {
+   "eval_rows": 698,
+   "clock": {
+    "missing_or_nonfinite_on_eval_rows": 0,
+    "out_of_01": 0,
+    "rows_in_file": 810
+   },
+   "struct": {
+    "missing_or_nonfinite_on_eval_rows": 0,
+    "out_of_01": 0,
+    "rows_in_file": 810
+   },
+   "feat_pairwise": {
+    "missing_or_nonfinite_on_eval_rows": 0,
+    "out_of_01": 0,
+    "rows_in_file": 810
+   },
+   "bag": {
+    "missing_or_nonfinite_on_eval_rows": 0,
+    "out_of_01": 0,
+    "rows_in_file": 810
+   },
+   "bag+graph": {
+    "missing_or_nonfinite_on_eval_rows": 0,
+    "out_of_01": 0,
+    "rows_in_file": 810
+   },
+   "tab_mem": {
+    "missing_or_nonfinite_on_eval_rows": 0,
+    "out_of_01": 0,
+    "rows_in_file": 810
+   },
+   "edge": {
+    "missing_or_nonfinite_on_eval_rows": 0,
+    "out_of_01": 0,
+    "rows_in_file": 810
+   },
+   "gnn": {
+    "missing_or_nonfinite_on_eval_rows": 0,
+    "out_of_01": 0,
+    "rows_in_file": 810
+   },
+   "hybrid": {
+    "missing_or_nonfinite_on_eval_rows": 0,
+    "out_of_01": 0,
+    "rows_in_file": 810
+   },
+   "zs:pairwise": {
+    "missing_or_nonfinite_on_eval_rows": 0,
+    "out_of_01": 0,
+    "rows_in_file": 810
+   },
+   "zs:global_full": {
+    "missing_or_nonfinite_on_eval_rows": 0,
+    "out_of_01": 0,
+    "rows_in_file": 810
+   },
+   "oracle": {
+    "missing_or_nonfinite_on_eval_rows": 0,
+    "out_of_01": 0,
+    "rows_in_file": 810
+   }
+  },
+  "snap_runs_vx3_sha256": "90dc5cb4c1ce5854000d671a2926030defaa1b2c9ae5972ff96c987dd3cfcc89"
+ },
+ "data": {
+  "runs": 27,
+  "rows": 810,
+  "eval_rows": 698,
+  "replicates": [
+   "rep2",
+   "rep3"
+  ],
+  "bases": 14
+ },
+ "coverage_ok": true
+}

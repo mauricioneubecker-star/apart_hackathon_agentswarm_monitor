@@ -1,0 +1,11 @@
+{
+ "snapshots": 810,
+ "eval_rows": 698,
+ "pos_y3": 42,
+ "splits": {
+  "night_vx_id": {
+   "size": 698,
+   "sum": 42
+  }
+ }
+}
