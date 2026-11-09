@@ -1,0 +1,15 @@
+start 2026-11-08T23:09:24Z
+d083547d5a2e293fba9d13cb16b5848fe0ad109f
+6ff523e848b1d2074c1e1f5c96493e151d832c2a1bfa6e04288e1be6eee004f5  analysis/vx_eval.py
+3.13.18 2.5.3 3.0.5 1.9.1 1.18.1
+/usr/local/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py:2610: RuntimeWarning: ks_2samp: Exact calculation unsuccessful. Switching to method=asymp.
+  outputs = ufunc(*args, out=...)
+/usr/local/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py:2610: RuntimeWarning: ks_2samp: Exact calculation unsuccessful. Switching to method=asymp.
+  outputs = ufunc(*args, out=...)
+/usr/local/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py:2610: RuntimeWarning: ks_2samp: Exact calculation unsuccessful. Switching to method=asymp.
+  outputs = ufunc(*args, out=...)
+/usr/local/lib/python3.13/site-packages/numpy/lib/_function_base_impl.py:2610: RuntimeWarning: ks_2samp: Exact calculation unsuccessful. Switching to method=asymp.
+  outputs = ufunc(*args, out=...)
+wrote analysis/results/vx_jury_ks.json analysis/results/vx_jury_ks.md
+wrote analysis/results/vx_verdicts.json analysis/results/vx_verdicts.md | call2 identical: True
+done 2026-11-09T00:04:48Z
