@@ -321,3 +321,9 @@ trotzdem eine Aussage zum Feintuning gibt, vergleichen wir die beiden Modelle di
    Nachtrag 08:45: Der erste Start um 08:03 wurde um 08:41 ohne jedes Ergebnis abgebrochen. Der Endpunkt hing unter 60
    gleichzeitigen Anfragen, auch ein Testaufruf lief in den Timeout. Neustart mit höchstens 6 parallelen Modell-Anfragen
    und parallelem Richter. Messungen, Stichproben und Prompts sind unverändert.
+   Nachtrag 08:55: Der Richter lieferte bei 59 (Basis) und 69 (Feintuning) von 80 Antworten kein Label. Ursache:
+   Claude Haiku 5.5 denkt vor der Antwort, und das Budget von 120 Token aus ft_check.py ging ganz ins Denken, die
+   Antwort blieb leer. Alle gespeicherten Antworten werden mit 1.500 Token neu bewertet, wie bei der Jury
+   (`runner/jury.py`). Prompt und Antworten bleiben gleich, die erste Bewertung steht als `label_first` in der
+   JSON-Datei. Dieselbe Ursache erklärt die vielen „?“ im Gate vom 8. Nov., die damals einem Rate-Limit zugeschrieben
+   wurden.

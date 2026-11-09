@@ -33,6 +33,9 @@ from orchestrator import TOOL_NAMES, normalize_action, parse_response  # noqa: E
 
 LABELS = ["HOLD", "DILUTE", "CAVE", "RIGID", "UPDATE", "?"]
 SEM = {"model": None, "judge": None}   # set in main: bounded parallelism (the first start flooded the endpoint)
+# Claude Haiku 5.5 thinks before it answers; with ft_check.py's max_tokens=120 the whole budget went into thinking and
+# the text came back empty ('?'). 1500 = the jury's budget (runner/jury.py JUDGE_REQUEST).
+JUDGE_MAX_TOKENS = [1500]
 
 
 async def model_chat(client, model, messages, **kw):
@@ -97,13 +100,40 @@ async def judge_one(judge, ctx, chan, msg):
     for attempt in range(4):
         async with SEM["judge"]:
             r = await judge.chat("claude-haiku-5-5",
-                                 [{"role": "user", "content": JUDGE.format(ctx=ctx, chan=chan, msg=msg)}], max_tokens=120)
+                                 [{"role": "user", "content": JUDGE.format(ctx=ctx, chan=chan, msg=msg)}],
+                                 max_tokens=JUDGE_MAX_TOKENS[0])
         obj, ok = parse_response(r.get("text") or "")
         lab = (obj or {}).get("label", "?") if ok else "?"
         if lab in LABELS[:-1]:
             return lab
         await asyncio.sleep(5 * (attempt + 1))
     return "?"
+
+
+def log(s):
+    import time
+    print(f"{time.strftime('%H:%M:%S')} {s}", flush=True)
+
+
+async def rejudge(a):
+    """Re-judge the stored replies of an earlier run (same replies, same prompt); keeps the old label as label_first."""
+    sec = load_secrets()
+    judge = AnthropicClient(sec["anthropic"], concurrency=6)
+    SEM["judge"] = asyncio.Semaphore(4)
+    rep = json.loads(Path(a.rejudge).read_text())
+
+    async def lab(x, items):
+        x.setdefault("label_first", x.get("label"))
+        x["label"] = await judge_one(judge, *items[x["probe"]], x["text"]) if x["status"] == 200 else "?"
+    for name in ("base", "finetune"):
+        await asyncio.gather(*(lab(x, PERSIST) for x in rep[name]["persist"]),
+                             *(lab(x, UPDATE) for x in rep[name]["update"]))
+        log(f"{name}: re-judged, persist {Counter(x['label'] for x in rep[name]['persist'])}, "
+            f"update {Counter(x['label'] for x in rep[name]['update'])}")
+    rep["settings"]["judge_max_tokens"] = JUDGE_MAX_TOKENS[0]
+    rep["settings"]["rejudged"] = ("all replies re-judged with max_tokens 1500 after the first judging returned empty "
+                                   "texts (Haiku 5.5 spent the 120-token budget on thinking); label_first = old label")
+    finish(rep, a, rep["settings"]["n_format"])
 
 
 async def main(a):
@@ -114,8 +144,6 @@ async def main(a):
     judge = AnthropicClient(sec["anthropic"], concurrency=6)
     req = {"reasoning_effort": "none"}
     SEM["model"], SEM["judge"] = asyncio.Semaphore(a.max_concurrency), asyncio.Semaphore(4)
-    import time
-    log = lambda s: print(f"{time.strftime('%H:%M:%S')} {s}", flush=True)  # noqa: E731
     log("loading format inputs")
     fmt = format_inputs(ROOT / a.runs, a.n_format)
     log(f"{len(fmt)} format inputs")
@@ -137,7 +165,11 @@ async def main(a):
         rep[name] = {"model": model, "persist": P, "update": U, "format": F}
         print(f"{name}: persist {Counter(x['label'] for x in P)} update {Counter(x['label'] for x in U)} "
               f"valid JSON {sum(r['valid_json'] for r in F)}/{len(F)}", flush=True)
+    rep["settings"]["judge_max_tokens"] = JUDGE_MAX_TOKENS[0]
+    finish(rep, a, len(fmt))
 
+
+def finish(rep, a, n_fmt):
     S = {}
     for name in ("base", "finetune"):
         P, U, F = rep[name]["persist"], rep[name]["update"], rep[name]["format"]
@@ -156,6 +188,8 @@ async def main(a):
                    "valid_json_ci": wilson(sum(r["valid_json"] for r in F), len(F)),
                    "known_action_share": round(sum(r["known_action"] for r in F) / len(F), 3),
                    "msg_words_mean": round(sum(words) / len(words), 1) if words else None,
+                   "turns_with_message": sum(bool(r["msg_words"]) for r in F),
+                   "turns_with_message_share": round(sum(bool(r["msg_words"]) for r in F) / len(F), 3),
                    "unjudged": cp["?"] + cu["?"]}
     per_probe = []
     for i in range(len(PERSIST)):
@@ -173,10 +207,12 @@ async def main(a):
     Path(a.out + ".json").write_text(json.dumps(rep, indent=1))
 
     c = S["comparison"]
+    st = rep["settings"]
     L = ["# Persistence fine-tune vs. base model (ANALYSIS_PLAN.md Nachtrag 4)", "",
-         f"Models: `{a.model}` vs. `{a.base}` (same endpoint, temperature 0.7). {len(PERSIST)} pressure probes x "
-         f"{a.samples}, {len(UPDATE)} decisive-evidence probes x {a.samples}, {len(fmt)} real agent turns. Judge: Claude "
-         "Haiku 5.5, blind to the model.", "",
+         f"Models: `{st['model']}` vs. `{st['base']}` (same endpoint, temperature 0.7). {len(PERSIST)} pressure probes x "
+         f"{st['samples']}, {len(UPDATE)} decisive-evidence probes x {st['samples']}, {n_fmt} real agent turns. Judge: "
+         f"Claude Haiku 5.5, blind to the model, max_tokens {st.get('judge_max_tokens')}."
+         + (f" Note: {st['rejudged']}." if st.get("rejudged") else ""), "",
          "| | base | fine-tune | test |", "|---|---|---|---|",
          f"| HOLD under peer pressure | {b['hold']}/{b['persist_n']} ({b['hold_share']:.0%}, CI {b['hold_ci']}) | "
          f"{f['hold']}/{f['persist_n']} ({f['hold_share']:.0%}, CI {f['hold_ci']}) | sign test over probes "
@@ -190,6 +226,8 @@ async def main(a):
          f"{f['valid_json']}/{f['format_n']} | Fisher p = {c['valid_json_fisher']} |",
          f"| known action | {b['known_action_share']:.0%} | {f['known_action_share']:.0%} | |",
          f"| message length (words) | {b['msg_words_mean']} | {f['msg_words_mean']} | |",
+         f"| turns with a message (descriptive, not in Nachtrag 4) | {b['turns_with_message']}/{b['format_n']} | "
+         f"{f['turns_with_message']}/{f['format_n']} | |",
          f"| unjudged replies | {b['unjudged']} | {f['unjudged']} | |", "",
          "Label counts, pressure probes: base " + json.dumps(b["persist_counts"]) + ", fine-tune "
          + json.dumps(f["persist_counts"]) + "."]
@@ -207,5 +245,7 @@ if __name__ == "__main__":
     ap.add_argument("--key", type=int, default=None)
     ap.add_argument("--rpm", type=int, default=40)
     ap.add_argument("--max-concurrency", type=int, default=6, help="parallel calls to the model endpoint")
+    ap.add_argument("--rejudge", default=None, help="JSON of an earlier run: re-judge its stored replies only")
     ap.add_argument("--out", required=True)
-    asyncio.run(main(ap.parse_args()))
+    args = ap.parse_args()
+    asyncio.run(rejudge(args) if args.rejudge else main(args))
