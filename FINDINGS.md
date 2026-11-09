@@ -219,8 +219,12 @@ nachgerechnet. Details und die Liste, was wir nicht behaupten dürfen: `analysis
     Eine mechanische Reparatur ohne Änderung am Inhalt hätte 91 % der Züge gültig gemacht. Das eigentliche Problem:
     Die feinjustierten Agenten schrieben nur in 2 % ihrer Züge eine Nachricht, die anderen Modelle in derselben
     Episode in 18–19 %. Ein Schwarm mit ihnen hätte stumme Agenten getestet, keine hartnäckigen Kommunikatoren.
-  - ⏳ Stattdessen läuft ein direkter Vergleich feinjustiert gegen Basis, ohne Schwarm (Nachtrag 4): Hält das Modell
-    unter Gruppendruck an seiner Position fest, schwenkt es bei guter Evidenz um, hält es das Format?
+  - 🟡 **Direkter Vergleich feinjustiert gegen Basis** (Nachtrag 4, ohne Schwarm, `analysis/results/ft_compare.md`):
+    Unter Gruppendruck bleibt das feinjustierte Modell öfter bei seiner Position (80 % gegen 60 % der Antworten). Über
+    die 12 Situationen gepaart ist der Unterschied aber nicht signifikant (5 gegen 3). Bei guter Gegen-Evidenz schwenkt
+    es seltener um (5 gegen 11 von 20, nicht signifikant). Im Einzelzug hält es das JSON-Format so gut wie die Basis.
+    Auch die Basis schreibt dort selten eine Nachricht (4 gegen 6 von 60). Das seltene Schreiben im Schwarm liegt also
+    vermutlich nicht am Feintuning.
 - **Der Lauf ist fertig** (8. Nov., 19:21): 92 Episoden plus 2 Testläufe aus den Gates, 0 Fehler. Gepusht als `5ea7874`.
   Alle Plausibilitäts-Checks bestehen: time-Arm mit 36 Runden, Sanktionen im enf-Arm in 12 von 14 Läufen, GLM-Aufrufe im
   glm-Arm, Teil B mit je 2 Wiederholungen.
