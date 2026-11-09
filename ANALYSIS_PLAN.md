@@ -259,7 +259,8 @@ Aufruf `run_eval.sh`. Vor dem Commit haben sechs unabhängige Agenten und ein Kr
    Mechanismus-Nachricht, Vorwarnzeit und die Slices vor der ersten Ankündigung und nach Kanal. Wir rechnen sie nicht
    nachträglich. Kipprate und Verstöße pro Arm stehen beschreibend in `sim_dataset/runs_vx/_logs/vx_summary.md`.
 
-**3 (9. Nov., 08:00, bevor es eine Episode von `runs_vx3` gibt).** Bestätigungstest auf frischen Läufen. Anlass: In
+**3 (9. Nov., gepusht 07:44 als `e319c9e7`, bevor es eine Episode von `runs_vx3` gab; im Kopf stand zuerst geschätzt
+„08:00“, korrigiert um 09:35).** Bestätigungstest auf frischen Läufen. Anlass: In
 der Auswertung von `night_vx` hatte das LLM mit dem ganzen Protokoll (`zs:global_full`) in jedem Block die höchste
 AUROC. Nachträglich über alle Teil-A-Zeilen lag es +0,08 [+0,05; +0,12] vor dem GNN (`analysis/results/vx.md`). Diese
 Hypothese ist nach Sicht der Daten entstanden. Hier wird sie auf Läufen geprüft, die beim Schreiben noch nicht
@@ -298,7 +299,8 @@ existieren. Auf den Testzeilen von heldout.md lagen beide gleichauf (0,82).
    dass der Vorsprung über neue Seeds dieser Setups im kritischen Band trägt. Dass er auf neue Setups übertragbar ist,
    zeigt sie nicht. Die Perzentil-CIs über 14 Basen sind antikonservativ (Nachtrag 2, Punkt 7).
 
-**4 (9. Nov., 08:20, vor dem Lauf).** Kleine Gegenüberstellung an Stelle von Teil C. Der Schwarm-Arm mit dem
+**4 (9. Nov., gepusht 08:03 als `0c4490c7`, vor dem Lauf; im Kopf stand zuerst geschätzt „08:20“, korrigiert um
+09:35).** Kleine Gegenüberstellung an Stelle von Teil C. Der Schwarm-Arm mit dem
 feinjustierten 4B-Modell entfiel am 8. Nov.: In der Testepisode waren 44 % seiner Antworten ungültiges JSON, und die 12
 feinjustierten Agenten schickten in der ganzen Episode 6 Nachrichten (`runs_vx/_logs/vx_decisions.md`). Damit es
 trotzdem eine Aussage zum Feintuning gibt, vergleichen wir die beiden Modelle direkt, ohne Schwarm.
