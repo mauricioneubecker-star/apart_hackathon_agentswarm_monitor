@@ -172,7 +172,7 @@ async def simulate(a):
     # v1.6: --replicates 0 = replicates_planned from the index (night batch: blocks differ)
     reps = {sid: (int(rp) if a.replicates == 0 and rp == rp else max(1, a.replicates))
             for sid, rp in zip(rows.scenario_id, rows.get("replicates_planned", [1] * len(rows)))}
-    jobs = [(sid, r) for sid in rows.scenario_id for r in range(reps[sid])
+    jobs = [(sid, r) for sid in rows.scenario_id for r in range(a.rep_start, reps[sid])
             if not (out / sid / f"rep{r}" / "meta.json").exists()]
     if not jobs:
         print("nothing to do")
@@ -391,6 +391,8 @@ def main():
     ap.add_argument("cmd", choices=["selftest", "simulate", "jury", "labels", "features", "status"])
     ap.add_argument("--where", default=None)
     ap.add_argument("--replicates", type=int, default=1)
+    ap.add_argument("--rep-start", type=int, default=0,
+                    help="simulate: skip replicate indices below N (e.g. 2 = only rep2.. of --replicates)")
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--episode-retries", type=int, default=0,
                     help="simulate: re-run an episode that raised an error up to N more times (fresh run dir)")
