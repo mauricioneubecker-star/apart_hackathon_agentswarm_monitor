@@ -258,3 +258,42 @@ Aufruf `run_eval.sh`. Vor dem Commit haben sechs unabhängige Agenten und ein Kr
    (außer den Fehlalarmen für H4), Brier, MAE von risk_count, Knoten-Ebene, Lauf-Ebene ab der ersten
    Mechanismus-Nachricht, Vorwarnzeit und die Slices vor der ersten Ankündigung und nach Kanal. Wir rechnen sie nicht
    nachträglich. Kipprate und Verstöße pro Arm stehen beschreibend in `sim_dataset/runs_vx/_logs/vx_summary.md`.
+
+**3 (9. Nov., 08:00, bevor es eine Episode von `runs_vx3` gibt).** Bestätigungstest auf frischen Läufen. Anlass: In
+der Auswertung von `night_vx` hatte das LLM mit dem ganzen Protokoll (`zs:global_full`) in jedem Block die höchste
+AUROC. Nachträglich über alle Teil-A-Zeilen lag es +0,08 [+0,05; +0,12] vor dem GNN (`analysis/results/vx.md`). Diese
+Hypothese ist nach Sicht der Daten entstanden. Hier wird sie auf Läufen geprüft, die beim Schreiben noch nicht
+existieren. Auf den Testzeilen von heldout.md lagen beide gleichauf (0,82).
+
+1. **Daten.** Die 14 Konfigurationen von `night_vx_id`, unverändert, mit den Replikaten 2 und 3 (Seeds
+   `replicate_seeds[2]` und `[3]`, nie gelaufen): 28 Episoden in `sim_dataset/runs_vx3/`. Start mit
+   `tools/night_run.sh` und `OUT=runs_vx3 WHERE="split=='__none__'" STAGE2_WHERE="split=='night_vx_id'"
+   STAGE2_REPS=4 EXTRA="--rep-start 2" STOP_AT=1030`. Neu ist nur der Schalter `--rep-start` (eigener Commit). Er
+   wählt die Replikat-Indizes und sonst nichts. Modelle, Jury, Labels und Merkmale sind unverändert. `runs_vx` wird
+   nicht angefasst und nicht neu ausgewertet.
+2. **Vorhersager.** Dieselben 12 wie in Nachtrag 2, eingefroren wie dort: GNN aus `models/cloud_final_gnn.pt`
+   (`predict.py --no-eval --blend ''`), Tabellen-Baselines mit `make_baselines.py` auf night_train neu gefittet
+   (deterministisch, gleiche Einstellungen), Hybrid mit derselben Formel, LLM-Monitore `global_full` (k = 3) und
+   `pairwise` mit Prompt `lm1-2026-11-08` r0 und Claude Haiku 5.5. Schwellen braucht dieser Test nicht.
+3. **Zeilen und Label.** Alle Zeilen mit `eval == 1` aus `gnn_opt/build_dataset.py` auf `runs_vx3`, Label `y3`
+   (θ = 8, Δ = 3), Zeit-Bins für die zeitgematchte AUROC wie in `vx_eval.py`.
+4. **Primärer Test (H7).** D = AUROC(`zs:global_full`) − AUROC(`gnn`) auf allen Zeilen von rep2 und rep3 zusammen.
+   Bootstrap über die 14 Basen mit Zurücklegen, gepaart (jede gezogene Basis bringt die Zeilen ihrer beiden neuen Läufe
+   mit, beide Monitore auf denselben Ziehungen), 10.000 Ziehungen, Seed 20261109, Perzentil-CI 95 %. Ziehungen ohne
+   beide Klassen fallen weg. **H7 ist gestützt, wenn die untere CI-Grenze über 0 liegt.** Das ist der einzige Test
+   dieses Nachtrags, ohne Korrektur.
+5. **Sekundär**, mit CIs aus denselben Ziehungen und ohne Entscheidungsregel: (a) dieselbe Differenz zeitgematcht
+   (`tm_auroc`), weil `global_full` die vergangene Zeit indirekt sieht, (b) `zs:global_full` gegen `hybrid`,
+   (c) `zs:pairwise` gegen `gnn`.
+6. **Beschreibend.** AUROC und zeitgematchte AUROC aller 12 Vorhersager auf rep2 + rep3 und je Replikat. Die Spanne
+   über rep0–rep3 je Vorhersager (rep0 und rep1 aus `vx_eval.json`, nicht neu gerechnet). Gekippte Läufe je Replikat
+   und die mittlere Kipprunde der gekippten Läufe.
+7. **Ablauf.** Die Simulation startet erst nach dem Push dieses Nachtrags. Nach 10:30 beginnt keine neue Episode.
+   Ausgewertet werden alle fertigen Episoden. Fehlt einer Basis jeder neue Lauf, fällt sie heraus, und wir sagen das.
+   Vorhersagen und Auswertungsskript werden vor der Auswertung eingefroren und gepusht (`analysis/vx3_preds/`,
+   `run_eval.sh` mit Sperre gegen einen zweiten Lauf). Vorher wird nur mit Zufalls-Scores getestet. Die Auswertung
+   läuft genau einmal, das Ergebnis berichten wir unabhängig vom Ausgang. Scheitert die GNN- oder die LLM-Pipeline,
+   bleibt H7 offen.
+8. **Grenzen, vorab benannt.** Es sind dieselben 14 Basen, auf denen die Hypothese entstand. Eine Bestätigung zeigt,
+   dass der Vorsprung über neue Seeds dieser Setups im kritischen Band trägt. Dass er auf neue Setups übertragbar ist,
+   zeigt sie nicht. Die Perzentil-CIs über 14 Basen sind antikonservativ (Nachtrag 2, Punkt 7).
