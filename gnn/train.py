@@ -174,7 +174,7 @@ def train_gnn(cfg: RunConfig, bundle):
 def run(cfg: RunConfig) -> dict:
     t0 = time.time()
     bundle = get_bundle(cfg.data)
-    if cfg.model in ("logreg", "hgb", "lgbm", "time"):
+    if cfg.model in ("logreg", "hgb", "lgbm", "time", "hgb1", "logreg1"):
         from .baselines import run_baseline
         G, N, info = run_baseline(cfg, bundle)
     else:
@@ -218,6 +218,8 @@ def default_arm(cfg: RunConfig) -> str:
         parts.append(f"jury={d.jury}")
     if d.node_aux:
         parts.append("aux=" + "+".join(d.node_aux))
+    if d.train_frac < 1:
+        parts.append(f"train={d.train_frac:g}")
     return " ".join(parts)
 
 
