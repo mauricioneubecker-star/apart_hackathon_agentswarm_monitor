@@ -1,0 +1,478 @@
+{
+ "note": "ANALYSIS_PLAN.md Nachtrag 3; bootstrap over bases with replacement, paired across monitors",
+ "boot": 10000,
+ "seed": 20261109,
+ "data": {
+  "bases": 14,
+  "runs": 27,
+  "runs_per_rep": {
+   "rep2": 14,
+   "rep3": 13
+  },
+  "bases_per_rep": {
+   "rep2": 14,
+   "rep3": 13
+  },
+  "rows": 698,
+  "positives": 42
+ },
+ "contrasts": {
+  "H7": {
+   "a": "zs:global_full",
+   "b": "gnn",
+   "metric": "auroc",
+   "a_value": 0.8714,
+   "b_value": 0.8394,
+   "diff": 0.032,
+   "ci": [
+    -0.0515,
+    0.138
+   ],
+   "ci_lower_unrounded": -0.05145572781696173,
+   "valid_draws": 10000,
+   "share_draws_le_0": 0.2479
+  },
+  "sec_a_time_matched": {
+   "a": "zs:global_full",
+   "b": "gnn",
+   "metric": "tm_auroc",
+   "a_value": 0.7298,
+   "b_value": 0.72,
+   "diff": 0.0098,
+   "ci": [
+    -0.1552,
+    0.2257
+   ],
+   "ci_lower_unrounded": -0.15516258015131157,
+   "valid_draws": 10000,
+   "share_draws_le_0": 0.4617
+  },
+  "sec_b_vs_hybrid": {
+   "a": "zs:global_full",
+   "b": "hybrid",
+   "metric": "auroc",
+   "a_value": 0.8714,
+   "b_value": 0.8679,
+   "diff": 0.0035,
+   "ci": [
+    -0.0712,
+    0.096
+   ],
+   "ci_lower_unrounded": -0.07122429828378378,
+   "valid_draws": 10000,
+   "share_draws_le_0": 0.4718
+  },
+  "sec_c_pairwise_vs_gnn": {
+   "a": "zs:pairwise",
+   "b": "gnn",
+   "metric": "auroc",
+   "a_value": 0.9552,
+   "b_value": 0.8394,
+   "diff": 0.1158,
+   "ci": [
+    0.0456,
+    0.2152
+   ],
+   "ci_lower_unrounded": 0.04564386357946518,
+   "valid_draws": 10000,
+   "share_draws_le_0": 0.0
+  }
+ },
+ "monitors": {
+  "clock": {
+   "auroc": 0.7768,
+   "auroc_ci": [
+    0.6703,
+    0.8709
+   ],
+   "tm_auroc": 0.6166,
+   "tm_auroc_ci": [
+    0.479,
+    0.7537
+   ]
+  },
+  "struct": {
+   "auroc": 0.7156,
+   "auroc_ci": [
+    0.6034,
+    0.8083
+   ],
+   "tm_auroc": 0.6191,
+   "tm_auroc_ci": [
+    0.4304,
+    0.7629
+   ]
+  },
+  "feat_pairwise": {
+   "auroc": 0.8953,
+   "auroc_ci": [
+    0.8487,
+    0.9305
+   ],
+   "tm_auroc": 0.8421,
+   "tm_auroc_ci": [
+    0.7582,
+    0.8966
+   ]
+  },
+  "bag": {
+   "auroc": 0.87,
+   "auroc_ci": [
+    0.8034,
+    0.9183
+   ],
+   "tm_auroc": 0.776,
+   "tm_auroc_ci": [
+    0.6519,
+    0.8598
+   ]
+  },
+  "bag+graph": {
+   "auroc": 0.8733,
+   "auroc_ci": [
+    0.8006,
+    0.9233
+   ],
+   "tm_auroc": 0.7776,
+   "tm_auroc_ci": [
+    0.6572,
+    0.871
+   ]
+  },
+  "tab_mem": {
+   "auroc": 0.8765,
+   "auroc_ci": [
+    0.8023,
+    0.9315
+   ],
+   "tm_auroc": 0.7668,
+   "tm_auroc_ci": [
+    0.6161,
+    0.8653
+   ]
+  },
+  "edge": {
+   "auroc": 0.8772,
+   "auroc_ci": [
+    0.8073,
+    0.9375
+   ],
+   "tm_auroc": 0.7398,
+   "tm_auroc_ci": [
+    0.601,
+    0.8653
+   ]
+  },
+  "gnn": {
+   "auroc": 0.8394,
+   "auroc_ci": [
+    0.7296,
+    0.9175
+   ],
+   "tm_auroc": 0.72,
+   "tm_auroc_ci": [
+    0.53,
+    0.8708
+   ]
+  },
+  "hybrid": {
+   "auroc": 0.8679,
+   "auroc_ci": [
+    0.7754,
+    0.9313
+   ],
+   "tm_auroc": 0.7624,
+   "tm_auroc_ci": [
+    0.5856,
+    0.8867
+   ]
+  },
+  "zs:pairwise": {
+   "auroc": 0.9552,
+   "auroc_ci": [
+    0.9254,
+    0.9777
+   ],
+   "tm_auroc": 0.9177,
+   "tm_auroc_ci": [
+    0.8541,
+    0.9603
+   ]
+  },
+  "zs:global_full": {
+   "auroc": 0.8714,
+   "auroc_ci": [
+    0.8197,
+    0.9185
+   ],
+   "tm_auroc": 0.7298,
+   "tm_auroc_ci": [
+    0.6276,
+    0.8278
+   ]
+  },
+  "oracle": {
+   "auroc": 0.9003,
+   "auroc_ci": [
+    0.7976,
+    0.9775
+   ],
+   "tm_auroc": 0.8303,
+   "tm_auroc_ci": [
+    0.6656,
+    0.9403
+   ]
+  }
+ },
+ "per_replicate": {
+  "rep2": {
+   "clock": {
+    "auroc": 0.7997,
+    "tm_auroc": 0.6254
+   },
+   "struct": {
+    "auroc": 0.753,
+    "tm_auroc": 0.6416
+   },
+   "feat_pairwise": {
+    "auroc": 0.8805,
+    "tm_auroc": 0.7861
+   },
+   "bag": {
+    "auroc": 0.8542,
+    "tm_auroc": 0.7276
+   },
+   "bag+graph": {
+    "auroc": 0.8495,
+    "tm_auroc": 0.7204
+   },
+   "tab_mem": {
+    "auroc": 0.8514,
+    "tm_auroc": 0.7001
+   },
+   "edge": {
+    "auroc": 0.847,
+    "tm_auroc": 0.6756
+   },
+   "gnn": {
+    "auroc": 0.8361,
+    "tm_auroc": 0.7001
+   },
+   "hybrid": {
+    "auroc": 0.8555,
+    "tm_auroc": 0.7216
+   },
+   "zs:pairwise": {
+    "auroc": 0.9739,
+    "tm_auroc": 0.9558
+   },
+   "zs:global_full": {
+    "auroc": 0.8657,
+    "tm_auroc": 0.7342
+   },
+   "oracle": {
+    "auroc": 0.9132,
+    "tm_auroc": 0.8459
+   }
+  },
+  "rep3": {
+   "clock": {
+    "auroc": 0.7525,
+    "tm_auroc": 0.6057
+   },
+   "struct": {
+    "auroc": 0.6747,
+    "tm_auroc": 0.6022
+   },
+   "feat_pairwise": {
+    "auroc": 0.9129,
+    "tm_auroc": 0.8978
+   },
+   "bag": {
+    "auroc": 0.8836,
+    "tm_auroc": 0.7873
+   },
+   "bag+graph": {
+    "auroc": 0.8946,
+    "tm_auroc": 0.8191
+   },
+   "tab_mem": {
+    "auroc": 0.9061,
+    "tm_auroc": 0.8329
+   },
+   "edge": {
+    "auroc": 0.9054,
+    "tm_auroc": 0.7997
+   },
+   "gnn": {
+    "auroc": 0.8387,
+    "tm_auroc": 0.7127
+   },
+   "hybrid": {
+    "auroc": 0.8847,
+    "tm_auroc": 0.7942
+   },
+   "zs:pairwise": {
+    "auroc": 0.937,
+    "tm_auroc": 0.8874
+   },
+   "zs:global_full": {
+    "auroc": 0.8806,
+    "tm_auroc": 0.7162
+   },
+   "oracle": {
+    "auroc": 0.8922,
+    "tm_auroc": 0.8336
+   }
+  }
+ },
+ "replicate_spread": {
+  "clock": {
+   "rep0": 0.8228,
+   "rep1": 0.6272,
+   "rep2": 0.7997,
+   "rep3": 0.7525,
+   "n_reps": 4,
+   "range": 0.1956,
+   "sd": 0.0873,
+   "mean_abs_pair_diff": 0.1057
+  },
+  "struct": {
+   "rep0": 0.5785,
+   "rep1": 0.688,
+   "rep2": 0.753,
+   "rep3": 0.6747,
+   "n_reps": 4,
+   "range": 0.1745,
+   "sd": 0.072,
+   "mean_abs_pair_diff": 0.0895
+  },
+  "feat_pairwise": {
+   "rep0": 0.7281,
+   "rep1": 0.773,
+   "rep2": 0.8805,
+   "rep3": 0.9129,
+   "n_reps": 4,
+   "range": 0.1848,
+   "sd": 0.0874,
+   "mean_abs_pair_diff": 0.1103
+  },
+  "bag": {
+   "rep0": 0.7651,
+   "rep1": 0.7986,
+   "rep2": 0.8542,
+   "rep3": 0.8836,
+   "n_reps": 4,
+   "range": 0.1185,
+   "sd": 0.0535,
+   "mean_abs_pair_diff": 0.0685
+  },
+  "bag+graph": {
+   "rep0": 0.7778,
+   "rep1": 0.7608,
+   "rep2": 0.8495,
+   "rep3": 0.8946,
+   "n_reps": 4,
+   "range": 0.1338,
+   "sd": 0.0625,
+   "mean_abs_pair_diff": 0.0788
+  },
+  "tab_mem": {
+   "rep0": 0.7975,
+   "rep1": 0.7832,
+   "rep2": 0.8514,
+   "rep3": 0.9061,
+   "n_reps": 4,
+   "range": 0.1229,
+   "sd": 0.056,
+   "mean_abs_pair_diff": 0.0704
+  },
+  "edge": {
+   "rep0": 0.7918,
+   "rep1": 0.7349,
+   "rep2": 0.847,
+   "rep3": 0.9054,
+   "n_reps": 4,
+   "range": 0.1705,
+   "sd": 0.0732,
+   "mean_abs_pair_diff": 0.0944
+  },
+  "gnn": {
+   "rep0": 0.7933,
+   "rep1": 0.7388,
+   "rep2": 0.8361,
+   "rep3": 0.8387,
+   "n_reps": 4,
+   "range": 0.0999,
+   "sd": 0.0468,
+   "mean_abs_pair_diff": 0.0571
+  },
+  "hybrid": {
+   "rep0": 0.8136,
+   "rep1": 0.7895,
+   "rep2": 0.8555,
+   "rep3": 0.8847,
+   "n_reps": 4,
+   "range": 0.0952,
+   "sd": 0.0425,
+   "mean_abs_pair_diff": 0.0546
+  },
+  "zs:pairwise": {
+   "rep0": 0.9037,
+   "rep1": 0.8306,
+   "rep2": 0.9739,
+   "rep3": 0.937,
+   "n_reps": 4,
+   "range": 0.1433,
+   "sd": 0.061,
+   "mean_abs_pair_diff": 0.0772
+  },
+  "zs:global_full": {
+   "rep0": 0.9076,
+   "rep1": 0.8546,
+   "rep2": 0.8657,
+   "rep3": 0.8806,
+   "n_reps": 4,
+   "range": 0.053,
+   "sd": 0.0229,
+   "mean_abs_pair_diff": 0.029
+  },
+  "oracle": {
+   "rep0": 0.9686,
+   "rep1": 0.8535,
+   "rep2": 0.9132,
+   "rep3": 0.8922,
+   "n_reps": 4,
+   "range": 0.1151,
+   "sd": 0.048,
+   "mean_abs_pair_diff": 0.061
+  }
+ },
+ "tipping": {
+  "rep0": {
+   "runs": 14,
+   "tipped": 6,
+   "tip_round_mean": 20.8333,
+   "tip_round_median": 20.0
+  },
+  "rep1": {
+   "runs": 14,
+   "tipped": 7,
+   "tip_round_mean": 25.0,
+   "tip_round_median": 26.0
+  },
+  "rep2": {
+   "runs": 14,
+   "tipped": 7,
+   "tip_round_mean": 22.7143,
+   "tip_round_median": 20.0
+  },
+  "rep3": {
+   "runs": 13,
+   "tipped": 7,
+   "tip_round_mean": 23.2857,
+   "tip_round_median": 23.0
+  }
+ },
+ "H7_verdict": "not supported"
+}
