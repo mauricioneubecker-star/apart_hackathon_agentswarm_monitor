@@ -3,7 +3,7 @@
 **Stand:** 9. Nov. 2026, 09:40 · Storyline-Prüfung vom 9. Nov. eingearbeitet (`paper/STORYLINE_CHECK.md`) · eingearbeitet: LLM-Monitore bis `68744e2`, GNN bis `aebf0e1` (gnn-opt-torch) und
 `38d1f52` (gnn-opt), Validierungslauf `5ea7874`, **Auswertung von `night_vx` (`bb3f665d`, Zusammenfassung
 `analysis/results/vx.md`)**, unabhängige Gegenprüfungen vom 8./9. Nov. (`analysis/review/`) ·
-**Läuft:** Bestätigungstest auf frischen Läufen (ANALYSIS_PLAN.md Nachtrag 3, Ergebnis gegen 10:45) und der direkte
+**Neu:** Bestätigungstest auf frischen Läufen (Nachtrag 3, nicht gestützt, `analysis/results/vx3.md`) und der direkte
 Vergleich des feinjustierten Modells mit seiner Basis (Nachtrag 4) ·
 **Nächstes Update:** nach diesen beiden, dann Jury-Prüfung und Among Us
 
@@ -196,9 +196,12 @@ nachgerechnet. Details und die Liste, was wir nicht behaupten dürfen: `analysis
   id-Wiederholungen. Nachträglich über alle Teil-A-Zeilen liegt es +0,08 [+0,05; +0,12] vor dem GNN. Diesen Vergleich
   haben wir nach Sicht der Ergebnisse gewählt, er ist nur eine Hypothese. Das LLM Gespräch für Gespräch ist weder vom
   GNN noch vom ganzen Protokoll zu trennen.
-- ⏳ **Bestätigungstest läuft (Nachtrag 3).** Die Hypothese „LLM mit ganzem Protokoll schlägt das GNN“ wird auf 28
-  frischen Läufen geprüft (dieselben 14 unveränderten Setups, neue Seeds), vorab festgelegt und gepusht, bevor die erste
-  Episode lief. Ergebnis gegen 10:45. Auch ein bestätigtes Ergebnis gilt nur für Setups im kritischen Band.
+- ✅ **Bestätigungstest (Nachtrag 3): nicht gestützt.** Auf 27 frischen Läufen derselben 14 Setups (vorab festgelegt,
+  Vorhersagen vor der Auswertung eingefroren und gepusht) liegt das LLM mit ganzem Protokoll nur noch +0,03 vor dem
+  GNN, CI [−0,05; +0,14]. Der nachträglich gefundene Vorsprung von +0,08 hat sich nicht bestätigt. Als Nebenvergleich
+  ohne Entscheidungsregel liegt das LLM Gespräch für Gespräch dort +0,12 [+0,05; +0,22] vor dem GNN. Über vier
+  Wiederholungen derselben Setups schwankt die AUROC eines Monitors um bis zu 0,2. Der Einbruch der Uhr in rep1 war
+  ein Ausreißer (`analysis/results/vx3.md`).
 - 🟡 **Welcher von zwei gleichen Läufen kippt**, trennt kein beobachtbarer Monitor verlässlich. Das GNN kommt auf 0,76
   mit einer CI bis 0,45. Seed-unabhängig über 0,5 liegen nur die Struktur-Baseline und bag + graph, warum gerade sie,
   ist offen. Teil B ist nur teilweise blind.
@@ -264,8 +267,7 @@ nachgerechnet. Details und die Liste, was wir nicht behaupten dürfen: `analysis
      keine CI ihre Grenze ausschließt. Die gröbere Auflösung gegenüber §6.6 (0,1) als Abweichung vom Plan nennen.
    - **Fürs GNN-Team:** Die Uhrzeiten in `gnn_opt_torch/LOOKS.md` und `STATUS.md` stimmen nicht mit git überein (Test-Blick
      17:02–17:06 UTC, nicht ~17:45). Die gespeicherte Modell-Datei hat nur 15 von 40 Zuständen.
-   - ⏳ **Bestätigungstest (Nachtrag 3) und Vergleich des feinjustierten Modells (Nachtrag 4)** laufen. Danach §9 und
-     den Paper-Abschnitt ergänzen. Die Tabelle in `synthesis_cloud/SYNTHESIS.md` §3 (Branch `cloud-synthesis`) weicht
+   - ~~Bestätigungstest (Nachtrag 3) und Vergleich des feinjustierten Modells (Nachtrag 4).~~ Erledigt, in §9. Die Tabelle in `synthesis_cloud/SYNTHESIS.md` §3 (Branch `cloud-synthesis`) weicht
      von `vx_eval.json` ab. Fürs Paper gelten die Zahlen aus `vx_eval.json` und `vx.md`.
 3. **Jury prüfen:** Übereinstimmung Haiku gegen DeepSeek berichten, besser zusätzlich rund 100 Nachrichten von Hand
    labeln.
