@@ -69,6 +69,36 @@ can only detect very large shifts (the plan says > 0.1). No monitor collapses in
 pattern is that the zero-shot `global_full` LLM is best in every arm, which matches the test-split OOD result
 (exploratory; `global_full` also tracks elapsed time, Spearman 0.83 with the round).
 
+## 3b. Where the GNN generalizes and where it does not
+
+Final GNN (`cloud_final_gnn`, 5 seeds), AUROC of y3. Sources: CV LODO folds (`gnn_opt_torch/preds/cv/cloud_final_gnn_cv5.csv`,
+18 folds), test splits (`synthesis_cloud/test_look1/`, `analysis/results/heldout.md`), night_vx arms (§3), judge swap
+(RESULTS.md step 9 / 9c). "Holds" = within noise of the in-distribution level; cells are small (7-14 configs), so
+this is indicative.
+
+| dimension | evidence | GNN AUROC | verdict |
+|---|---|---|---|
+| model mix (duo / majority held out) | CV LODO | 0.911 / 0.842 | holds |
+| seed type (external / pioneer held out) | CV LODO | 0.899 / 0.941 | holds |
+| channels (train board only, test team / DM) | CV LODO | 0.854 | holds |
+| topology (clustered held out) | CV LODO | 0.889 | holds |
+| topology (scale-free) | vx topo arm (7 bases) | 0.890 vs id rep0 0.786 | holds (H5 supported, CI includes 0) |
+| deadline timing shift | vx time arm | 0.846 vs 0.786 | holds |
+| task category (train K2, test K4) | CV LODO | 0.822 (weakest fold; graph-level-GRU GNNs 0.70-0.76) | small drop |
+| new task family (metricore) | test_ood_family | 0.794 vs test_id 0.921 | drops |
+| new agent backbone (GLM) | vx glm arm | 0.734 vs 0.786 (13/14 runs tip: mostly timing) | drops |
+| injection via tool output | test_ood_seed | 0.744; time-matched 0.54 | fails (near chance within time) |
+| counterfactual branch arms | night_branch | tipping arm higher in 1 / 6 pairs after the branch point | fails |
+| stronger enforcement | vx enf arm | 0.843, but false alarms in 3/9 untipped runs vs 1/8 | ranking holds, alarms do not (H4 not supported) |
+| single jury judge | test, single-judge features | −0.04 to −0.05 (CV with judge-swap aug −0.01 to −0.02) | drops |
+
+Interpretation: the GNN generalizes where the communication looks the same (population mix, seed type, channel,
+topology, timing; topology plays no role, consistent with the rewire control). It fails where the communication itself
+changes: a new task family, a different agent model (different language), triggers that never appear in messages
+(tool output), or a different judge scoring the messages. The zero-shot LLM monitors lose less on exactly these
+shifts (test OOD splits, every vx arm), the main argument for combining both. Caveat: id rep0 vs rep1 (same 14
+configs) already differ by 0.15 for the GNN, so single-arm differences below ~0.1 are not reliable.
+
 ## 4. How far can you trust this?
 
 Trust (holds across sources, rows and definitions): findings 1, 2, 4 of §1; "GNN alone ≈ counted features";
