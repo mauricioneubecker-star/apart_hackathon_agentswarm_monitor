@@ -1,0 +1,377 @@
+{
+ "note": "post hoc, exploratory; chosen after reading the night_vx evaluation",
+ "boot": 20000,
+ "seed": 20261109,
+ "resolution": {
+  "shift_minus_noise_cis_entirely_below_0": "0 of 96",
+  "median_half_width": {
+   "shift": {
+    "auroc": 0.128925,
+    "tm_auroc": 0.27202499999999996
+   },
+   "shift_minus_noise": {
+    "auroc": 0.154,
+    "tm_auroc": 0.33655
+   }
+  },
+  "gnn_half_width_range": {
+   "shift": {
+    "auroc": [
+     0.1632,
+     0.22444999999999998
+    ],
+    "tm_auroc": [
+     0.215,
+     0.43745
+    ]
+   },
+   "shift_minus_noise": {
+    "auroc": [
+     0.1565,
+     0.25535
+    ],
+    "tm_auroc": [
+     0.26645,
+     0.42765
+    ]
+   }
+  },
+  "note": "a drop equal to the half-width is detected about half the time; about 80 % needs ~1.43 x the half-width"
+ },
+ "replicate_noise_auroc_14_bases": {
+  "clock": {
+   "noise": -0.1956,
+   "ci": [
+    -0.2919,
+    -0.0924
+   ]
+  },
+  "struct": {
+   "noise": 0.1095,
+   "ci": [
+    -0.0421,
+    0.2746
+   ]
+  },
+  "feat_pairwise": {
+   "noise": 0.0449,
+   "ci": [
+    -0.1126,
+    0.1996
+   ]
+  },
+  "bag": {
+   "noise": 0.0335,
+   "ci": [
+    -0.1177,
+    0.1817
+   ]
+  },
+  "bag+graph": {
+   "noise": -0.0169,
+   "ci": [
+    -0.1819,
+    0.1395
+   ]
+  },
+  "tab_mem": {
+   "noise": -0.0142,
+   "ci": [
+    -0.1197,
+    0.1048
+   ]
+  },
+  "edge": {
+   "noise": -0.0569,
+   "ci": [
+    -0.2597,
+    0.0719
+   ]
+  },
+  "gnn": {
+   "noise": -0.0544,
+   "ci": [
+    -0.2641,
+    0.1997
+   ]
+  },
+  "hybrid": {
+   "noise": -0.0241,
+   "ci": [
+    -0.1475,
+    0.1235
+   ]
+  },
+  "zs:pairwise": {
+   "noise": -0.0731,
+   "ci": [
+    -0.1743,
+    0.0236
+   ]
+  },
+  "zs:global_full": {
+   "noise": -0.053,
+   "ci": [
+    -0.1776,
+    0.0427
+   ]
+  },
+  "oracle": {
+   "noise": -0.115,
+   "ci": [
+    -0.1931,
+    -0.0507
+   ]
+  }
+ },
+ "monitors_with_negative_noise": "9 of 12",
+ "timing": {
+  "id_rep0": {
+   "tipped": 6,
+   "mean_tip_round": 20.833333333333332,
+   "range": [
+    15,
+    28
+   ]
+  },
+  "id_rep1": {
+   "tipped": 7,
+   "mean_tip_round": 25.0,
+   "range": [
+    15,
+    30
+   ]
+  },
+  "time": {
+   "tipped": 8,
+   "mean_tip_round": 24.875,
+   "range": [
+    19,
+    31
+   ]
+  },
+  "rep1_minus_rep0_paired": {
+   "bases_tipped_in_both": 6,
+   "rep1_later": 5,
+   "mean_diff": 4.0,
+   "sign_test_p": 0.21875
+  },
+  "time_minus_id_rep0_paired": {
+   "bases": 5,
+   "mean_diff": 4.6
+  },
+  "time_minus_id_rep1_paired": {
+   "bases": 6,
+   "mean_diff": 1.0
+  },
+  "deadline_id_mean": 21.928571428571427,
+  "deadline_time_arm": [
+   29
+  ],
+  "run_order_blocks_by_start_time": [
+   {
+    "block": "Part A rep0 + arms (+ gate canaries)",
+    "n": 64,
+    "first": "2026-11-08T15:12:56",
+    "last": "2026-11-08T17:25:51"
+   },
+   {
+    "block": "Part B rep0",
+    "n": 8,
+    "first": "2026-11-08T17:28:04",
+    "last": "2026-11-08T17:39:46"
+   },
+   {
+    "block": "id rep1",
+    "n": 14,
+    "first": "2026-11-08T17:41:01",
+    "last": "2026-11-08T18:07:38"
+   },
+   {
+    "block": "Part B rep1",
+    "n": 8,
+    "first": "2026-11-08T18:07:41",
+    "last": "2026-11-08T18:19:17"
+   }
+  ]
+ },
+ "pooled_part_a": {
+  "rows": 1973,
+  "positives": 132,
+  "bases": 14,
+  "auroc": {
+   "clock": 0.7714413280002634,
+   "struct": 0.638044623310783,
+   "bag+graph": 0.7581065955590671,
+   "gnn": 0.799096340921436,
+   "hybrid": 0.8070959458792158,
+   "zs:pairwise": 0.833205767616414,
+   "zs:global_full": 0.8811787072243346,
+   "oracle": 0.8894457886853324
+  },
+  "contrasts": {
+   "zs:global_full - gnn": {
+    "diff": 0.08208236630289856,
+    "ci": [
+     0.048746454627642585,
+     0.11802618620355824
+    ]
+   },
+   "zs:pairwise - gnn": {
+    "diff": 0.03410942669497796,
+    "ci": [
+     -0.04379355273158231,
+     0.10720138909733144
+    ]
+   },
+   "zs:global_full - zs:pairwise": {
+    "diff": 0.047972939607920595,
+    "ci": [
+     -0.015901557514581638,
+     0.11766883723858405
+    ]
+   },
+   "zs:global_full - hybrid": {
+    "diff": 0.07408276134511871,
+    "ci": [
+     0.03850173496592077,
+     0.1113005088663705
+    ]
+   },
+   "zs:global_full - bag+graph": {
+    "diff": 0.12307211166526744,
+    "ci": [
+     0.07606530310974502,
+     0.18013507712069896
+    ]
+   },
+   "hybrid - bag+graph": {
+    "diff": 0.04898935032014873,
+    "ci": [
+     0.019796749190676755,
+     0.08765074556457328
+    ]
+   },
+   "gnn - clock": {
+    "diff": 0.02765501292117256,
+    "ci": [
+     -0.06573209897588542,
+     0.11471766853608123
+    ]
+   },
+   "zs:global_full - clock": {
+    "diff": 0.10973737922407112,
+    "ci": [
+     0.020180705013151848,
+     0.18864869274567378
+    ]
+   },
+   "zs:pairwise - clock": {
+    "diff": 0.061764439616150524,
+    "ci": [
+     -0.03056063401091422,
+     0.1523175273422707
+    ]
+   }
+  }
+ },
+ "part_b_pairs": {
+  "composition": {
+   "night-new": 16,
+   "night-night": 10,
+   "new-new": 3
+  },
+  "rows_night_only": 544,
+  "rows_total": 960,
+  "with_new_run": {
+   "clock": 0.5,
+   "struct": 1.0,
+   "bag+graph": 0.631578947368421,
+   "gnn": 0.7368421052631579,
+   "hybrid": 0.6842105263157895,
+   "zs:pairwise": 0.6842105263157895,
+   "zs:global_full": 0.6842105263157895,
+   "oracle": 0.5526315789473685
+  },
+  "night_night": {
+   "clock": 0.5,
+   "struct": 0.6,
+   "bag+graph": 0.8,
+   "gnn": 0.8,
+   "hybrid": 0.7,
+   "zs:pairwise": 0.9,
+   "zs:global_full": 0.95,
+   "oracle": 0.55
+  },
+  "struct_night_new_by_direction": {
+   "tipped_is_new=0": "9/9",
+   "tipped_is_new=1": "7/7"
+  }
+ },
+ "h4_gnn_alarms": {
+  "enf": {
+   "alarmed": 3,
+   "untipped": 9,
+   "max_violators_of_alarmed": [
+    6,
+    6,
+    7
+   ]
+  },
+  "id": {
+   "alarmed": 1,
+   "untipped": 8,
+   "max_violators_of_alarmed": [
+    3
+   ]
+  },
+  "fisher_p": 0.5764705882352941
+ },
+ "clock_alarm_rounds": [
+  18
+ ],
+ "tm_companions": {
+  "H2_gnn_shift_noise": [
+   0.1248,
+   -0.1111
+  ],
+  "H3_gnn_bag_shift": [
+   -0.129,
+   -0.0801,
+   -0.0489
+  ],
+  "H4i_gnn_shift_noise": [
+   0.1324,
+   -0.1111
+  ],
+  "H5_gnn_bag_shift": [
+   -0.049,
+   0.0731,
+   -0.1221,
+   [
+    -0.6185,
+    0.5151
+   ]
+  ],
+  "H2_clock_without_last3": {
+   "arm": 0.6999,
+   "id_rep0": 0.8094,
+   "id_rep1": 0.6522,
+   "shift": -0.1095,
+   "shift_ci": [
+    -0.316,
+    0.1037
+   ],
+   "noise": -0.1572,
+   "noise_ci": [
+    -0.2646,
+    -0.0568
+   ],
+   "shift_minus_noise": 0.0477,
+   "shift_minus_noise_ci": [
+    -0.1219,
+    0.2266
+   ]
+  }
+ }
+}

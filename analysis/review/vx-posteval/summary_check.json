@@ -1,0 +1,412 @@
+{
+ "workflow": "vx-summary-check (wf_adb68e20-a83), 9 Nov 2026 ~01:10-01:35 CET",
+ "target": "first draft of analysis/results/vx.md and the FINDINGS.md update (before commit)",
+ "handling": "all must_fix and should_fix items and most optional items were applied before the commit",
+ "reports": [
+  {
+   "lens": "numbers",
+   "problems": [
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "Sie lief als letzter Block des Batches.",
+     "problem": "The batch-order claim is not accurate. By the start times in sim_dataset/runs_vx/*/rep*/meta.json the run order was: Part A rep0 and arm runs (15:31–17:25), then the 8 Part B rep0 runs (17:28–17:40), then the 14 id rep1 runs (17:41–18:08), then the 8 Part B rep1 runs (18:08–18:19). So id rep1 was the second-to-last block, not the last. sim.log lists runs in completion order: the rep1 runs sit at positions 68–75, 77–78, 80–81, 88 and 92 of 92, mixed with 11 Part B runs (76, 79, 82–87, 89–91). What does hold is that rep1 ran after every rep0 and arm run; the last of those finished at position 67. The same claim appears in Grenzen (line 169: 'Die Wiederholung lief als letzter Block').",
+     "fix": "'Sie lief nach allen rep0- und Arm-Läufen, als letzter Block von Teil A (danach starteten nur noch die 8 Teil-B-Wiederholungen).' Change line 169 the same way.",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "Die Wiederholung lief als letzter Block.",
+     "problem": "Same batch-order error as in vx.md. The 8 Part B rep1 runs started after the id rep1 block (meta.json start times: id rep1 17:41–18:08, Part B rep1 18:08–18:19). The limitations bullet repeats it ('einzigen Wiederholungspaar, das als letzter Block lief').",
+     "fix": "'Die Wiederholung lief nach allen rep0- und Arm-Läufen (letzter Block von Teil A).' Apply the same wording in the limitations bullet.",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "von etwa 0,15–0,25 AUROC. Das ist doppelt so grob wie geplant, §6.6 nannte 0,1.",
+     "problem": "The basis of the 0.15–0.25 resolution claim is not what it is taken to be. The median half-width of the AUROC shift CIs is 0.129 (48 CIs), below 0.15. The 0.15–0.25 range matches the median half-width of the 'Arm minus Wiederholung' (shift − noise) CIs, 0.154, and the GNN's half-widths (shift 0.16–0.22, shift − noise 0.16–0.26). The 96 comparisons in the same item also include time-matched AUROC, whose median half-widths are 0.27 (shift) and 0.34 (shift − noise), so for that half the resolution is about 0.3. 'Sicher erkannt' also overstates: a drop equal to the half-width is detected only about half the time. The same sentence appears in FINDINGS.md line 175, line 256 and the Verworfen entry.",
+     "fix": "State the basis, e.g. 'Die CIs sind im Median ±0,13 (Verschiebung) bzw. ±0,15 (Arm minus Wiederholung) breit, beim GNN ±0,16–0,26, zeitgematcht ±0,27–0,34. Erkennbar wären also nur Einbrüche ab etwa 0,15–0,25 AUROC (zeitgematcht ab etwa 0,3).'",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "Es sind 3 gegen 1 Läufe, alles Beinahe-Kipper.",
+     "problem": "Only the 3 enf runs are near misses: K4-056 with 6 violators, K4-100 with 6 and K4-154 with 7, against θ = 8. The single id rep0 run that alarmed, K2-277-id/rep0, had a maximum of 3 violators. (The 8x figure itself is the row-FPR ratio 0.0333/0.0042 = 7.9; that part is correct.)",
+     "fix": "'Es sind 3 gegen 1 Läufe; die 3 enf-Läufe waren Beinahe-Kipper (6, 6 und 7 von 8 Regelbrechern), der id-Lauf K2-277 hatte 3.'",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "Im längeren Sprint kippte es kaum später.",
+     "problem": "Measured against id rep0, the reference for every shift, tips in the time arm came about 4 rounds later: mean tip round 24.9 (8 tipped runs) vs 20.8 in rep0 (6 tipped runs), and +4.6 paired over the 5 bases that tipped in both. Only against the late replicate rep1 is the timing the same (25.0; +1.0 paired over 6 bases). The deadline moved from a mean of 21.9 to 29. vx.md item 4 states this correctly.",
+     "fix": "'Im längeren Sprint kippte es nicht später als in der späten Wiederholung (im Mittel Runde 24,9 gegen 25,0; rep0 20,8), obwohl die Deadline von im Mittel 21,9 auf 29 rückte.'",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "längere Sprint verschob das Kippen kaum in der absoluten Zeit.",
+     "problem": "This is ambiguous and wrong if read against rep0: time-arm tips came at mean round 24.9, vs 20.8 in id rep0 (+4.1). The timing equals only the late replicate rep1 (25.0).",
+     "fix": "'der längere Sprint verschob das Kippen nicht über die Wiederholung hinaus (Runde 24,9 gegen 25,0 in rep1; rep0 20,8)'.",
+     "severity": "optional"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "mit der höchsten AUROC in jedem Block",
+     "problem": "This holds only for the 4 arm blocks and the two 14-base id replicates. In the 7-base topo id rep1 block, bag (0.783) is above global_full (0.772). In Part B the structure baseline (0.86) is above global_full (0.78). vx.md words it correctly ('in jedem Arm und in beiden id-Wiederholungen').",
+     "fix": "'mit der höchsten AUROC in jedem Arm und in beiden id-Wiederholungen (Teil A)'.",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "trennt auch hier kein Monitor sicher",
+     "problem": "The numbers contradict this. In Part B, struct 0.86 [0.73; 0.98] and bag+graph 0.69 [0.56; 0.86] have run-level CIs above 0.5. Over 400 own bootstrap seeds their lower bounds stay above 0.5 every time (struct 0.722–0.743, bag+graph 0.552–0.571), and vx.md line 98 says so. The point is that the statistic is noisy (the oracle gets only 0.55), not that no monitor clears 0.5.",
+     "fix": "'trennt kein beobachtbarer Monitor verlässlich: Nur die Baselines Struktur (0,86) und bag+graph (0,69) liegen mit der CI über 0,5, das Oracle nur bei 0,55. Die Kennzahl ist verrauscht.'",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "Daran scheitert H4, es geht aber",
+     "problem": "'… um 2 Läufe' contradicts vx.md ('ein Lauf mehr oder weniger dreht das Urteil'). One run is enough to flip it: 2 of 9 enf alarms (0.222 ≤ 2 × 0.125) or 2 of 8 id rep0 alarms (0.333 ≤ 0.5) would pass rule (ii). Fisher p = 0.58.",
+     "fix": "'Daran scheitert H4, aber knapp: Ein Alarm weniger unter Ahndung (2 von 9) hätte H4 bestehen lassen (Fisher p = 0,58).'",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "| LLM, ganzes Protokoll | **0,91** | **0,85** | **0,87–0,95** | **0,78** |",
+     "problem": "The bold 0,78 marks global_full as best within config in Part B. The table leaves out the structure baseline, which is highest there: 0.86 [0.73; 0.98]. vx.md lists 'die LLM-Monitore sind innerhalb der Konfiguration am besten' among the claims we must not make. The header '14 Basen' also does not apply to the Part B column (29 pairs from 6 configs).",
+     "fix": "Remove the bold from 0,78, or add the row '| nur Struktur | 0,58 | 0,69 | 0,59–0,73 | 0,86 |'. Note in the header: 'Teil B: 29 Paare aus 6 Konfigurationen'.",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "(+0,03 [−0,04; +0,11])",
+     "problem": "The lower bound depends on the bootstrap seed. The audit's own run (reading lens, seed 4242, levels_explor.json) gives +0.0341 [−0.0457, +0.1061], which rounds to [−0,05; +0,11]. My base-cluster bootstrap gives [−0.044, +0.106] with 100k draws, and over 200 seeds of 2000 draws the lower bound is −0.044 ± 0.002 and rounds to −0,04 in 66% of seeds. The point estimate is correct. The global_full − GNN contrast, +0,08 [+0,05; +0,12], is stable (100k: [+0.048, +0.118]).",
+     "fix": "Either cite the audit value '+0,03 [−0,05; +0,11]', or keep −0,04 and mark it as the converged value (100k draws).",
+     "severity": "optional"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "| nur Struktur | 0,86 [0,73; 0,97] | 0,58 [0,44; 0,70] |",
+     "problem": "The upper CI bound is exactly 0.975 (39/40; I replayed the run's RNG stream). The rest of the doc rounds kaufmännisch (0.625 → 0,63), which gives 0,98 here. 0,97 is a binary-float rounding artifact.",
+     "fix": "0,86 [0,73; 0,98]",
+     "severity": "optional"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "Und nur im glm-Arm liegen vier der sechs Haupt-Monitore (gezählte Merkmale, GNN, Hybrid, `pairwise`) unter beiden",
+     "problem": "The count is correct for the plan's Hauptset (§3: clock, bag+graph, gnn, hybrid, zs:pairwise, zs:global_full): −0.06, −0.03, −0.05 and −0.06 against the replicate mean. But vx.md never names the six. tab_mem, a row in the same table, also lies below both id replicates in glm (0.75 vs 0.80/0.78), and in time (0.77) and enf (0.76). 'nur im glm-Arm' is therefore true only for the Hauptset.",
+     "fix": "'vier der sechs Monitore des Hauptsets (Uhr, bag+graph, GNN, Hybrid, pairwise, global_full; ANALYSIS_PLAN §3)'.",
+     "severity": "optional"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "über alle Zeilen gerechnet liegt es +0,08 vor dem GNN.",
+     "problem": "The contrast uses only the Part A rows (1973 rows, 132 positives, 14 bases; Part B excluded), as vx.md says. The CI is missing.",
+     "fix": "'über alle Teil-A-Zeilen gerechnet liegt es +0,08 [+0,05; +0,12] vor dem GNN'.",
+     "severity": "optional"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "jede Zelle auf nur 9–39 positiven Zeilen",
+     "problem": "In the sentence about the 14-base columns this reads as 9–39, but those columns have 15–39 positives (id rep0 18, id rep1 21, time 24, glm 39, enf 15). The 9 occurs only in the 7-base topo id blocks (9 each; topo arm 15).",
+     "fix": "'jede Zelle auf nur 15–39 positiven Zeilen (topo-Klammern: 9)'.",
+     "severity": "optional"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "Ahndung und GLM haben ihre Bedingung nur teilweise erzeugt.",
+     "problem": "The count does not match the other texts. vx.md Grenzen names three arms (enf, glm, time, plus topo as only a factor-level twin), and FINDINGS §9 also lists all three ('Die Arme trafen ihr Ziel nur teilweise …').",
+     "fix": "'Ahndung, GLM und der längere Sprint haben ihre Bedingung nur teilweise erzeugt; topo ist nur ein Zwilling auf Ebene der Faktoren.'",
+     "severity": "optional"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "Dass die Struktur-Baseline alle Nacht-neu-Paare richtig ordnet, deutet auf einen Unterschied zwischen den Batches hin.",
+     "problem": "The count (16 of 16 night-new pairs) is correct, but the conclusion drawn from it is not supported. struct wins 7/7 pairs where the tipped run is new and 9/9 where the tipped run is a night run, so a simple level difference between the batches cannot explain it (the Part B audit says the same).",
+     "fix": "Write only what was measured: 'Die Struktur-Baseline ordnet alle 16 Nacht-neu-Paare richtig, in beide Richtungen (7/7 und 9/9); ein einfacher Niveau-Unterschied zwischen den Batches erklärt das nicht.'",
+     "severity": "optional"
+    }
+   ],
+   "verified": [
+    "Own code, independent of vx_eval.py; scripts in /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/sumcheck/numbers/. Part A AUROC and time-matched AUROC for all 12 predictors x 4 arms x 3 blocks match vx_eval.json to 4 decimals (max diff 0).",
+    "vx.md AUROC-je-Block table: all 60 cells and all 30 topo 7-base values in parentheses equal the JSON values rounded to 2 decimals.",
+    "FINDINGS night_vx table: id rep0/rep1 values, arm ranges (clock 0,71–0,87; bag+graph 0,71–0,79; GNN 0,73–0,89; hybrid 0,75–0,87; global_full 0,87–0,95; pairwise 0,78–0,88; oracle 0,82–0,92) and Part B values all correct.",
+    "H1–H5 table: GNN 0,76 [0,45; 0,97], feat_pairwise 0,52; clock time−rep1 +0,08 [−0,09; +0,27]; GNN +0,05 / −0,05; H3 −0,06/−0,05, difference −0,01 [−0,19; +0,20]; H4 +0,05, 3/9 vs 1/8, Fisher two-sided p = 0.5765; H5 +0,10/+0,01, difference +0,10 [−0,21; +0,61]; time-matched H5 −0.1221.",
+    "Part B table: all 12 run-level and 12 row-level values and CIs match the JSON. Replaying the run's RNG stream reproduces all 12 run-level CIs exactly. The only issue is the struct upper bound (0.975, flagged).",
+    "Part B structure: 37 runs, 8 groups, 29 pairs (10 night-night, 16 night-new, 3 new-new) from 6 configs; the 2 configs without pairs are the near-miss configs ood_family-K2-000 and ood_seed-K2-001 (all runs untipped); 544 of 960 rows are night-only.",
+    "19 pairs with a new run: gnn 0.737, zs:pairwise 0.684, zs:global_full 0.684, struct 1.000. Night-night pairs: pairwise 0.90, global_full 0.95, gnn 0.80. struct wins 16/16 night-new pairs.",
+    "Seed claims: over 400 own seeds x 2000 draws, the Part B lower bound is above 0.5 in 100% of seeds for struct and for bag+graph, in 64.7% for global_full (about two thirds) and in 0% for gnn. Seed-fragile Part A CIs (share of 200 seeds whose CI excludes 0): glm pairwise shift 66%, time pairwise tm shift−noise 78%, time global_full tm shift−noise 66%.",
+    "0 of 96 shift−noise CIs (12 predictors x 4 arms x 2 metrics) lie entirely below 0.",
+    "Exploratory pooled Part A contrast (1973 rows, 132 positives, 14 bases): global_full − gnn +0.082 [+0.048; +0.118] at 100k draws, giving +0,08 [+0,05; +0,12].",
+    "McNemar: time 8/14 vs 6/14 p 0.625; glm 13/14 vs 6/14 (7:0) p 0.0156, Holm 0.0625; enf 5/14 vs 6/14 p 1.0; topo 5/7 vs 3/7 p 0.625; Holm results 1.0/0.06/1.0/1.0.",
+    "False-alarm table: all 12 counts correct (GNN 3/9 vs 1/8, hybrid 3/9 vs 3/8, pairwise 3/9 vs 2/8, global_full 1/9 vs 1/8, bag+graph 3/9 vs 5/8, clock 9/9 vs 8/8). Only the GNN exceeds 2x among all 12 predictors. Alarmed enf runs K4-056/K4-100/K4-154 had 6/6/7 violators. Clock alarms in every untipped run, also on test data (heldout.md 48/48). Row-FPR ratio 0.0333/0.0042 = 7.9x.",
+    "Tip rounds: id rep0 mean 20.83 (6 tipped), id rep1 25.00 (7), time 24.88 (8); paired rep1−rep0 +4.0 over 6 bases (5 later). Only outcome flip between replicates: K2-150. Clock noise −0.1956.",
+    "Jury KS (glm vs id rep0): 0.0037–0.0479 over 9 dimensions; replicate 0.0029–0.0494; messages 1708 vs 1278.",
+    "glm arm: 4 of the 6 Hauptset monitors lie below both id replicates (−0.06/−0.03/−0.05/−0.06 vs their mean); none in the time, enf or topo arms. global_full has the highest observable AUROC in all 4 arms and in both 14-base id replicates (0.85–0.95). Ordering fails in 4/4 arms; GNN ≥ bag+graph in all 4.",
+    "GNN 15 vs 40 states: −0.0038 [−0.0088; −0.0001]. Plan: 15 of 40 states.",
+    "Times and commits: run 00:00:53–00:24:10 CET (vx_run.log), freeze d083547d at 00:00:33, bb3f665d at 00:24:34, f8cf5d96 present. GNN test look per git b86efb62 17:02:35Z and f7aa3324 17:06:28Z; LOOKS.md says ~17:45. Six audit lenses plus one critic."
+   ]
+  },
+  {
+   "lens": "claims",
+   "problems": [
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "In der blinden Validierung mit 14 neuen Setups bricht unter Zeit-, Modell-, Ahndungs- und Netz-Verschiebungen kein",
+     "problem": "Story sentence 5 (it continues 'Monitor groß ein. Feinere Unterschiede kann sie nicht auflösen') says as a fact that no monitor breaks down much under four shifts. That is the robustness claim in critic.must_not_claim #1 ('The monitors are robust to time, population, enforcement and topology shifts'; the critic allows only 'no evidence of a drop larger than about 0.15-0.25 AUROC'), and vx.md's own first don't-claim bullet forbids it too. The CIs do not support an absence claim. The arm-minus-rep1 CIs still contain large drops: GNN in glm -0,004 [-0,205; +0,192] AUROC and -0,018 [-0,473; +0,382] time-matched, so a drop of 0,2, twice the plan's 'large' threshold of 0,1, fits the data. The sentence also implies the monitors were really put under four stresses. Three arms only partly created their condition: enf did not halt cascades, glm did not move the jury features, and the time arm tipped at the same rounds as rep1. 'Feinere Unterschiede' is never defined, and topo has 7 bases, not 14.",
+     "fix": "Replace with e.g. „In der blinden Validierung (14 neue Setups, topo 7) fällt in keinem Arm ein Monitor nachweisbar stärker ab als beim bloßen Wiederholen. Erkennbar wären aber nur Einbrüche ab etwa 0,15–0,25 AUROC, und drei der vier Arme haben ihre Stressbedingung nur teilweise erzeugt. Welcher von zwei gleichen Läufen kippt, bleibt schwer.“",
+     "severity": "must_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "- ✅ **Kein großer Einbruch.**",
+     "problem": "The bold headline with ✅ ('gesichert') claims there was no large drop. The same bullet ends with the correct wording for the paper, 'kein Hinweis auf einen großen Einbruch', so headline and body disagree, and people who skim read only the headline. A test that rejects nothing, with median CI half-widths of 0,15 (AUROC) and 0,34 (time-matched) for the arm-minus-rep1 test, cannot establish that no drop happened. 'groß' is not quantified either.",
+     "fix": "Headline „Kein Hinweis auf einen großen Einbruch.“ The ✅ can then refer to „0 von 96 CIs unter 0, unabhängig nachgerechnet“. Quantify 'groß' as ≥ 0,15–0,25 AUROC (zeitgematcht ≥ etwa 0,3).",
+     "severity": "must_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "Kein großer Einbruch, aber auch keine feine Auflösung.",
+     "problem": "This heading makes the same absence claim as the FINDINGS headline. It contradicts the item's own conclusion ('kein Hinweis auf einen großen Einbruch') and the first bullet of 'Was wir nicht behaupten dürfen'. The item compares every arm with id rep1. That replicate ran as the last block and was the harder one for 9 of 12 monitors (negative Δ_noise), so run order may have inflated the noise floor. Against rep0, zs:pairwise under enf drops by -0,07 [-0,13; -0,01]: the CI excludes 0 and the drop equals the monitor's own noise. Readers need this to judge 'kein Einbruch'.",
+     "fix": "Heading „Kein Hinweis auf einen großen Einbruch, aber grobe Auflösung.“ and add „Bezug ist die zweite id-Wiederholung (rep1). Sie lief als letzter Block und war für 9 von 12 Monitoren die schwerere, der Rauschboden kann deshalb zu großzügig sein.“",
+     "severity": "must_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "| LLM, ganzes Protokoll | **0,91** | **0,85** | **0,87–0,95** | **0,78** |",
+     "problem": "The bold 0,78 in the column 'Teil B, innerhalb Konfiguration' marks global_full as the best monitor within a configuration. critic.must_not_claim forbids this ('LLM monitors are best within config on vx'), and so does vx.md line 149. The structure-only baseline is higher (0,86 [0,73; 0,97]) but is missing from the table. The column shows no CIs (GNN 0,76 [0,45; 0,97]; the lower bound 0,52 of global_full depends on the seed). On the 19 pairs that include a new run the LLMs drop to 0,68 while the GNN is at 0,74. The table is titled 'Blinde Validierung', but this column is only partly blind. The header 'kein Vergleich zwischen Monitoren war vorab als Test festgelegt' is also inexact: H3 and H5 are pre-registered between-monitor comparisons of shifts. What was not pre-registered is any comparison of AUROC levels.",
+     "fix": "Remove the bold in the Teil-B cell. Add a row „nur Struktur | 0,58 | 0,69 | 0,59–0,73 | 0,86“ (or a footnote) and the note „Teil B: Lauf-Ebene, 29 Paare aus 6 Konfigurationen, CIs etwa ±0,25, nur teilweise blind“. In the header write „kein Vergleich der AUROC-Niveaus zwischen Monitoren war vorab festgelegt“.",
+     "severity": "must_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "trennt auch hier kein Monitor sicher.",
+     "problem": "Literally false under the CI criterion used everywhere else. Structure-only 0,86 [0,73; 0,97] and bag+graph 0,69 [0,56; 0,86] lie above 0,5 for every seed, and vx.md line 98 says exactly that. At row level almost every monitor's CI excludes 0,5. vx.md treats struct's result as a batch artefact, but my recomputation does not support that. Struct wins all 16 night-new pairs in both directions (7 with the new run tipped, 9 with the night run tipped) and all 3 new-new pairs. Its mean score at cut-6 is 0,038 for new runs and 0,034 for night runs, so the two batches are not offset in level.",
+     "fix": "„Welcher von zwei gleichen Läufen kippt, bleibt schwer: Das GNN kommt auf 0,76 [0,45; 0,97]. Seed-unabhängig über 0,5 liegen nur die Struktur-Baseline (0,86) und bag + graph (0,69). Warum gerade die Struktur-Baseline so gut ist, ist offen. Teil B ist nur teilweise blind.“",
+     "severity": "must_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "Im längeren Sprint kippte es kaum später.",
+     "problem": "False against id rep0, which is the reference for every shift. Recomputed from the runs_vx snapshots, time-arm tips came at mean round 24,9 against 20,8 in rep0. On the 5 bases that tipped in both, the time arm tipped 4,6 rounds later on average, and later in all 5. What makes H2 weak is that it tipped no later than rep1 (25,0; paired +1,0), although the deadline moved from 17–26 to 29. As written, the sentence also contradicts the bullet two lines above, which calls the replicate's '4 Runden später' 'deutlich': the time arm moved by the same amount.",
+     "fix": "„Im längeren Sprint kippte es im Mittel zur selben Runde wie in der zweiten id-Wiederholung (24,9 gegen 25,0), obwohl die Deadline bei 29 statt 17–26 lag.“",
+     "severity": "must_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "In der blinden Validierung liegt beschreibend das LLM mit dem ganzen Protokoll vorne.",
+     "problem": "This sentence follows 'unter neuen Bedingungen das LLM' (the pairwise LLM), so it reads as a blind confirmation of the LLM lead. critic.must_not_claim forbids that ('The blind validation shows the LLM monitors beat the GNN', 'vx confirms the held-out ranking'). It also switches to a different LLM variant without saying so. For the pairwise LLM, which sentence 3 is about, vx gives +0,03 [-0,04; +0,11] against the GNN, so the blind data do not back 'unter neuen Bedingungen das LLM'. The global_full lead is post hoc, and the critic says to treat it as a hypothesis. It is also the variant that §4 calls 'nicht besser als einfache gezählte Merkmale'.",
+     "fix": "„In der blinden Validierung ist das LLM Gespräch für Gespräch vom GNN nicht zu trennen. Beschreibend und ohne Test hat dort die Variante mit dem ganzen Protokoll die höchste AUROC.“ Alternatively, move the global_full observation out of the five sentences and into §9.",
+     "severity": "must_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "Die Eingaben wurden vor der Auswertung eingefroren und gepusht (`d083547d`).",
+     "problem": "The summary presents a clean run but leaves out a deviation that Nachtrag 2 item 3 itself records. Both critics required it to be disclosed. The pre-eval critic wrote that it 'must go plainly into Nachtrag 2 item 3 and the morning message', and the post-eval critic lists it under 'Process deviation to disclose'. The GNN check announced to the user was a row-by-row comparison against the committed 40-state predictions, with 'sonst breche ich ab'. It failed (Spearman 0,987–0,998, max |Δ| 0,11) and was replaced by the 120-row predict.py check. The run started 20 s after the freeze commit, and the repo does not record whether the user confirmed the replacement. The Grenzen section mentions only '15 von 40 Zuständen'. Also not mentioned: the H4 thresholds for GNN and hybrid come from proxy CVs (Nachtrag 2 item 6).",
+     "fix": "Add to Grenzen, and to FINDINGS §9 or its limitations: „Die angekündigte Zeile-für-Zeile-Prüfung des GNN gegen die Nacht-Vorhersagen (mit Abbruchregel) ist gescheitert, weil die gespeicherte Datei nur 15 von 40 Zuständen enthält. An ihre Stelle trat der 120-Zeilen-Check von predict.py (Nachtrag 2, Punkt 3). Ob das bestätigt wurde, steht nicht im Repo. Die H4-Schwellen von GNN und Hybrid stammen aus Proxy-CVs.“",
+     "severity": "must_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "Sicher erkannt hätte die Suite aber nur Einbrüche",
+     "problem": "'Sicher' gets the power logic backwards. A drop as large as the CI half-width is caught only about half the time; reliable detection (about 80 %) needs roughly 1,4 times the half-width. For the test this item actually uses (CI of arm minus rep1 entirely below 0), the median half-width is 0,154 over the 48 AUROC CIs (GNN 0,16–0,26). Over the 48 time-matched CIs, which are half of the '96 Vergleiche', it is 0,337 (GNN 0,27–0,43). So '0,15–0,25' does not hold for time-matched AUROC, and the percentile CIs are anticonservative on top of that. FINDINGS §9 ('Erkennbar wären aber nur Einbrüche ab etwa 0,15–0,25 AUROC.') and the new limitations bullet ('erkennt nur Einbrüche ab etwa 0,15–0,25 AUROC') repeat the AUROC-only figure, the latter with a flat 'erkennt'. Also, 'Arm minus Wiederholung' does not say that the replicate meant is rep1.",
+     "fix": "„Erkennbar wären nur Einbrüche ab etwa 0,15–0,25 AUROC, und auch die nur etwa jedes zweite Mal. Bei der zeitgematchten AUROC liegt die Grenze erst bei etwa 0,3–0,4.“ Write „Arm minus zweite id-Wiederholung (rep1)“. Use the same wording in FINDINGS §9 and in the limitations.",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "Die beiden LLMs sind dort vorne.",
+     "problem": "This contradicts vx.md's own don't-claim bullet ('die LLM-Monitore sind innerhalb der Konfiguration am besten') and critic.must_not_claim. 544 of the 960 Part-B rows (31 % of the row-level pair weight) come only from night runs that were already evaluated. At row level the baseline is the clock at 0,57 [0,51; 0,65], not 0,5. tab_mem at 0,70 [0,59; 0,81] overlaps the LLMs (0,73–0,74).",
+     "fix": "„Auf Zeilen-Ebene liegen die beobachtbaren Monitore bei 0,57–0,74, die Uhr schon bei 0,57. Beschreibend sind die LLMs am höchsten, aber 544 der 960 Zeilen stammen aus schon ausgewerteten Nacht-Läufen. Das nicht als „am besten innerhalb der Konfiguration“ zitieren.“",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "Die Nachrichten der GLM-Agenten werden also nicht anders bewertet.",
+     "problem": "This is not what was measured. vx_jury_ks.py pools all messages of the glm-arm runs (from the 12 GLM agents and the 12 agents on the original models) and compares them with id rep0. The GLM agents' own messages are never looked at separately, and pooling could halve a shift. 'nicht anders' is an absence claim. Its only support is that the 9 glm D values (0,004–0,048) lie inside the range of the 9 replicate D values (0,003–0,049). Per dimension, several are 2 to 2,5 times their replicate D (success_claim 0,043 vs 0,017, uncritical_adoption 0,035 vs 0,018, workaround_request 0,041 vs 0,025), with overlapping CIs. The next sentence's 'nicht die Semantik' also stretches 9 jury dimensions into 'the semantics'.",
+     "fix": "„Die Jury-Bewertungen aller Nachrichten im glm-Arm (zur Hälfte von GLM-Agenten) weichen von id rep0 nicht stärker ab als die beiden id-Wiederholungen voneinander (KS 0,004–0,048 gegen 0,003–0,049). Getrennt für die GLM-Agenten wurde das nicht geprüft.“ In the next sentence write „kaum die Jury-Merkmale“ instead of „nicht die Semantik“.",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "Kipp-Zeitpunkt verschieben sich deutlich (im Mittel 4 Runden später)",
+     "problem": "'deutlich' and the ✅ overstate what a single replicate pair shows. Only the clock (-0,20 [-0,29; -0,09]) and the oracle (-0,12 [-0,19; -0,05]) have a replicate shift whose CI excludes 0. For the monitors it is -0,02 to -0,07 (GNN -0,05 [-0,26; +0,20], zs:pairwise -0,07 [-0,17; +0,02]). Tipping came later in 5 of 6 bases (sign test p = 0,22). vx.md item 3 is correctly specific ('die AUROC der Uhr um −0,20'). The same 'deutlich' appears in the new Verworfen entry, and the Kipp-Zählung bullet says 'Bei AUROC und Kipp-Zeitpunkt ist es groß'.",
+     "fix": "Use 🟡 instead of ✅ and write „…, aber die AUROC der Uhr fällt um 0,20 [0,09; 0,29], die der Monitore um bis zu 0,07 (die CIs schließen 0 ein). Gekippt wird in 5 von 6 Setups später (im Mittel 4 Runden, Vorzeichentest p = 0,22).“ Use the same wording in Verworfen.",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "gestützt, aber keine dieser Entscheidungen trägt eine CI.",
+     "problem": "Literally false and unclear for non-experts: every verdict has a CI (H1, for example, [0,45; 0,97]). What vx.md means is that no CI excludes its decision boundary. The bullet also leaves out that the GNN half of H2 flips under time-matched AUROC; vx.md item 2 names both flips.",
+     "fix": "„…, aber bei keiner schließt die CI die Entscheidungsgrenze aus. H5 und die GNN-Hälfte von H2 drehen sich mit der zeitgematchten AUROC sogar um.“",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "Welche LLM-Variante vorne liegt, hängt also von den Setups ab.",
+     "problem": "This draws a causal conclusion from two untested descriptive rankings on populations that differ in many ways. On vx the two LLM variants cannot be told apart: id rep0 0,908 vs 0,904; post hoc over the pooled Part A rows (recomputed with the base bootstrap), global_full minus pairwise is +0,05 [-0,02; +0,12]. 'ist es umgekehrt' holds only against the counted features (global_full minus bag+graph +0,12 [+0,08; +0,18], post hoc), not against pairwise. The heading '## 4. LLM-Monitore: kleine Ausschnitte lesen ist am besten ✅' now conflicts with this bullet. The unchanged §10 ('Das LLM mit dem ganzen Protokoll ist nie besser als die gezählten Merkmale.') and §7 ('Innerhalb gleicher Setups liegen die LLM-Monitore vorne, die kleine Ausschnitte lesen.') need 'auf den Nacht-Daten'. In vx.md item 5, 'Die Reihenfolge der LLM-Varianten ist also nicht stabil' draws the same conclusion across data that vx.md itself calls not comparable.",
+     "fix": "„🟡 In night_vx hat das ganze Protokoll beschreibend in jedem Block die höchste AUROC (nicht getestet). Von Gespräch für Gespräch ist es dort nicht zu trennen (nachträglich +0,05 [−0,02; +0,12]). Eine gesicherte Rangfolge der beiden Varianten gibt es weder auf den Testdaten noch auf vx.“ Add „auf den Nacht-Daten“ to the §4 heading, to §7 and to §10.",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "nicht gestützt, weil die Uhr nicht einbricht",
+     "problem": "This reads as 'the clock is robust to a longer sprint'. Against rep0 the clock does fall (0,82 to 0,71, shift -0,11 [-0,31; +0,09]); the rule only shows that it falls no more than in the replicate (arm minus rep1 +0,08 [-0,09; +0,27]). The time-arm tips stayed inside the rounds the clock has learned. At its frozen threshold the clock alarms in every vx run at round 18 and only there (its single round above 0,1207). That includes all 14 time-arm runs, whose deadline is 29, and AUROC cannot see this mistiming (critic). The pre-registered companion 'Uhr ohne die letzten 3 Runden' is also missing.",
+     "fix": "„nicht gestützt: Die Uhr fällt nicht stärker ab als beim Wiederholen (Arm − rep1 +0,08 [−0,09; +0,27], ohne die letzten 3 Runden +0,05 [−0,12; +0,23]). Das ist ein schwacher Test: Gekippt wurde zur selben Runde wie in rep1, und die Uhr alarmiert in jedem Lauf in Runde 18, egal wo die Deadline liegt.“",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "Regeln aus ANALYSIS_PLAN.md Nachtrag 2, Punkt 7. Gelesen werden sie wie vorab festgelegt für das eingefrorene GNN.",
+     "problem": "The section says it follows Nachtrag 2 but leaves out companion numbers that Nachtrag 2 promises. (1) H2: 'Die Uhr ohne die letzten 3 Runden berichten wir' (also Plan §2). The value is +0,05 [-0,12; +0,23], and vx.md never mentions it. (2) H4: 'Die Zeilen-FPR berichten wir daneben, wie in §6.4'. The GNN has 3,3 % against 0,4 %, both below the nominal 5 %; vx.md gives this only implicitly through 'achtmal'. (3) Item 7: 'die zeitgematchte AUROC steht daneben'. vx.md gives it for H2 and H5 but not for H3 (GNN -0,13 vs bag -0,08, still not supported) or H4 (i) (+0,13 ≥ -0,11, holds). (4) Item 2: edge next to the ordering (the ordering still fails with edge). (5) Item 7: the id pairs reported next to H1; they appear only in the don't-claim list. The critic also writes 'The paper tables must fill these gaps'.",
+     "fix": "Add one line per companion under the H table, taken from vx_eval.json (h2_clock_without_last3, h4_false_alarms.*.row_fpr_untipped, the tm_auroc columns) and from vx_verdicts.md.",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "## Was wir nicht behaupten dürfen",
+     "problem": "Several critic.must_not_claim items are missing from this list: 'H3 shows generic semantics transfer to an unseen model' and 'the graph adds fragility'. 'Monitors improved under the shifts': the GNN going from 0,79 to 0,85/0,84/0,89 against the easy rep0 invites this reading, and so does the column 'Spanne in den 4 Armen' in FINDINGS. 'zs:pairwise breaks under enforcement': its enf shift CI [-0,13; -0,01] excludes 0 but equals its own noise. 'the failed ordering shows the GNN is worse than simple baselines'. 'the GNN is more robust to topology than bag'. 'H4 holds' via the paired-bases reading (2/6 vs 1/6) or a different threshold. 'time-matched AUROC reveals large shift effects'. That sanctions were validated on vx.",
+     "fix": "Add these as German bullets, e.g. „„H3 zeigt, dass die Semantik auf ein neues Modell übertragbar ist“ oder „der Graph macht anfälliger“: Die Jury-Merkmale haben sich kaum verschoben, und die Differenz −0,01 [−0,19; +0,20] ist ein Münzwurf.“ and „„Unter den Verschiebungen wurden die Monitore besser“ oder „pairwise bricht unter Ahndung ein“: −0,070 entspricht dem eigenen Rauschen von −0,073.“",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "Jede Aussage, eine CI schließe 0 (oder 0,5) aus, bei den Seed-abhängigen Intervallen",
+     "problem": "The critic says neither 'excludes' nor 'includes' should be written for these intervals without a caveat. For pairwise in glm the fragile reading is 'includes'. The reported shift CI [-0,20; +0,003] includes 0, but the converged CI excludes it ([-0,2009; -0,0010]; 67 % of seeds exclude 0). So the claim to avoid is 'pairwise fällt in glm nicht signifikant ab', and line 73 ('Auch das ist nicht signifikant', about four monitors including pairwise in glm) comes close to it. Also missing from the list: the glm oracle shift [-0,141; -0,001] (0 excluded in only 43 % of seeds) and the time-matched lower bound of the H2 clock without the last 3 rounds, -0,0045 (converged about -0,06).",
+     "fix": "„Bei den Seed-abhängigen Intervallen weder „schließt aus“ noch „schließt ein“ ohne Hinweis schreiben: `pairwise`-Verschiebung in glm (konvergiert schließt sie 0 aus), Oracle in glm, …“ At line 73 write „Gegenüber rep1 ist keiner der vier nachweisbar schlechter“; that statement holds for every seed.",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "über alle Zeilen gerechnet liegt es +0,08 vor dem GNN.",
+     "problem": "The scope is wrong and the status is missing. The contrast is over all Part-A rows (vx.md says 'über alle Teil-A-Zeilen'), not over all rows. No CI is given, and the critic calls the number 'exploratory, post hoc ... treat it as a hypothesis, not a result'. The contrast was chosen after global_full had been seen on top in every block, so its CI (recomputed +0,082 [+0,049; +0,119]) is not a test. vx.md item 5 needs the same label.",
+     "fix": "„Nachträglich über alle Teil-A-Zeilen gerechnet liegt es +0,08 [+0,05; +0,12] vor dem GNN. Der Vergleich wurde nach Sicht der Ergebnisse gewählt und ist nur eine Hypothese.“",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "und H1–H5 als unentschieden.",
+     "problem": "Nachtrag 2 item 7 fixes the form of the outcome: 'Jede Regel ergibt „gestützt“ oder „nicht gestützt“. Daneben sagen wir, ob die zugehörige CI die Grenze ausschließt.' Writing H1–H5 in the paper only as 'unentschieden' would replace the pre-registered verdicts with a label chosen afterwards. In the same way, §6.6 promised that '> 0,1' would appear in the paper ('Das steht so im Paper'), so the correction to 0,15–0,25 has to be stated as a declared deviation.",
+     "fix": "„… H1–H5 mit den vorab festgelegten Urteilen (H1–H4 nicht gestützt, H5 gestützt) und dem Zusatz, dass keine CI ihre Grenze ausschließt. Die Korrektur gegenüber §6.6 (0,1 → 0,15–0,25) als Abweichung vom Plan nennen.“",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "Sechs unabhängige Prüfer haben alles mit eigenem",
+     "problem": "The six 'Prüfer' are automated agents from one workflow (vx-posteval/README.md: 'Six verifiers ... and one critic'; analysis/review/README.md calls them 'Prüf-Agenten'). A team member could write 'six independent reviewers' in the paper. 'alles' is also too broad. They recomputed the evaluation from the frozen predictions; the post-hoc numbers in items 3, 5 and 6 come from scratch scripts of the critic and the reading lens. FINDINGS §9 repeats the claim ('Sechs Prüfer haben alles unabhängig nachgerechnet.').",
+     "fix": "„Sechs Prüf-Agenten (KI, eigener Code) haben die Auswertung aus den eingefrorenen Eingaben nachgerechnet.“ Use the same wording in FINDINGS §9.",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "Ahndung und GLM haben ihre Bedingung nur teilweise erzeugt.",
+     "problem": "vx.md (item 4 and Grenzen) and FINDINGS §9 both name three arms. The limitations list drops the time arm, which is the arm behind the clock question: H2 is a weak test because tipping stayed at rep1's rounds. It also omits that topo is only a factor-level twin on 7 bases.",
+     "fix": "„Ahndung, GLM und der längere Sprint haben ihre Bedingung nur teilweise erzeugt. topo ist nur ein Zwilling auf Ebene der Faktoren (7 Basen).“",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "längere Sprint verschob das Kippen kaum in der absoluten Zeit",
+     "problem": "Against rep0 the time arm tipped 4,1 rounds later on average (24,9 vs 20,8; on the 5 paired bases +4,6, later in all 5). Only against rep1 is the timing unchanged (paired +1,0). Item 4 has the correct wording, but 'die späte Wiederholung' there should be named explicitly (id rep1, which ran as the last block).",
+     "fix": "„… der längere Sprint verschob das Kippen nicht über die zweite id-Wiederholung hinaus (Runde 24,9 gegen 25,0), obwohl die Deadline 3–12 Runden später lag.“ In item 4 write „wie in der zweiten id-Wiederholung (rep1)“.",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "Es sind 3 gegen 1 Läufe, alles Beinahe-Kipper.",
+     "problem": "Literally false for the id run. The single id-rep0 alarm (K2-277, round 30) had at most 3 violators; only the three enf runs (K4-056, K4-100 and K4-154 with 6, 6 and 7) were near misses. Line 131, 'Beinahe-Kipper mit 6–7 von 8 Regelbrechern', reads as '6–7 out of 8 rule-breakers'. What is meant is 6–7 violators among 24 agents, with tipping at 8.",
+     "fix": "„Es sind 3 gegen 1 Läufe, und die drei enf-Läufe waren Beinahe-Kipper.“ and „Beinahe-Kipper mit 6–7 Regelbrechern (gekippt heißt: mindestens 8)“.",
+     "severity": "should_fix"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "deutlich besser als die reine",
+     "problem": "Story sentence 2 is unchanged, but it now sits next to a vx table where the pure-round clock (0,82) is above the GNN (0,79) on id rep0, and vx.md forbids 'auf vx schlagen die Monitore die Uhr'. Post hoc over the pooled Part A rows, the GNN is not above the clock (+0,03 [-0,06; +0,12], recomputed); only the LLMs are (global_full +0,11 [+0,02; +0,19]).",
+     "fix": "Limit the scope: „… deutlich besser als die reine Rundenzahl (Kreuzvalidierung und Testdaten; auf night_vx nicht getestet, dort liegt die Uhr auf id rep0 über dem GNN).“",
+     "severity": "optional"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "10 der 29 Paare stammen aus schon ausgewerteten",
+     "problem": "A non-expert will conclude that the other 19 pairs are entirely new. In fact 16 of them also contain an already evaluated night run; only 3 pairs are new against new (recomputed). At row level, 544 of 960 rows are night rows. Three nearby statements are also off. 'Nur Struktur und bag + graph liegen mit der CI über 0,5' contradicts the table just above (global_full [0,52; 0,97]) until the next sentence explains it. 'Der Vorsprung der LLMs in der Tabelle': on the 29 pairs pairwise equals the GNN (0,759 each) and global_full is only +0,02 ahead; the LLMs lead only on the 10 night-night pairs (0,90 and 0,95 vs GNN 0,80). 'deutet auf einen Unterschied zwischen den Batches hin': struct wins the night-new pairs in both directions and also the 3 new-new pairs, so this is not a level offset between batches.",
+     "fix": "„10 Paare sind Nacht-Nacht, 16 Nacht-neu und nur 3 ganz neu. Auf Zeilen-Ebene stammen 544 von 960 Zeilen aus Nacht-Läufen.“ Further: „Seed-unabhängig über 0,5 liegt die CI nur bei …“, „Gleichauf mit dem GNN liegen die LLMs nur dank der 10 Nacht-Nacht-Paare (dort 0,90/0,95 gegen 0,80).“ and „Warum die Struktur-Baseline alle Paare mit neuem Lauf richtig ordnet, ist offen.“",
+     "severity": "optional"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "der knappe Sieger auf den Testdaten",
+     "problem": "On the held-out rows pairwise tied with zs:agent at 0,85, and no difference was significant after Holm. 'Sieger' suggests it won a test.",
+     "fix": "„`pairwise`, auf den Testdaten knapp vorne (nicht signifikant), …“",
+     "severity": "optional"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "jede Zelle auf nur 9–39 positiven Zeilen",
+     "problem": "The 14-base columns have 15–39 positive rows (enf 15, id rep0 18, id rep1 21, time 24, glm 39). The 9 comes from the 7-base topo id blocks, which this sentence explicitly excludes ('Die übrigen Spalten').",
+     "fix": "„… jede Zelle auf nur 15–39 positiven Zeilen (topo: 9–15).“",
+     "severity": "optional"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "| GNN (eingefroren) | 0,79 | 0,74 | 0,85 | 0,73 | 0,84 | 0,89 (0,79 / 0,64) |",
+     "problem": "vx.md labels the stored 15-state GNN 'eingefroren', the same label FINDINGS uses for the 40-state held-out GNN, while the FINDINGS vx table calls it 'gespeicherte Fassung'. The FINDINGS vx note explains the non-comparability with 'andere Modell-Instanzen'. That is true only for GNN, tab_mem and hybrid: clock, bag+graph and both LLMs are the same instances, and for them the difference lies in the setups.",
+     "fix": "In vx.md use „GNN (gespeicherte Fassung, 15 Zustände)“. In the FINDINGS note write „andere Instanzen von GNN, Tabellenmodell und Hybrid, und Setups im kritischen Band“.",
+     "severity": "optional"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "um 2 Läufe.",
+     "problem": "vx.md says that one run flips the verdict ('ein Lauf mehr oder weniger dreht das Urteil'). 'es geht aber um 2 Läufe' reads as if it took two. The bullet also omits that all three enf runs were near misses, which is the main argument against 'Ahndung erzeugt Fehlalarme' (critic.must_not_claim).",
+     "fix": "„Daran scheitert H4. Schon ein Alarm weniger würde das Urteil drehen, und alle drei Läufe waren Beinahe-Kipper.“",
+     "severity": "optional"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "ohne mehr Fehlalarme?",
+     "problem": "The pre-registered rule allows up to twice the id rate (VALIDATION §3.5; Nachtrag 2 item 7: 'höchstens doppelt so hoch'). 'ohne mehr Fehlalarme' states a stricter rule than the one that was applied.",
+     "fix": "„Bleibt das GNN unter Ahndung brauchbar, mit höchstens doppelt so vielen Fehlalarmen wie ohne Ahndung?“",
+     "severity": "optional"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "Sichtbare Ahndung bremste das Kippen nicht (5 statt 6 von 14).",
+     "problem": "'5 statt 6' is a decrease, so to a non-expert 'bremste nicht' looks self-contradictory. What is meant is that there was no detectable decrease (McNemar p = 1,0; K4 1/9 vs 3/9, K2 4/5 vs 3/5).",
+     "fix": "„Sichtbare Ahndung bremste das Kippen nicht erkennbar (5 statt 6 von 14, p = 1,0).“",
+     "severity": "optional"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/FINDINGS.md",
+     "quote": "**Stand:** 9. Nov. 2026, 02:00",
+     "problem": "Both 'Stand' times lie in the future: vx.md gives 01:50, FINDINGS 02:00, while both files were last written at 01:05 CET and it was 01:18 when I checked. FINDINGS line 10 still says 'Am 8. Nov. hat ein Faktencheck jede Aussage geprüft.', which does not cover the new night_vx statements of 9 Nov.",
+     "fix": "Use the actual time or the commit time, and add „Die night_vx-Aussagen vom 9. Nov. sind noch nicht faktengeprüft.“ (or update it after this review).",
+     "severity": "optional"
+    },
+    {
+     "file": "/Users/mauricio/sim_local/apart_vx/analysis/results/vx.md",
+     "quote": "Teil-A-Zeilen ergibt +0,08 [+0,05; +0,12] gegenüber dem GNN.",
+     "problem": "This number, the 19-pair Part B values, the tip rounds (25,0 vs 20,8) and Fisher p = 0,58 exist in the repo only as text in audit_reports.json. The scripts that produced them sit in a /private/tmp scratchpad (critic_extra*.py, reading_extras.py, levels_explor.py, partb_explor.py), not in the repo. The 8 Nov review archive kept its scripts 'damit jede zitierte Zahl nachvollziehbar bleibt', and FINDINGS promises a Beleg for every number. I reproduced all of them independently, but a reader of the repo cannot.",
+     "fix": "Archive those scripts in analysis/review/vx-posteval/ (or commit a small analysis/vx_posthoc.py) and list it under 'Dateien' in vx.md.",
+     "severity": "optional"
+    }
+   ],
+   "verified": [
+    "Every value in the vx.md table 'AUROC je Block' (10 monitors × 6 columns, plus the topo 7-base id values in brackets) matches vx_eval.json part_a at 2 decimals. All values and arm ranges in the new FINDINGS night_vx table match as well.",
+    "The vx.md Teil B table matches vx_eval.json part_b: all 12 run-level and 12 row-level points with their CIs.",
+    "The H1–H5 table matches vx_verdicts.json in values and verdicts. The time-matched flips (H5 −0,122; H2 GNN half |+0,125| > |−0,111|) and H3 failing on time-matched AUROC (−0,129 vs −0,080) match the tm_auroc columns of vx_eval.json.",
+    "Kipprate table: McNemar p 0,625 / 0,0156 / 1,0 / 0,625 and Holm 1,0 / 0,0625 / 1,0 / 1,0 match.",
+    "H4: all false-alarm shares match. Fisher exact p for 3/9 vs 1/8 is 0,576. The alarmed enf runs K4-056, K4-100 and K4-154 reached 6, 6 and 7 violators; the single id-rep0 alarm (K2-277, round 30) reached 3. Among all 12 predictors only the GNN exceeds the 2× ratio. The GNN row FPR is 0,0333 (enf) vs 0,0042 (id).",
+    "Jury KS: glm D 0,004–0,048, replicate D 0,003–0,049, and 1.708 / 1.278 messages match vx_jury_ks.md. The KS script pools all messages of the arm; it does not separate GLM agents.",
+    "0 of 96 CIs of arm minus rep1 lie entirely below 0 (lowest upper bound: glm struct AUROC +0,044). The median shift-CI half-width is 0,129 (AUROC) and 0,272 (time-matched), as the critic reported. For arm minus rep1 the median half-width is 0,154 (AUROC) and 0,337 (time-matched); for the GNN it is 0,16–0,26 and 0,27–0,43.",
+    "Tip timing, recomputed from runs_vx snapshots: id rep0 has 6/14 tipped, mean round 20,83, 1 after the deadline; id rep1 has 7/14, mean 25,00, 6 after the deadline. Only K2-150 changes outcome. rep1 tipped later in 5 of 6 bases (paired mean +4,0). The time arm has 8/14 tipped, mean 24,88 (rounds 19–31); paired against rep0 it is +4,6 (5 of 5 later), against rep1 +1,0.",
+    "Post-hoc contrasts over the pooled Part A rows, recomputed with a base bootstrap (3 seeds): global_full − GNN +0,082 [+0,049; +0,119]; pairwise − GNN +0,034 [−0,045; +0,109]; global_full − pairwise +0,048 [−0,016; +0,119]; global_full − bag+graph +0,123 [+0,078; +0,180]; GNN − clock +0,028 [−0,064; +0,116].",
+    "Part B composition, recomputed: the 29 pairs are 10 night-night, 16 night-new and 3 new-new. On the 19 pairs with a new run: GNN 0,737, both LLMs 0,684, struct 1,000. On the night-night pairs: GNN 0,80, pairwise 0,90, global_full 0,95. 544 of 960 rows are night rows.",
+    "glm: exactly 4 of the 6 main monitors (bag+graph, GNN, hybrid, pairwise) lie below both id replicates, 0,03–0,06 below their mean. No other arm has any.",
+    "global_full has the highest observable AUROC in every arm and in both 14-base id blocks.",
+    "The ordering feat_pairwise < bag ≤ bag+graph ≤ GNN fails in all 4 arms, and GNN > bag+graph in every arm. 'vor allem feat_pairwise > bag' holds in 3 of 4 arms; topo fails on bag > bag+graph.",
+    "The clock's only alarm round on vx is 18, including all 14 time-arm runs with deadline 29 (this confirms the critic's mistiming point).",
+    "Process timeline: d083547d was committed at 00:00:33 CET, and vx_run.log shows the run from 00:00:53 to 00:24:10 CET with the vx_eval.py sha256. The GNN team's test-look time of 17:02–17:06 UTC in the FINDINGS to-do is backed by git and the pre-eval audit.",
+    "vx.md states these pre-registered points correctly: McNemar is descriptive because the counts were already known (§6.5), H6 is dropped (§6.4), the readings of Nachtrag 2 item 7 are applied, and §6.6 named 0,1.",
+    "Recompute scripts: /private/tmp/claude-501/-Users-mauricio-Desktop-Uni-Master-1-Semester-Hackathon-apart/6b604ad8-2b8f-4c9b-91f6-20738eb16ec2/scratchpad/sumcheck/claims/ (tips.py, pooled.py, partb.py, h4.py, tables.py, struct_dir.py). Nothing in the repo was modified."
+   ]
+  }
+ ]
+}
