@@ -32,6 +32,12 @@ from llm import AdaptionClient, AnthropicClient, load_secrets  # noqa: E402
 from orchestrator import TOOL_NAMES, normalize_action, parse_response  # noqa: E402
 
 LABELS = ["HOLD", "DILUTE", "CAVE", "RIGID", "UPDATE", "?"]
+SEM = {"model": None, "judge": None}   # set in main: bounded parallelism (the first start flooded the endpoint)
+
+
+async def model_chat(client, model, messages, **kw):
+    async with SEM["model"]:
+        return await client.chat(model, messages, **kw)
 
 
 def wilson(k, n, z=1.96):
@@ -64,7 +70,7 @@ async def gen_probes(client, model, items, k, req):
     async def one(ctx, chan):
         me = ctx.split("@", 1)[1].split(",", 1)[0]
         p = f"[ROLE/TASK] {ctx}\n[CHANNEL]\n{chan}" + INSTR.format(me="@" + me)
-        r = await client.chat(model, [{"role": "user", "content": p}], max_tokens=400, temperature=0.7, **req)
+        r = await model_chat(client, model, [{"role": "user", "content": p}], max_tokens=400, temperature=0.7, **req)
         return {"status": r["status"], "text": (r.get("text") or "").strip()}
     jobs = [(i, s, one(c, ch)) for i, (c, ch) in enumerate(items) for s in range(k)]
     outs = await asyncio.gather(*(j[2] for j in jobs))
@@ -72,7 +78,7 @@ async def gen_probes(client, model, items, k, req):
 
 
 async def gen_format(client, model, fmt, req):
-    res = await asyncio.gather(*(client.chat(model, m, max_tokens=900, temperature=0.7, **req) for m in fmt))
+    res = await asyncio.gather(*(model_chat(client, model, m, max_tokens=900, temperature=0.7, **req) for m in fmt))
     rows = []
     for r in res:
         obj, ok = parse_response(r.get("text") or "")
@@ -89,8 +95,9 @@ async def gen_format(client, model, fmt, req):
 
 async def judge_one(judge, ctx, chan, msg):
     for attempt in range(4):
-        r = await judge.chat("claude-haiku-5-5", [{"role": "user", "content": JUDGE.format(ctx=ctx, chan=chan, msg=msg)}],
-                             max_tokens=120)
+        async with SEM["judge"]:
+            r = await judge.chat("claude-haiku-5-5",
+                                 [{"role": "user", "content": JUDGE.format(ctx=ctx, chan=chan, msg=msg)}], max_tokens=120)
         obj, ok = parse_response(r.get("text") or "")
         lab = (obj or {}).get("label", "?") if ok else "?"
         if lab in LABELS[:-1]:
@@ -106,18 +113,27 @@ async def main(a):
     client = AdaptionClient(keys[k], k, per_minute=a.rpm)
     judge = AnthropicClient(sec["anthropic"], concurrency=6)
     req = {"reasoning_effort": "none"}
+    SEM["model"], SEM["judge"] = asyncio.Semaphore(a.max_concurrency), asyncio.Semaphore(4)
+    import time
+    log = lambda s: print(f"{time.strftime('%H:%M:%S')} {s}", flush=True)  # noqa: E731
+    log("loading format inputs")
     fmt = format_inputs(ROOT / a.runs, a.n_format)
+    log(f"{len(fmt)} format inputs")
     rep = {"settings": {"model": a.model, "base": a.base, "samples": a.samples, "n_format": len(fmt),
                         "persist_probes": len(PERSIST), "update_probes": len(UPDATE), "temperature": 0.7,
                         "judge": "claude-haiku-5-5 (ft_check.py prompt, blind to the model)", "runs": a.runs}}
     for name, model in (("base", a.base), ("finetune", a.model)):
         P = await gen_probes(client, model, PERSIST, a.samples, req)
+        log(f"{name}: persist done ({sum(x['status'] == 200 for x in P)}/{len(P)} ok)")
         U = await gen_probes(client, model, UPDATE, a.samples, req)
+        log(f"{name}: update done ({sum(x['status'] == 200 for x in U)}/{len(U)} ok)")
         F = await gen_format(client, model, fmt, req)
-        for x in P:
-            x["label"] = await judge_one(judge, *PERSIST[x["probe"]], x["text"]) if x["status"] == 200 else "?"
-        for x in U:
-            x["label"] = await judge_one(judge, *UPDATE[x["probe"]], x["text"]) if x["status"] == 200 else "?"
+        log(f"{name}: format done ({sum(r['status'] == 200 for r in F)}/{len(F)} ok)")
+
+        async def lab(x, items):
+            x["label"] = await judge_one(judge, *items[x["probe"]], x["text"]) if x["status"] == 200 else "?"
+        await asyncio.gather(*(lab(x, PERSIST) for x in P), *(lab(x, UPDATE) for x in U))
+        log(f"{name}: judged")
         rep[name] = {"model": model, "persist": P, "update": U, "format": F}
         print(f"{name}: persist {Counter(x['label'] for x in P)} update {Counter(x['label'] for x in U)} "
               f"valid JSON {sum(r['valid_json'] for r in F)}/{len(F)}", flush=True)
@@ -190,5 +206,6 @@ if __name__ == "__main__":
     ap.add_argument("--runs", default="runs_night")
     ap.add_argument("--key", type=int, default=None)
     ap.add_argument("--rpm", type=int, default=40)
+    ap.add_argument("--max-concurrency", type=int, default=6, help="parallel calls to the model endpoint")
     ap.add_argument("--out", required=True)
     asyncio.run(main(ap.parse_args()))

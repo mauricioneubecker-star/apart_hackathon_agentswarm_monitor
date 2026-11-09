@@ -318,3 +318,6 @@ trotzdem eine Aussage zum Feintuning gibt, vergleichen wir die beiden Modelle di
    handgeschrieben (12 + 4), es gibt einen Richter. Ohne Verlauf ist das Format leichter als im Schwarm: Im Gate waren
    90 % der Einzelzüge gültig, in der Testepisode nur 56 %.
 5. **Ablauf.** Einmal ausgeführt und unabhängig vom Ergebnis berichtet (`analysis/results/ft_compare.{json,md}`).
+   Nachtrag 08:45: Der erste Start um 08:03 wurde um 08:41 ohne jedes Ergebnis abgebrochen. Der Endpunkt hing unter 60
+   gleichzeitigen Anfragen, auch ein Testaufruf lief in den Timeout. Neustart mit höchstens 6 parallelen Modell-Anfragen
+   und parallelem Richter. Messungen, Stichproben und Prompts sind unverändert.
