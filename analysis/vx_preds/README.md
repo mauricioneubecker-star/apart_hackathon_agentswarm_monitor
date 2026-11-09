@@ -1,7 +1,8 @@
-# night_vx: frozen inputs of the one evaluation
+# night_vx: frozen inputs of the pre-registered evaluation
 
 Everything here was produced before any night_vx score was compared with a label (ANALYSIS_PLAN.md §6 and
-Nachtrag 2). The evaluation is `run_eval.sh`, run once from the repo root.
+Nachtrag 2). The evaluation is `run_eval.sh`, run once from the repo root. A cloud session ran it a second time on the same
+inputs (branch cloud-synthesis, b14b3393); the result files are byte-identical (analysis/results/vx.md, Offenlegung).
 
 ## Contents
 

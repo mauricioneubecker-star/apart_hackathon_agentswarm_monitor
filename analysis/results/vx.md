@@ -1,8 +1,9 @@
-# Validierung `night_vx`: Ergebnis der einen Auswertung
+# Validierung `night_vx`: Ergebnis der vorab festgelegten Auswertung
 
 **Stand:** 9. Nov. 2026, 01:40. Die Eingaben wurden vor der Auswertung eingefroren und gepusht (`d083547d`). Die
-Auswertung lief genau einmal (`analysis/vx_preds/run_eval.sh`, 00:00–00:24 Uhr), die Rohausgaben sind gepusht
-(`bb3f665d`). Die Regeln stehen in ANALYSIS_PLAN.md §6 und Nachtrag 2. Sechs Prüf-Agenten (KI, eigener Code) haben die
+Auswertung lief nach Plan einmal bei uns (`analysis/vx_preds/run_eval.sh`, 00:00–00:24 Uhr), die Rohausgaben sind
+gepusht (`bb3f665d`). Eine Cloud-Sitzung führte dasselbe Skript parallel ein zweites Mal aus, mit byte-gleichen
+Ergebnissen (siehe Offenlegung). Die Regeln stehen in ANALYSIS_PLAN.md §6 und Nachtrag 2. Sechs Prüf-Agenten (KI, eigener Code) haben die
 Auswertung aus den eingefrorenen Eingaben nachgerechnet. Alle Punkt-Schätzer stimmen auf 4 Stellen, mit dem Seed des
 Laufs auch alle CIs (`analysis/review/vx-posteval/`). Alle Zahlen, die nicht in `vx_eval.json` stehen, sind
 nachträglich gerechnet, nach Sicht der Ergebnisse. Sie stammen aus `analysis/vx_posthoc.py` (`vx_posthoc.json`), die

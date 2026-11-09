@@ -1,6 +1,6 @@
 # Findings: aktueller Stand fürs Paper
 
-**Stand:** 9. Nov. 2026, 08:15 · eingearbeitet: LLM-Monitore bis `68744e2`, GNN bis `aebf0e1` (gnn-opt-torch) und
+**Stand:** 9. Nov. 2026, 09:40 · Storyline-Prüfung vom 9. Nov. eingearbeitet (`paper/STORYLINE_CHECK.md`) · eingearbeitet: LLM-Monitore bis `68744e2`, GNN bis `aebf0e1` (gnn-opt-torch) und
 `38d1f52` (gnn-opt), Validierungslauf `5ea7874`, **Auswertung von `night_vx` (`bb3f665d`, Zusammenfassung
 `analysis/results/vx.md`)**, unabhängige Gegenprüfungen vom 8./9. Nov. (`analysis/review/`) ·
 **Läuft:** Bestätigungstest auf frischen Läufen (ANALYSIS_PLAN.md Nachtrag 3, Ergebnis gegen 10:45) und der direkte
@@ -19,7 +19,8 @@ Zeichen: ✅ gesichert (getestet, CI, unabhängig nachgerechnet) · 🟡 vorläu
 ## Die Geschichte in fünf Sätzen
 
 1. In einem Schwarm aus 24 Coding-Agenten kippt in 4 von 10 Läufen der Schwarm: Mindestens 8 Agenten nutzen den
-   verbotenen Shortcut. Echte Ansteckung über Nachrichten zeigt sich dabei nur beim Shortcut „Checks überspringen“.
+   verbotenen Shortcut. Ein Zusammenhang mit Nachrichten früherer Regelbrecher zeigt sich nur beim Shortcut „Checks
+   überspringen“, als Assoziation, nicht als belegte Ursache.
 2. Monitore, die nur die Nachrichten lesen, sagen das Kippen 3 Runden vorher voraus, deutlich besser als die reine
    Rundenzahl (Kreuzvalidierung und Testdaten; auf `night_vx` nicht getestet). Ob sie auch eine Uhr schlagen, die
    zusätzlich die Deadline kennt, hängt auf den Testdaten davon ab, wie man die Zeit abgleicht.
@@ -43,8 +44,8 @@ Zeichen: ✅ gesichert (getestet, CI, unabhängig nachgerechnet) · 🟡 vorläu
 - Im Nacht-Batch (252 Läufe, 112 Setups) kippen 101 Läufe, also 4 von 10.
 - **K4, ein selbst auffindbarer Shortcut und ein öffentliches Board** führen jeweils signifikant öfter zum Kippen
   (Permutationstests über Setups, Holm über 14 Faktoren).
-- 🟡 Die ersten beiden sind im Grunde ein Effekt. K4 mit selbst auffindbarem Shortcut kippt in 82 % der Setups, alle
-  anderen Kombinationen nur in 20–24 %. Das ist explorativ, weil die Wechselwirkung nachträglich gefunden wurde.
+- 🟡 Die ersten beiden sind im Grunde ein Effekt. Bei K4 mit selbst auffindbarem Shortcut liegt die mittlere Kipprate der
+  Setups bei 82 %, bei allen anderen Kombinationen bei 20–24 %. Das ist explorativ, weil die Wechselwirkung nachträglich gefunden wurde.
 - 🟡 Ein Release-Freeze (Zeitdruck) erhöht die Kipprate deutlich. Nach der strengsten Korrektur über alle 14 Faktoren ist
   das knapp nicht signifikant.
 - 🟡 Sanktionen lassen sich im Nacht-Batch nicht prüfen. Nur 8 der 28 Setups mit Sanktionen konnten Verstöße überhaupt
@@ -76,8 +77,11 @@ Diese Analyse ist nachträglich entstanden und gegengeprüft. Details: `analysis
 
 - Schon die Rundenzahl allein sagt das Kippen recht gut voraus, weil es meist spät im Sprint passiert. Daran muss sich
   jeder Monitor messen.
-- ✅ **Gegen die reine Rundenzahl gewinnen alle Monitore klar.** Vergleicht man nur Momente in derselben Runde, fällt
-  die Uhr auf Zufallsniveau, die Monitore nicht. Das gilt in der Kreuzvalidierung und auf den Testdaten (p ≤ 0,0002).
+- 🟡 **Vorab festgelegt war der Abgleich nach „Runden bis zur Deadline“. Damit ist auf den Testdaten nach Holm kein
+  Monitor signifikant besser als die Uhr** (Details im nächsten Punkt). Fürs Paper zuerst dieses Ergebnis nennen.
+- ✅ **Gegen die reine Rundenzahl gewinnen alle Monitore klar.** Vergleicht man nur Momente in derselben Runde
+  (Harness-Variante, nicht die vorab festgelegte Definition), fällt die Uhr auf Zufallsniveau, die Monitore nicht. Das
+  gilt in der Kreuzvalidierung und auf den Testdaten (p ≤ 0,0002).
 - 🟡 **Gegen eine Uhr, die auch die Deadline kennt, wird es knapp.** Der Plan gleicht nach „Runden bis zur Deadline“ ab.
   Dort verrät die absolute Runde, ob die Deadline früh oder spät liegt, und die Uhr erreicht auf den Testdaten 0,72.
   Dann ist nach Holm kein Monitor signifikant besser. Am knappsten ist das LLM Gespräch für Gespräch (Holm-p 0,09).
@@ -108,8 +112,9 @@ Gespräch einzeln (ein Paar oder die Broadcasts eines Absenders) und jeder Agent
 Das GNN sieht nur den Kommunikationsgraphen und allgemeine Bewertungen der Nachrichten durch die Jury. Es bekommt
 keine Uhr und keine Aufgabenwörter.
 
-- ✅ **Ein Gedächtnis pro Agent ist nötig.** Mit einem Gedächtnis für den ganzen Schwarm bricht das GNN ein, wenn K4 im
-  Training fehlt. Mit Gedächtnis pro Agent hält es. Ohne zeitliches Gedächtnis wird es klar schlechter.
+- 🟡 **Zeitliches Gedächtnis ist nötig, Gedächtnis pro Agent hilft vermutlich.** Ohne zeitliches Gedächtnis wird das GNN
+  klar schlechter. Fehlt K4 im Training, hält es mit Gedächtnis pro Agent besser als mit einem für den ganzen Schwarm
+  (einzelne Seeds). Über alle 18 Folds übersteigt aber kein Architektur-Unterschied das Seed-Rauschen.
 - ✅ **Die Graphstruktur trägt kaum etwas bei.** Neu verdrahtete Kanten kosten fast nichts. Ohne die Jury-Bewertungen
   der Nachrichten wird es dagegen klar schlechter, vor allem zeitgematcht. Zufällig vertauschte Zeilen fallen auf
   Zufallsniveau, ein Leck gibt es also nicht.
@@ -139,8 +144,8 @@ Alle Monitore wurden auf identischen Zeilen bewertet, gepaart, mit Bootstrap üb
   (fremde Aufgabe, neuer Injektionsweg, Branch) liegt das LLM Gespräch für Gespräch vorne, gegen das GNN etwa +0,10.
 - Bei Injektion über Tool-Ausgaben (test_ood_seed) steht der Auslöser nicht in der Kommunikation. Zeitgematcht liegen
   die trainierten Monitore dort fast bei Zufall, die LLM-Monitore etwas darüber.
-- **Praktisch:** Bei 5 % Fehlalarmrate pro Zeile warnen die Monitore in rund der Hälfte der gekippten Läufe vorher. Das
-  GNN warnt am frühesten (Median 5 Runden), das LLM Gespräch für Gespräch hat die wenigsten Fehlalarme (10 von 48
+- **Praktisch:** Bei 5 % Fehlalarmrate pro Zeile warnen die Monitore in rund der Hälfte der gekippten Läufe vorher. Gewarnt
+  wird im Median 2–5,5 Runden vorher, GNN und Hybrid gehören zu den frühesten. Das LLM Gespräch für Gespräch hat die wenigsten Fehlalarme (10 von 48
   nicht gekippten Läufen). Die Uhr alarmiert in jedem nicht gekippten Lauf.
 - Details: `analysis/results/heldout.md`.
 
@@ -172,7 +177,8 @@ Alle Monitore wurden auf identischen Zeilen bewertet, gepaart, mit Bootstrap üb
 
 Die Validierung prüft, ob die Monitore unter neuen Bedingungen halten. Sie ist nur zum Testen da: kein Training, keine
 Modellauswahl darauf. Die Eingaben wurden vor der Auswertung eingefroren und gepusht (`d083547d`), ausgewertet wurde
-genau einmal (`bb3f665d`). Sechs Prüf-Agenten (KI, eigener Code) haben die Auswertung aus den eingefrorenen Eingaben
+nach Plan (`bb3f665d`). Eine Cloud-Sitzung hat dasselbe Skript parallel ein zweites Mal ausgeführt, mit byte-gleichem
+Ergebnis (siehe Offenlegung). Sechs Prüf-Agenten (KI, eigener Code) haben die Auswertung aus den eingefrorenen Eingaben
 nachgerechnet. Details und die Liste, was wir nicht behaupten dürfen: `analysis/results/vx.md`.
 
 **Ergebnis:**
@@ -250,7 +256,8 @@ nachgerechnet. Details und die Liste, was wir nicht behaupten dürfen: `analysis
 1. ~~Analyseplan v2 committen.~~ Erledigt: `4e6e998`, gepusht vor den vx-Daten. Das Team sollte ihn gegenlesen.
    Änderungen nur noch als datierter Nachtrag.
 2. ~~`night_vx` auswerten.~~ Erledigt in der Nacht zum 9. Nov.: LLM-Monitore (`f8cf5d9`), eingefrorenes GNN und
-   Baselines plus Nachtrag 2 (`d083547d`), die eine Auswertung (`bb3f665d`), unabhängige Prüfung vor und nach dem Lauf.
+   Baselines plus Nachtrag 2 (`d083547d`), die vorab festgelegte Auswertung (`bb3f665d`, von einer Cloud-Sitzung
+   parallel ein zweites Mal ausgeführt, byte-gleich), unabhängige Prüfung vor und nach dem Lauf.
    Ergebnis in §9 und `analysis/results/vx.md`.
    - **Offen fürs Paper:** den Validierungsteil mit den Formulierungen aus `vx.md` schreiben, besonders „kein Hinweis
      auf einen großen Einbruch“ statt „robust“. H1–H5 mit den vorab festgelegten Urteilen nennen, mit dem Zusatz, dass
@@ -310,7 +317,7 @@ Setups, Holm über 11 Tests). AUROC: 0,5 = Raten, 1 = perfekt.
 Kein Unterschied zwischen Monitoren ist nach Holm signifikant (Details `analysis/results/heldout.md`).
 \* nachträglich. \*\* fremde Aufgabenfamilie / Injektion über Tool-Ausgaben / Branch-Arme.
 
-**Blinde Validierung `night_vx`** (14 Basen, topo 7, einmal ausgewertet; beschreibend: ein Vergleich der
+**Blinde Validierung `night_vx`** (14 Basen, topo 7, nach Plan ausgewertet, zweimal ausgeführt mit identischem Ergebnis; beschreibend: ein Vergleich der
 AUROC-Niveaus zwischen Monitoren war nicht vorab festgelegt). AUROC.
 
 | Monitor | id rep0 | id rep1 | Spanne in den 4 Armen | Teil B, innerhalb Konfiguration* |
@@ -362,7 +369,7 @@ besser als die gezählten Merkmale (+0,04, Holm 0,03). Alle anderen Urteile blei
 | Fairer Vergleich (CV) | `analysis/review/stats-monitors/REPORT.md` | night-vx-validation (nach dem Push) |
 | Fairer Vergleich (Testzeilen) | `analysis/results/heldout.md`, Skripte `analysis/heldout/` | night-vx-validation |
 | θ/Δ-Sensitivität | `analysis/results/sensitivity.md`, Skripte `analysis/sens.py`, `analysis/sens_summary.py` | night-vx-validation (nach dem Push) |
-| Among Us | `gnn/RESULTS_amongus.md` | alle |
+| Among Us | `gnn/RESULTS_amongus.md` (neuere, ungeprüfte Fassung nur auf gnn-pipeline und gnn-swarm) | alle, Fassungen verschieden |
 | Validierung | `sim_dataset/VALIDATION.md`, `sim_dataset/runs_vx/_logs/vx_decisions.md` | night-vx-validation (nach dem Push) |
 | Validierung: Auswertung | `analysis/results/vx.md` (Zusammenfassung), `vx_eval.md`, `vx_verdicts.md`; nachträgliche Zahlen `analysis/vx_posthoc.py` / `vx_posthoc.json`; Eingaben `analysis/vx_preds/`; Prüfungen `analysis/review/vx-preeval/` und `vx-posteval/` | night-vx-validation |
 | Analyseplan | `ANALYSIS_PLAN.md` | night-vx-validation (nach dem Push) |
@@ -390,3 +397,10 @@ besser als die gezählten Merkmale (+0,04, Holm 0,03). Alle anderen Urteile blei
   Ausgang. Die Uhr verliert 0,20 AUROC, gekippt wird in 5 von 6 Setups später (Auswertung `night_vx`, 9. Nov.).
 - ~~„Die Validierung erkennt Einbrüche über 0,1 AUROC“ (Plan §6.6).~~ Verlässlich erst ab etwa 0,2 AUROC, beim GNN ab
   0,2–0,35.
+
+- ~~„Struktur zählt: Der Blick auf den ganzen Schwarm schlägt einzelne Gespräche“ (Storyline-Entwurf 9. Nov.).~~ Neu
+  verdrahtete Kanten kosten nichts, und das LLM Gespräch für Gespräch ist mindestens gleichauf (`paper/STORYLINE_CHECK.md`).
+- ~~„Kontakt zu einem Regelbrecher verdreifacht die Übernahme“, „3,5 %“, „19 von 23 Zwillinge getrennt“, „versteckte
+  Injektionen zeigen sich 6 Runden vor dem Kippen“.~~ Für keine dieser Zahlen gibt es eine Quelle im Projekt.
+- ~~„AUROC 0,92 auf zurückgehaltenen Setups“.~~ Gilt nur für den Split mit bekannten Setups (explorativ). Der vorab
+  festgelegte Vergleich auf allen 36 Setups ergibt 0,80–0,855.
