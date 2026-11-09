@@ -297,3 +297,24 @@ existieren. Auf den Testzeilen von heldout.md lagen beide gleichauf (0,82).
 8. **Grenzen, vorab benannt.** Es sind dieselben 14 Basen, auf denen die Hypothese entstand. Eine Bestätigung zeigt,
    dass der Vorsprung über neue Seeds dieser Setups im kritischen Band trägt. Dass er auf neue Setups übertragbar ist,
    zeigt sie nicht. Die Perzentil-CIs über 14 Basen sind antikonservativ (Nachtrag 2, Punkt 7).
+
+**4 (9. Nov., 08:20, vor dem Lauf).** Kleine Gegenüberstellung an Stelle von Teil C. Der Schwarm-Arm mit dem
+feinjustierten 4B-Modell entfiel am 8. Nov.: In der Testepisode waren 44 % seiner Antworten ungültiges JSON, und die 12
+feinjustierten Agenten schickten in der ganzen Episode 6 Nachrichten (`runs_vx/_logs/vx_decisions.md`). Damit es
+trotzdem eine Aussage zum Feintuning gibt, vergleichen wir die beiden Modelle direkt, ohne Schwarm.
+
+1. **Modelle.** `qwen3.5-4b-ft` (Feintuning auf Hartnäckigkeit) gegen `qwen3.5-4b` (Basis), derselbe Modal-Endpunkt,
+   dieselben Prompts und Einstellungen wie im Gate (`tools/ft_check.py`: Temperatur 0,7, gleiche Antwortlängen,
+   `reasoning_effort=none`).
+2. **Messungen** (`tools/ft_compare.py`). (a) 12 Drucksituationen × 5 Antworten je Modell. Ein Haiku-Richter, der das
+   Modell nicht kennt, vergibt HOLD, DILUTE, CAVE, RIGID oder UPDATE (Prompt aus ft_check.py). (b) 4 Situationen mit
+   entscheidender neuer Evidenz × 5 Antworten, hier ist UPDATE richtig. (c) 60 echte Agenten-Züge aus runs_night
+   (Systemprompt + Beobachtung, ohne Verlauf, Ziehung mit Seed 0; die ersten 20 sind die des Gates): gültiges JSON,
+   bekannte Aktion, Länge der Nachrichten.
+3. **Hauptgröße, beschreibend.** Anteil HOLD unter Druck, Feintuning gegen Basis, mit exaktem Vorzeichentest über die
+   12 Situationen (gepaart) und Fisher daneben. Dazu der UPDATE-Anteil und der JSON-Anteil (Fisher). Keine
+   Entscheidungsregel und keine Korrektur, denn es ist ein Manipulations- und Formatcheck.
+4. **Grenzen, vorab benannt.** Kein Schwarm, keine Monitore, keine Aussage über das Kippen. Die Situationen sind
+   handgeschrieben (12 + 4), es gibt einen Richter. Ohne Verlauf ist das Format leichter als im Schwarm: Im Gate waren
+   90 % der Einzelzüge gültig, in der Testepisode nur 56 %.
+5. **Ablauf.** Einmal ausgeführt und unabhängig vom Ergebnis berichtet (`analysis/results/ft_compare.{json,md}`).
