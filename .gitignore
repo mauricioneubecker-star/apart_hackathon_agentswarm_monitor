@@ -8,3 +8,4 @@ results/*
 .venv/
 logs/
 !results/llm_monitor/
+gnn_opt_data/

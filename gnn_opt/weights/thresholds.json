@@ -1,0 +1,13 @@
+{
+ "final_hybrid": 0.186475000001,
+ "hgb_bag+graph": 0.136285000001,
+ "hgb_bag+graph+mem": 0.13630500000100002,
+ "hgb_pairwise": 0.186390000001,
+ "hgb_bag": 0.161865000001,
+ "hgb_struct": 0.151485000001,
+ "hgb_clock": 0.120745000001,
+ "oracle_risk+clock": 0.116228000001,
+ "edge_monitor_max": 0.373265000001,
+ "edge_monitor_top3": 0.326340000001,
+ "lr_bag+graph": 0.163235000001
+}
