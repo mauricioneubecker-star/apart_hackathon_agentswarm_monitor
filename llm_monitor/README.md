@@ -1,5 +1,9 @@
 # LLM communication-monitor baselines (Claude Haiku 5.5)
 
+> **Note (added after submission).** The headline tables here use protocol (a): out-of-fold scores pooled over all
+> 112 night configurations, including the held-out ones. The paper reports the held-out comparison (Table 2,
+> `analysis/results/heldout.md`). Variants marked NON-PARITY, stacked or informed are not part of the paper.
+
 Frozen, reusable baselines of LLM-based communication oversight for the swarm-tipping task, evaluated on exactly
 the rows and labels the GNN uses. The GNN itself is not trained or tuned here; it plugs in later through a
 prediction CSV (`--compare` / `--combine`). Results: [`results/llm_monitor/RESULTS.md`](../results/llm_monitor/RESULTS.md).

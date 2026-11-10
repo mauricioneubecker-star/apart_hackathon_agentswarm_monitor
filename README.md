@@ -35,9 +35,8 @@ analysis/               analyses behind the paper's results
   heldout/              comparison of all monitors on the held-out configurations (Table 2)
   vx_preds/ vx3_preds/  frozen monitor predictions of the validation suite and of H7, made before any evaluation
   results/              result tables (Markdown and JSON) of all analyses
-synthesis_cloud/        summary of where the monitors generalise and where not (Figure 4), GNN test-look tables
+synthesis_cloud/        tables of the GNN team's single look at the held-out splits
 ANALYSIS_PLAN.md        pre-registration (analysis plan v2 with dated addenda, in German)
-archive/                material not used in the paper (see archive/README.md)
 ```
 
 ## From paper to repository
@@ -56,7 +55,7 @@ archive/                material not used in the paper (see archive/README.md)
 | §5.1 Zero-shot LLM monitors | `llm_monitor/` | `results/llm_monitor/RESULTS.md`, `monitor_*.jsonl` in every run directory |
 | §5.2 Table 2, held-out comparison | `analysis/heldout/` | `analysis/results/heldout.md`, `analysis/results/heldout_full.md` |
 | §5.3 Figure 3, what the GNN relies on | `gnn_opt_torch/`, `gnn_opt/judge_swap.py` | `gnn_opt_torch/RESULTS.md`, `gnn_opt_torch/experiments/`, `analysis/results/sensitivity.md` |
-| §5.4 Figure 4, generalisation map | `analysis/vx_eval.py`, `analysis/vx_verdicts.py`, `analysis/vx_posthoc.py` | `synthesis_cloud/SYNTHESIS.md`, `analysis/results/vx*.md` |
+| §5.4 Figure 4, generalisation map | `analysis/vx_eval.py`, `analysis/vx_verdicts.py`, `analysis/vx_posthoc.py` | `analysis/results/heldout_full.md`, `analysis/results/vx*.md`, `synthesis_cloud/test_look1/` |
 | §5.4 Blind validation suite | `sim_dataset/tools/vx_select.py`, `analysis/vx_preds/run_eval.sh` | `sim_dataset/runs_vx/`, `analysis/vx_preds/`, `analysis/results/vx_eval.md` |
 | §5.4 Replication H7 | `analysis/vx3_eval.py` | `sim_dataset/runs_vx3/`, `analysis/vx3_preds/`, `analysis/results/vx3_eval.md` |
 | §5.5 Synthetic scaling, AmongUs-X | `gnn/adapters/synthetic.py`, `gnn/adapters/amongus.py`, `gnn/jury_amongus.py` | `gnn/RESULTS_amongus.md`, `gnn/sweeps/` |
@@ -109,9 +108,11 @@ The order is visible in the commit history:
 
 ## Notes
 
-- Some working documents are in German (`ANALYSIS_PLAN.md`, `sim_dataset/README.md`, `sim_dataset/DECISIONS.md`,
+- Some working documents are in German (`ANALYSIS_PLAN.md`, `sim_dataset/DECISIONS.md`, `sim_dataset/FEATURES.md`,
   `gnn/RESULTS_amongus.md`).
-- Some working documents still refer to files under the paths they had before they were moved to `archive/`.
+- Working documents from the project may refer to notes and checks that are not part of this repository.
+- The monitors use the 18 generic edge and 5 node features of the catalog (`E_GEN`, `N_GEN` in `gnn_opt/data.py`);
+  the lexical features in `sim_dataset/FEATURES.md` are used only in the ablation of Section 5.3.
 - API keys were never committed; `sim_dataset/secrets.example.json` shows the expected format.
 - The work was developed on several branches, which have all been merged into `main` except `gnn-swarm`, an early
   GNN variant that `gnn_opt_torch/` replaced. The branches are kept.

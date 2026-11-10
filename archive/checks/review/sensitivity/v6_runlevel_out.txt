@@ -1,9 +1,0 @@
-t6d3 cut-6: runs evaluated with hard-coded 8: 232; with theta=6: 224; included although already tipped: 8; excluded although not tipped: 0
-t6d3 mech+2: runs evaluated with hard-coded 8: 239; with theta=6: 235; included although already tipped: 4; excluded although not tipped: 0
-   results.json run_level n (cut-6, mech+2) for clock: 224 235
-t8d3 cut-6: runs evaluated with hard-coded 8: 232; with theta=8: 232; included although already tipped: 0; excluded although not tipped: 0
-t8d3 mech+2: runs evaluated with hard-coded 8: 239; with theta=8: 239; included although already tipped: 0; excluded although not tipped: 0
-   results.json run_level n (cut-6, mech+2) for clock: 232 239
-t10d3 cut-6: runs evaluated with hard-coded 8: 232; with theta=10: 237; included although already tipped: 0; excluded although not tipped: 5
-t10d3 mech+2: runs evaluated with hard-coded 8: 239; with theta=10: 243; included although already tipped: 0; excluded although not tipped: 4
-   results.json run_level n (cut-6, mech+2) for clock: 232 239

@@ -1,8 +1,0 @@
-t10d3, all rows (n=6796):
-   zs:pairwise - bag+graph: point +0.037  boot mean +0.038 [+0.013, +0.067]
-   zs:global_full - bag+graph: point +0.026  boot mean +0.026 [-0.008, +0.060]
-   clock - bag+graph: point -0.061  boot mean -0.061 [-0.114, -0.008]
-t10d3, rows with count<8 only = theta-8 row set, theta-10 labels (n=6468, pos=118):
-   zs:pairwise - bag+graph: point +0.022  boot mean +0.022 [-0.007, +0.055]
-   zs:global_full - bag+graph: point -0.004  boot mean -0.004 [-0.040, +0.029]
-   clock - bag+graph: point -0.068  boot mean -0.068 [-0.120, -0.013]

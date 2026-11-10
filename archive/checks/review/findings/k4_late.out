@@ -1,4 +1,0 @@
-b_gine_ggru          all 0.696 | r1-7: nan (n=448, pos=0) | r8-20: 0.788 (n=769, pos=62) | r21-30: 0.592 (n=389, pos=28)
-final                all 0.766 | r1-7: nan (n=448, pos=0) | r8-20: 0.806 (n=769, pos=62) | r21-30: 0.689 (n=389, pos=28)
-e_ngru_4runs         all 0.831 | r1-7: nan (n=448, pos=0) | r8-20: 0.850 (n=769, pos=62) | r21-30: 0.715 (n=389, pos=28)
-hgb_bag+graph+mem    all 0.814 | r1-7: nan (n=448, pos=0) | r8-20: 0.789 (n=769, pos=62) | r21-30: 0.690 (n=389, pos=28)

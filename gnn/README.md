@@ -1,5 +1,8 @@
 # GNN-Monitor: Training-Pipeline für Swarm-Simulation und AmongUs-X
 
+> **Note.** This earlier pipeline backs Section 5.5 of the paper (synthetic scaling testbed and AmongUs-X; results in
+> `RESULTS_amongus.md`). The GNN monitor of Sections 5.1–5.4 is in `gnn_opt_torch/`.
+
 Eine Pipeline für zwei Datensätze. Die Adapter schreiben ein gemeinsames Snapshot-Format ([FORMAT.md](FORMAT.md));
 Loader, Modelle, Training, Baselines, Sweeps und Report sind für beide gleich.
 

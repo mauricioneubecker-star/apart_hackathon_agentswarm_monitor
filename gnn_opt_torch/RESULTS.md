@@ -1,5 +1,9 @@
 # gnn_opt_torch: results (local Mac run, 2026-11-08)
 
+> **Note (added after submission).** This file documents the GNN development of 8 Nov 2026. It compares trained
+> monitors only; the zero-shot LLM monitors were run separately (`llm_monitor/`). The joint comparison of all
+> monitors on the held-out configurations, reported as Table 2 of the paper, is in `analysis/results/heldout.md`.
+
 Spatio-temporal GNN monitor for "the swarm tips within 3 rounds" (y3: >= 8 of 24 agents use the forbidden shortcut
 within the next 3 rounds), trained on `night_train` only and scored with the shared harness (`gnn_opt/`).
 

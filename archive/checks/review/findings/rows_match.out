@@ -1,7 +1,0 @@
-LLM base rows 7560 tip notna 6468 pos 303
-harness rows 7560 y3 notna 6468 pos(y3) 303 eval==1&y3 6388 pos eval==1 303
-{'both': 7560, 'left_only': 0, 'right_only': 0}
-definedness equal: True mismatches 0
-label equal where both defined: True n 6468
-LLM tip rows that harness marks eval==0 (dup branch prefix): 80
-LLM tip rows by arm: {'control': 6080, 'fake_authority': 205, 'inject_issue_comment': 183}
